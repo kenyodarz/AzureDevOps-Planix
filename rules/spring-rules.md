@@ -123,7 +123,7 @@ Message Listeners, Event Consumers).
 - **Cero lógica de negocio**: Solo parsean la solicitud, validan el input (usando `@Valid` de
   Jakarta Validation o similar), delegan la ejecución al Usecase correspondiente, y mapean la salida
   del usecase al DTO de respuesta HTTP.
-- **Manejo de errores centralizado**: Usar `@ControllerAdvice` y `@ExceptionHandler` en la capa de
+- **Manejo de errores centralizado**: Usar `@ControllerAdvice` and `@ExceptionHandler` en la capa de
   entry-points para capturar excepciones de negocio / dominio y convertirlas en respuestas HTTP
   consistentes (ej. 404 para `NotFoundException`, 400 para `IllegalArgumentException`).
 
@@ -300,3 +300,4 @@ Al finalizar o revisar una tarea, valida que:
 - [ ] Todos los bloques de control de flujo tienen llaves `{}` (S1117).
 - [ ] Los tests unitarios cubren el happy path y los casos borde bajo la convención GIVEN/WHEN/THEN.
 - [ ] No se asume ningún contrato ni nombre sin validación con el usuario o spec.
+

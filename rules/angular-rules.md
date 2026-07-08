@@ -302,3 +302,4 @@ Al finalizar o revisar un desarrollo en Angular, valida que:
 - [ ] Se implementaron pruebas unitarias con Vitest que cubren happy paths y flujos lógicos
   aplicando GIVEN/WHEN/THEN.
 - [ ] No se inventaron copys de interfaz o rutas sin la debida confirmación.
+

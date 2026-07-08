@@ -1,4 +1,4 @@
-# Instrucciones de Agente y Copilot para Commits
+# Instrucciones de Agente y Copilot para el Monorepo
 
 Siempre que generes, sugieras o crees de manera automática un mensaje de commit, debes estructurarlo en base a la regla de `COMMIT_RULES.md`:
 
