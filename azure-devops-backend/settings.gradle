@@ -1,0 +1,33 @@
+pluginManagement {
+    repositories {
+        //mavenLocal()
+        gradlePluginPortal()
+    }
+}
+
+buildCache {
+    local {
+        directory = new File(rootDir, 'build-cache')
+    }
+}
+
+rootProject.name = 'BackendAzureDevOps'
+
+include ':app-service'
+include ':model'
+include ':usecase'
+project(':app-service').projectDir = file('./applications/app-service')
+project(':model').projectDir = file('./domain/model')
+project(':usecase').projectDir = file('./domain/usecase')
+include ':task-store-inmemory'
+project(':task-store-inmemory').projectDir = file('./infrastructure/driven-adapters/task-store-inmemory')
+include ':mcp-client'
+project(':mcp-client').projectDir = file('./infrastructure/driven-adapters/mcp-client')
+include ':reactive-web'
+project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
+include ':pgvector-store'
+project(':pgvector-store').projectDir = file('./infrastructure/driven-adapters/pgvector-store')
+include ':metrics'
+project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
+include ':s3-repository'
+project(':s3-repository').projectDir = file('./infrastructure/driven-adapters/s3-repository')

@@ -1,0 +1,70 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    implementation project(':s3-repository')
+    implementation project(':metrics')
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation project(':task-store-inmemory')
+    implementation project(':mcp-client')
+    implementation project(':reactive-web')
+    implementation project(':pgvector-store')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'tools.jackson.core:jackson-databind'
+    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+    testImplementation 'com.tngtech.archunit:archunit:1.4.2'
+    testImplementation 'tools.jackson.core:jackson-databind'
+}
+
+tasks.register('explodedJar', Copy) {
+    with jar
+    into layout.buildDirectory.dir("exploded")
+}
+
+jar {
+    // To disable the *-plain.jar
+    enabled = false
+}
+
+bootJar {
+    // Sets output jar name
+    archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
+}
+
+def frontendDir = "$rootDir/../azure-devops-frontend"
+
+tasks.register('npmInstall', Exec) {
+    workingDir frontendDir
+    inputs.file("$frontendDir/package.json")
+    outputs.dir("$frontendDir/node_modules")
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'npm install'
+    } else {
+        commandLine 'npm', 'install'
+    }
+}
+
+tasks.register('buildFrontend', Exec) {
+    dependsOn npmInstall
+    workingDir frontendDir
+    inputs.dir("$frontendDir/src")
+    inputs.file("$frontendDir/angular.json")
+    inputs.file("$frontendDir/package.json")
+    outputs.dir("$frontendDir/dist")
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'npm run build'
+    } else {
+        commandLine 'npm', 'run build'
+    }
+}
+
+tasks.register('copyFrontendToStatic', Copy) {
+    dependsOn buildFrontend
+    from "$frontendDir/dist/frontend/browser"
+    into layout.buildDirectory.dir("resources/main/static")
+}
+
+processResources.dependsOn copyFrontendToStatic
+

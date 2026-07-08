@@ -1,0 +1,54 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Java / Gradle
+.gradle/
+**/.gradle/
+build/
+**/build/
+out/
+**/out/
+target/
+**/target/
+build-cache/
+**/build-cache/
+
+# Node / Angular
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+coverage/
+**/coverage/
+.angular/
+**/.angular/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+*.crt
+*.cer
+*.token
+*.local
+secrets/
+credentials/
+
+# Local tooling
+*.orig
+

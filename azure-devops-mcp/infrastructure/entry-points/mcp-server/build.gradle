@@ -1,0 +1,27 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation 'org.springframework:spring-context'
+    implementation 'tools.jackson.core:jackson-databind'
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+    // Spring AI BOM
+    implementation platform("org.springframework.ai:spring-ai-bom:2.0.0-RC1")
+
+    // MCP Server WebFlux
+    implementation "org.springframework.ai:spring-ai-mcp"
+    implementation "org.springframework.ai:spring-ai-starter-mcp-server-webflux"
+
+    // AOP for Audit
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
+
+    // Security
+    implementation 'org.springaicommunity:mcp-server-security:0.1.12'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
+    
+
+    // Test
+    testImplementation "org.springframework.ai:spring-ai-test"
+}

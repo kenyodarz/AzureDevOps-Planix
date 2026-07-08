@@ -1,0 +1,21 @@
+package co.com.bancolombia.model.a2a;
+
+public enum TaskState {
+    SUBMITTED("submitted"), WORKING("working"), INPUT_REQUIRED("input-required"),
+    AUTH_REQUIRED("auth-required"), COMPLETED("completed"), CANCELED("canceled"),
+    REJECTED("rejected"), FAILED("failed");
+    private final String value;
+
+    TaskState(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+}

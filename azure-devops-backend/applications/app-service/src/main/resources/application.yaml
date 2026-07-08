@@ -1,0 +1,103 @@
+server:
+  port: 8081
+a2a:
+  legacy-message-send-enabled: "${A2A_LEGACY_MESSAGE_SEND_ENABLED:true}"
+  legacy:
+    sunset-date: "${A2A_LEGACY_SUNSET_DATE:2026-06-30}"
+    successor-url: "${A2A_LEGACY_SUCCESSOR_URL:/}"
+    disable-after-sunset: "${A2A_DISABLE_LEGACY_AFTER_SUNSET:false}"
+agent:
+  system-prompt: "Eres un agente Scrum Master y Product Owner Técnico virtual de Bancolombia.\
+    \ Tu objetivo principal es asistir al equipo a clasificar, refinar, estimar y\
+    \ documentar excelentes Historias de Usuario (HU) y Historias Habilitadoras (HA).\n\
+    \nTus responsabilidades incluyen:\n- Ayudar al equipo a estructurar y detallar\
+    \ el alcance de las HU/HA (títulos, descripciones claras, criterios de aceptació\
+    n, DoR y DoD).\n- Resolver inquietudes ágiles sobre estimaciones en Story Points\
+    \ (Fibonacci), dependencias técnicas, e incertidumbres asociadas.\n- Servir de\
+    \ guía conversacional de forma amable, clara y estructurada.\n- Trabajar en conjunto\
+    \ con el backend en Java para registrar trabajo y tareas en Azure DevOps cuando\
+    \ se te solicite.\n\nReglas Conversacionales:\n- Responde siempre en ESPAÑOL.\n\
+    - Mantén respuestas claras, profesionales y enfocadas en la agilidad del equipo.\n"
+spring:
+  application:
+    name: "AgentAzureDevOps"
+  datasource:
+    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/agent_azure_devops}"
+    username: "${SPRING_DATASOURCE_USERNAME:postgres}"
+    password: "${SPRING_DATASOURCE_PASSWORD:postgres}"
+    driver-class-name: "org.postgresql.Driver"
+  ai:
+    openai:
+      api-key: "${AI_API_KEY:dummy}"
+      base-url: "${AI_BASE_URL:http://localhost:4141}"
+      chat:
+        model: "${AI_MODEL:gpt-5-mini}"
+      embedding:
+        model: "${AI_EMBEDDING_MODEL:text-embedding-ada-002}"
+    vectorstore:
+      pgvector:
+        table-name: "planning_chunks"
+        similarity-threshold: 0.75
+    mcp:
+      client:
+        enabled: "${SPRING_AI_MCP_CLIENT_ENABLED:false}"
+        streamable-http:
+          connections:
+            azure-devops:
+              url: "${MCP_AZURE_DEVOPS_URL:http://localhost:8080}"
+              endpoint: "/mcp/McpAzureDevOps"
+  h2:
+    console:
+      enabled: true
+      path: "/h2"
+  security:
+    oauth2:
+      client:
+        registration:
+          mcp-server:
+            provider: "entra-id"
+            client-id: "${ENTRA_ID_CLIENT_ID:your-client-id}"
+            client-secret: "${ENTRA_ID_CLIENT_SECRET:your-client-secret}"
+            authorization-grant-type: "client_credentials"
+            scope:
+              - "api://${ENTRA_ID_CLIENT_ID:your-client-id}/.default"
+        provider:
+          entra-id:
+            token-uri: "https://login.microsoftonline.com/${ENTRA_ID_TENANT_ID:your-tenant-id}/oauth2/v2.0/token"
+logging:
+  level:
+    co.com.bancolombia: "DEBUG"
+    org.springframework.ai: "DEBUG"
+    org.springframework.ai.mcp: "DEBUG"
+    org.springframework.ai.chat: "DEBUG"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080"
+mcp:
+  connection-headers:
+    ${MCP_AZURE_DEVOPS_URL:http://localhost:8080}:
+      resource: "local"
+azure-devops:
+  default-org: "${AZURE_DEVOPS_DEFAULT_ORGANIZATION:grupobancolombia}"
+  default-project: "${AZURE_DEVOPS_DEFAULT_PROJECT:Vicepresidencia Servicios de Tecnologí\
+    a}"
+adapters:
+  aws:
+    s3:
+      bucketName: "test"
+      region: "us-east-1"
+      endpoint: "https://s3.localhost.localstack.cloud:4566"
+adapter:
+  aws:
+    s3:
+      bucketName: "test"
+      region: "us-east-1"
+      endpoint: "https://s3.localhost.localstack.cloud:4566"

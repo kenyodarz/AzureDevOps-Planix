@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: Azure DevOps Work Item Tracking API
+  description: |
+    Especificación simplificada del API de Azure DevOps para interactuar con Work Items (WIT),
+    WIQL y operaciones por lote (Batch), permitiendo crear y consultar Historias de Usuario,
+    Historias Habilitadoras, Tasks e Issues.
+  version: 7.1-preview.3
+servers:
+  - url: https://dev.azure.com/{organization}/{project}
+    variables:
+      organization:
+        default: GrupoBancolombia
+        description: Nombre de la organización en Azure DevOps.
+      project:
+        default: b267af7c-3233-4ad1-97b3-91083943100d
+        description: Nombre o UUID del proyecto en Azure DevOps.
+paths:
+  /_apis/wit/workItems/{id}:
+    get:
+      summary: Obtener un Work Item por ID
+      description: Recupera los detalles de un elemento de trabajo específico por su ID.
+      operationId: getWorkItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del Work Item.
+          schema:
+            type: integer
+        - name: api-version
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "7.1"
+      responses:
+        '200':
+          description: Elemento de trabajo recuperado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItem'
+        '401':
+          description: No autorizado. Token inválido o no suministrado.
+        '404':
+          description: Elemento de trabajo no encontrado.
+
+    patch:
+      summary: Actualizar un Work Item
+      description: Actualiza los campos o relaciones (vínculos de padre-hijo, etc.) de un Work Item mediante JSON Patch.
+      operationId: updateWorkItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del Work Item a actualizar.
+          schema:
+            type: integer
+        - name: api-version
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "7.1"
+      requestBody:
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatchDocument'
+      responses:
+        '200':
+          description: Elemento de trabajo actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItem'
+        '400':
+          description: Error en la estructura del JSON Patch o campos inválidos.
+        '401':
+          description: No autorizado.
+
+  /_apis/wit/workitems/${type}:
+    post:
+      summary: Crear un Work Item
+      description: Crea un nuevo elemento de trabajo (como User Story, Task, Issue, etc.) utilizando JSON Patch para inicializar sus campos y relaciones.
+      operationId: createWorkItem
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: El tipo de Work Item a crear (ej. User Story, Task, Issue).
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "7.1"
+      requestBody:
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatchDocument'
+      responses:
+        '200':
+          description: Elemento de trabajo creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItem'
+        '400':
+          description: Datos inválidos o error en el formato del JSON Patch.
+        '401':
+          description: No autorizado.
+
+  /_apis/wit/wiql:
+    post:
+      summary: Consultar Work Items (WIQL)
+      description: Realiza una consulta estructurada en lenguaje WIQL (Work Item Query Language) para obtener los IDs y URLs de los elementos que coincidan.
+      operationId: queryByWiql
+      parameters:
+        - name: api-version
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "7.0"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Query estructurado en lenguaje WIQL.
+                  example: |
+                    SELECT [System.Id], [System.Title], [System.State]
+                    FROM WorkItems
+                    WHERE [System.AssignedTo] = 'jmina@bancolombia.com.co'
+                    AND [System.IterationPath] = 'Vicepresidencia Servicios de Tecnología\\2026\\Sprint 246'
+      responses:
+        '200':
+          description: Consulta ejecutada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WiqlQueryResult'
+        '400':
+          description: Sintaxis WIQL inválida.
+        '401':
+          description: No autorizado.
+
+  /_apis/wit/workitemsbatch:
+    post:
+      summary: Obtener Work Items en Lote (Batch)
+      description: Obtiene de manera masiva los detalles de múltiples elementos de trabajo a partir de sus IDs.
+      operationId: getWorkItemsBatch
+      parameters:
+        - name: api-version
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "7.1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemsBatchRequest'
+      responses:
+        '200':
+          description: Elementos de trabajo recuperados exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemsBatchResponse'
+        '401':
+          description: No autorizado.
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Autenticación básica usando un Personal Access Token (PAT) de Azure DevOps.
+
+  schemas:
+    JsonPatchDocument:
+      type: array
+      description: Un documento JSON Patch que representa una lista de operaciones de modificación.
+      items:
+        $ref: '#/components/schemas/JsonPatchOperation'
+
+    JsonPatchOperation:
+      type: object
+      required:
+        - op
+        - path
+      properties:
+        op:
+          type: string
+          description: La operación a realizar.
+          enum: [add, remove, replace, move, copy, test]
+        path:
+          type: string
+          description: La ruta del campo o relación que se va a modificar (ej. /fields/System.Title o /relations/-).
+          example: /fields/System.Title
+        value:
+          type: object
+          description: El valor a añadir, reemplazar o testear. Puede ser un string, entero, o un objeto para relaciones.
+          example: "Título de la Historia de Usuario"
+        from:
+          type: string
+          description: La ruta de origen (solo para operaciones move/copy).
+
+    WorkItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único del elemento de trabajo.
+        rev:
+          type: integer
+          description: Número de revisión actual.
+        fields:
+          type: object
+          additionalProperties: true
+          description: Campos clave del Work Item (System.Title, System.Description, System.State, etc.).
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkItemRelation'
+          description: Relaciones con otros elementos de trabajo (Padre, Hijo, Duplicado, etc.).
+        url:
+          type: string
+          description: URL del recurso REST de este Work Item.
+
+    WorkItemRelation:
+      type: object
+      properties:
+        rel:
+          type: string
+          description: El tipo de relación (ej. System.LinkTypes.Hierarchy-Reverse para el Padre, System.LinkTypes.Hierarchy-Forward para el Hijo).
+          example: System.LinkTypes.Hierarchy-Reverse
+        url:
+          type: string
+          description: URL del elemento de trabajo relacionado.
+          example: https://dev.azure.com/GrupoBancolombia/_apis/wit/workItems/7539457
+        attributes:
+          type: object
+          additionalProperties: true
+          description: Atributos de la relación (comentarios, fecha de creación, etc.).
+
+    WiqlQueryResult:
+      type: object
+      properties:
+        queryType:
+          type: string
+          example: flat
+        queryResultType:
+          type: string
+          example: workItem
+        asOf:
+          type: string
+          format: date-time
+        workItems:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: ID del Work Item.
+              url:
+                type: string
+                description: URL del recurso del Work Item.
+
+    WorkItemsBatchRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          description: Colección de IDs de Work Items a consultar (máximo 200).
+          items:
+            type: integer
+        fields:
+          type: array
+          description: Lista de campos específicos a retornar. Si no se provee, retorna los campos predeterminados.
+          items:
+            type: string
+          example: ["System.Id", "System.Title", "System.WorkItemType", "System.State", "System.AssignedTo", "System.IterationPath"]
+        $expand:
+          type: string
+          description: Expansión de relaciones o enlaces asociados.
+          enum: [None, Relations, Fields, Links, All]
+          default: None
+        errorPolicy:
+          type: string
+          description: Política de error si algún elemento no existe.
+          enum: [Fail, Omit]
+          default: Fail
+
+    WorkItemsBatchResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Cantidad de Work Items retornados.
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkItem'
+
+security:
+  - basicAuth: []

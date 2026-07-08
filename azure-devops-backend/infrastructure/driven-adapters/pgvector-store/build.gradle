@@ -1,0 +1,15 @@
+dependencies {
+    implementation project(':model')
+
+    // Spring AI PostgreSQL Vector Store
+    implementation 'org.springframework.ai:spring-ai-pgvector-store:2.0.0'
+    implementation 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework:spring-web'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'io.projectreactor:reactor-core'
+
+    implementation 'tools.jackson.core:jackson-core'
+    implementation 'tools.jackson.core:jackson-databind'
+}

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Emulador Floci para simular el S3 del backend
+  flocci-mock:
+    image: floci/floci:latest-compat
+    container_name: flocci-mock
+    ports:
+      - "4566:4566"
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - FLOCI_STORAGE_MODE=memory
+    volumes:
+      - ./floci-init.sh:/etc/localstack/init/ready.d/init-s3.sh:ro
+
+
+
+
+

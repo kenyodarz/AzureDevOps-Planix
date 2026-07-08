@@ -1,0 +1,252 @@
+{
+	"info": {
+		"_postman_id": "8e36d4ff-f6c1-4b10-8bde-d5162a8ab8ee",
+		"name": "Azure DevOps WIT & WIQL API Contract",
+		"description": "Colección de Postman para interactuar con los endpoints de Azure DevOps de Work Items (WIT) y consultas WIQL. Facilita la creación y actualización de Historias de Usuario, Historias Habilitadoras, Tasks e Issues, además del análisis de Sprint.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Work Item by ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{token}}",
+						"description": "PAT en formato Base64",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/workItems/7539457?api-version=7.1",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"azure",
+						"com"
+					],
+					"path": [
+						"{{organization}}",
+						"{{project}}",
+						"_apis",
+						"wit",
+						"workItems",
+						"7539457"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "7.1"
+						}
+					]
+				},
+				"description": "Recupera un elemento de trabajo específico utilizando su identificador numérico."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Work Item (User Story)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json-patch+json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"op\": \"add\",\n    \"path\": \"/fields/System.Title\",\n    \"value\": \"Frente | Mi Nueva Historia de Usuario\"\n  },\n  {\n    \"op\": \"add\",\n    \"path\": \"/fields/System.Description\",\n    \"value\": \"Como Scrum Master, quiero automatizar tareas para optimizar el Sprint.\"\n  },\n  {\n    \"op\": \"add\",\n    \"path\": \"/fields/System.AreaPath\",\n    \"value\": \"{{project}}\"\n  },\n  {\n    \"op\": \"add\",\n    \"path\": \"/fields/System.IterationPath\",\n    \"value\": \"{{project}}\"\n  }\n]"
+				},
+				"url": {
+					"raw": "https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/workitems/$User%20Story?api-version=7.1",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"azure",
+						"com"
+					],
+					"path": [
+						"{{organization}}",
+						"{{project}}",
+						"_apis",
+						"wit",
+						"workitems",
+						"$User Story"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "7.1"
+						}
+					]
+				},
+				"description": "Crea una Historia de Usuario usando JSON Patch. Puedes cambiar la variable del path `$User Story` por `$Task` o `$Issue` para crear otros tipos."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Work Item (Link Child to Parent)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json-patch+json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"op\": \"add\",\n    \"path\": \"/relations/-\",\n    \"value\": {\n      \"rel\": \"System.LinkTypes.Hierarchy-Reverse\",\n      \"url\": \"https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/workItems/7539457\",\n      \"attributes\": {\n        \"comment\": \"Vinculando la Tarea a su Historia de Usuario Padre\"\n      }\n    }\n  }\n]"
+				},
+				"url": {
+					"raw": "https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/workitems/7539458?api-version=7.1",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"azure",
+						"com"
+					],
+					"path": [
+						"{{organization}}",
+						"{{project}}",
+						"_apis",
+						"wit",
+						"workitems",
+						"7539458"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "7.1"
+						}
+					]
+				},
+				"description": "Actualiza un elemento de trabajo existente. En este ejemplo, añade una relación para vincular un elemento hijo (ej. Task 7539458) a su elemento padre (ej. User Story 7539457) utilizando `System.LinkTypes.Hierarchy-Reverse`."
+			},
+			"response": []
+		},
+		{
+			"name": "Query Work Items (WIQL)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\": \"SELECT [System.Id], [System.Title], [System.State] FROM WorkItems WHERE [System.AssignedTo] = 'jmina@bancolombia.com.co' AND [System.IterationPath] = 'Vicepresidencia Servicios de Tecnología\\\\2026\\\\Sprint 246'\"\n}"
+				},
+				"url": {
+					"raw": "https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/wiql?api-version=7.0",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"azure",
+						"com"
+					],
+					"path": [
+						"{{organization}}",
+						"{{project}}",
+						"_apis",
+						"wit",
+						"wiql"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "7.0"
+						}
+					]
+				},
+				"description": "Realiza consultas estructuradas WIQL para listar elementos por su correo asignado e Iteration Path."
+			},
+			"response": []
+		},
+		{
+			"name": "Batch Get Work Items",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ids\": [7539457, 7539458],\n  \"fields\": [\n    \"System.Id\",\n    \"System.Title\",\n    \"System.WorkItemType\",\n    \"System.State\",\n    \"System.AssignedTo\",\n    \"System.IterationPath\"\n  ],\n  \"$expand\": \"None\"\n}"
+				},
+				"url": {
+					"raw": "https://dev.azure.com/{{organization}}/{{project}}/_apis/wit/workitemsbatch?api-version=7.1",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"azure",
+						"com"
+					],
+					"path": [
+						"{{organization}}",
+						"{{project}}",
+						"_apis",
+						"wit",
+						"workitemsbatch"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "7.1"
+						}
+					]
+				},
+				"description": "Obtiene la información detallada de múltiples elementos de trabajo por ID en una sola llamada."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "organization",
+			"value": "GrupoBancolombia",
+			"type": "string"
+		},
+		{
+			"key": "project",
+			"value": "b267af7c-3233-4ad1-97b3-91083943100d",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "<token_en_base_64>",
+			"type": "string"
+		}
+	]
+}
