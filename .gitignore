@@ -52,3 +52,6 @@ credentials/
 # Local tooling
 *.orig
 
+ # Reports
+reports/
+**/reports/
