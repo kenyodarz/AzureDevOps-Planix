@@ -146,22 +146,50 @@ Entrada original archivada. La decisión final (aprobada) está registrada al fi
 
 ---
 
-## DP-05 — Camino muerto: `chat()` asíncrono contra un adapter no-op
+## DP-05 — Camino muerto: `chat()` asíncrono contra un adapter no-op ✅ RESUELTA
 
-- **Estado:** 🟡 ABIERTA (no bloqueante hasta Fase 07)
-- **Bloquea:** Fase 07
-- **Ubicación:** `AgentChatUseCase.chat():248` → `NoOpAgentResponseAdapter`
+- **Estado:** 🟢 RESUELTA — **Opción A: CONSERVAR y DOCUMENTAR como punto de extensión**
+- **Resuelta por:** Usuario · **Fecha:** 2026-08-29
+- **Se aplica en:** Fase 07
+- **Ubicación:** `AgentChatUseCase.chat():43` → `NoOpAgentResponseAdapter`
 
 **Hallazgo:** el método `chat()` persiste la tarea y publica la respuesta en un gateway cuya única
 implementación retorna `Mono.empty()`. Es un camino muerto en producción.
 
-**Pregunta al usuario:**
-> **Opción A (por defecto):** Conservarlo y documentarlo como punto de extensión para Kafka.
-> **Opción B:** Eliminar `chat()`, `AgentResponseGateway` y `NoOpAgentResponseAdapter`.
-> **Opción C:** Conservarlo tras un feature flag explícito en `application.yaml`.
+**Decisión del usuario:** *«Ahí está clara la razón por la que se devuelve un `Mono.empty()`, por
+ende la opción B se descarta.»* La eliminación queda descartada porque **en el Banco, A2A corre
+sobre Kafka y no sobre el protocolo oficial de transporte**: el flujo asíncrono no es un experimento
+abandonado, es el transporte real de la plataforma, hoy sin cablear en este agente.
 
-- **Resolución:** _(pendiente)_
-- **Fecha de resolución:** —
+Entre A y C, el usuario delegó la elección con el criterio explícito de **la menos traumática**,
+*«por si al agente se le activa el A2A o no»*.
+
+**Resolución: Opción A.** Justificación:
+
+1. **`NoOpAgentResponseAdapter` ya es el interruptor.** Es un *Null Object*: publicar en
+   `Mono.empty()` no tiene ningún efecto lateral. El camino ya está apagado sin necesidad de una
+   bandera.
+2. **La Opción C duplicaría el mecanismo de apagado.** Añadiría propiedad en `application.yaml`,
+   cableado condicional y una segunda ruta de arranque que probar, sobre un apagado que ya funciona.
+   Más superficie de error para el mismo resultado observable.
+3. **Encender A2A sobre Kafka es, con A, sustituir la implementación del puerto** —
+   `NoOpAgentResponseAdapter` → adaptador Kafka — sin tocar el dominio, el caso de uso ni la
+   configuración. Con C habría que acordarse además de encender el flag: un modo de fallo nuevo.
+4. Es la opción de **menor cambio**: cero modificaciones de comportamiento, solo documentación y
+   pruebas.
+
+**Alcance de la aplicación:**
+
+1. `AgentChatUseCase.chat()` se conserva **sin cambios funcionales**; se documenta explícitamente
+   como el transporte asíncrono A2A/Kafka y se advierte de que hoy resuelve contra un *Null Object*.
+2. `AgentResponseGateway` y `NoOpAgentResponseAdapter` se conservan. El adaptador documenta que es
+   un *Null Object* deliberado y cuál es el procedimiento para activar Kafka.
+3. **El camino `chat()` pasa a estar cubierto por pruebas**, para que deje de ser el hueco de
+   cobertura de `AgentChatUseCase` y para que una regresión en el flujo asíncrono se detecte antes
+   de que Kafka se active.
+
+> D-13 queda **saldada por documentación y cobertura**, no por eliminación: deja de ser un camino
+> muerto no documentado para ser un punto de extensión explícito y verificado.
 
 ---
 
@@ -279,12 +307,11 @@ cualquier heurística de longitud, tal como exige DP-01.
 | DP-04 | Aprobada la ruta `resources/prompts/` y los nombres de archivo (5 plantillas) | Usuario | 2026-08-28 |
 | DP-06 | Estimación por horas según tabla oficial; se elimina la «Regla de Mínimos de 5 puntos» | Usuario | 2026-08-28 |
 | DP-07 | Eliminar `buildPrompt()` y la plantilla de creación estructurada (dead code) | Usuario | 2026-08-28 |
+| DP-05 | Conservar `chat()` async y documentarlo como punto de extensión A2A/Kafka (Opción A). B descartada: A2A corre sobre Kafka en el Banco. C descartada: el Null Object ya es el interruptor | Usuario | 2026-08-29 |
 
 ## Decisiones aún abiertas
 
-| ID | Descripción | Bloquea |
-|---|---|---|
-| DP-05 | Camino muerto `chat()` async contra `NoOpAgentResponseAdapter` | Fase 07 |
+**Ninguna.** Todas las decisiones del plan quedaron resueltas por el usuario.
 
 ## Pendientes de ratificación del usuario
 

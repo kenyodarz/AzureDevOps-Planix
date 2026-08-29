@@ -34,12 +34,6 @@ import org.springframework.core.io.Resource;
         useDefaultFilters = false)
 public class UseCasesConfig {
 
-    @Value("${azure-devops.default-org:grupobancolombia}")
-    private String defaultOrg;
-
-    @Value("${azure-devops.default-project:Vicepresidencia Servicios de Tecnología}")
-    private String defaultProject;
-
     /**
      * Resolutor de intención: servicio de dominio sin estado ni dependencias, seguro como
      * singleton compartido.
@@ -51,9 +45,17 @@ public class UseCasesConfig {
 
     // ─── Configuración tipada ──────────────────────────────────────────────────
 
-    /** Organización y proyecto sobre los que trabaja el agente. */
+    /**
+     * Organización y proyecto sobre los que trabaja el agente.
+     * <p>
+     * Los valores se inyectan como <b>parámetros del método</b> y no como campos anotados: un
+     * bean de configuración no debe tener estado mutable (ArchUnit {@code Rule_2.7}).
+     */
     @Bean
-    public AzureDevOpsScope azureDevOpsScope() {
+    public AzureDevOpsScope azureDevOpsScope(
+            @Value("${azure-devops.default-org:grupobancolombia}") String defaultOrg,
+            @Value("${azure-devops.default-project:Vicepresidencia Servicios de Tecnología}")
+            String defaultProject) {
         return new AzureDevOpsScope(defaultOrg, defaultProject);
     }
 

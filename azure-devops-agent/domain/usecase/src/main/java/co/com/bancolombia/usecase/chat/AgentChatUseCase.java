@@ -40,6 +40,25 @@ public class AgentChatUseCase {
     private final ChatFlowDispatcher chatFlowDispatcher;
 
 
+    /**
+     * Transporte <b>asíncrono</b> A2A: ejecuta el chat, persiste la tarea resultante y publica la
+     * respuesta en {@link AgentResponseGateway}, sin devolverla al llamador.
+     *
+     * <p><b>Punto de extensión, hoy inactivo (DP-05, Opción A).</b> En la plataforma del Banco el
+     * protocolo A2A viaja sobre Kafka y no sobre el transporte oficial, por lo que este es el
+     * camino real de producción cuando la mensajería está cableada. En esta versión del agente el
+     * puerto lo resuelve un <i>Null Object</i>
+     * ({@code NoOpAgentResponseAdapter}, que retorna {@code Mono.empty()}), de modo que la
+     * publicación no tiene ningún efecto lateral y el camino queda apagado <b>sin necesidad de un
+     * feature flag</b>.
+     *
+     * <p>Para activar A2A sobre Kafka basta con sustituir la implementación de
+     * {@link AgentResponseGateway} por el adaptador productor: ni este caso de uso ni el resto del
+     * dominio requieren cambio alguno.
+     *
+     * @param request petición A2A entrante
+     * @return {@link Mono} que completa cuando la respuesta fue publicada
+     */
     public Mono<Void> chat(SendMessageRequest request) {
         return executeChat(request)
                 .flatMap(response -> {
@@ -51,6 +70,13 @@ public class AgentChatUseCase {
                 .flatMap(agentResponseGateway::sendResponse);
     }
 
+    /**
+     * Transporte <b>síncrono</b> REST/JSON-RPC: ejecuta el chat y devuelve la respuesta al
+     * llamador. Es el camino que usa hoy el entry-point.
+     *
+     * @param request petición A2A entrante
+     * @return la respuesta del agente
+     */
     public Mono<SendMessageResponse> chatAndRespond(SendMessageRequest request) {
         return executeChat(request);
     }

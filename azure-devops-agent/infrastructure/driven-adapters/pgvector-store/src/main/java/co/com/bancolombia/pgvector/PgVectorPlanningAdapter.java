@@ -5,7 +5,6 @@ import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.pgvector.exceptions.PlanningVectorStoreException;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -26,7 +25,6 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Component
 @Primary
-@RequiredArgsConstructor
 @Slf4j
 public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
 
@@ -35,12 +33,25 @@ public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
     private final VectorStore vectorStore;
     private final JdbcTemplate jdbcTemplate;
     private final JsonMapper jsonMapper;
+    private final String tableName;
+    private final double similarityThreshold;
 
-    @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
-    private String tableName;
-
-    @Value("${spring.ai.vectorstore.pgvector.similarity-threshold:0.75}")
-    private double similarityThreshold;
+    /**
+     * Inyección por constructor con todos los campos finales: un bean no debe tener estado
+     * mutable (ArchUnit {@code Rule_2.7}).
+     */
+    public PgVectorPlanningAdapter(VectorStore vectorStore, JdbcTemplate jdbcTemplate,
+            JsonMapper jsonMapper,
+            @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
+            String tableName,
+            @Value("${spring.ai.vectorstore.pgvector.similarity-threshold:0.75}")
+            double similarityThreshold) {
+        this.vectorStore = vectorStore;
+        this.jdbcTemplate = jdbcTemplate;
+        this.jsonMapper = jsonMapper;
+        this.tableName = tableName;
+        this.similarityThreshold = similarityThreshold;
+    }
 
     @Override
     public Mono<Void> saveChunks(List<PlanningChunk> chunks) {

@@ -1,11 +1,11 @@
 # FASE 07 — Endurecimiento y Cierre
 
-> **Estado:** 🔴 BLOQUEADA por DP-05 · **Depende de:** FASE 06 (🟢 completada) · **Riesgo:** Bajo
+> **Estado:** 🟢 COMPLETADA (2026-08-29) · **Depende de:** FASE 06 (🟢 completada) · **Riesgo:** Bajo
 > **Commit al cerrar:** `refactor(agent): endurecer arquitectura y cerrar deudas del plan`
+> **Resultado:** `docs/resultados/RESULTADO-FASE-07.md` · **Cierre:** `docs/resultados/CIERRE-DEL-PLAN.md`
 
-> ⛔ **Esta fase no puede empezar hasta que el usuario resuelva DP-05.** Es la primera instrucción
-> del orden de ejecución. **No decidas por tu cuenta**: la Política de No-Asunción
-> (`rules/spring-rules.md` §6) lo prohíbe explícitamente.
+> ✅ **DP-05 resuelta por el usuario el 2026-08-29: Opción A** (conservar `chat()` como punto de
+> extensión A2A/Kafka). El bloqueo quedó levantado y la fase se ejecutó completa.
 
 ---
 

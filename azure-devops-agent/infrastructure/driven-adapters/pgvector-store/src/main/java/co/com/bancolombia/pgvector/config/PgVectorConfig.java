@@ -24,8 +24,6 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class PgVectorConfig {
 
-    @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
-    private String tableName;
 
     /**
      * Bean de EmbeddingModel personalizado que invoca al servicio localmente en
@@ -127,10 +125,15 @@ public class PgVectorConfig {
     /**
      * VectorStore utilizando la abstracción oficial de PgVectorStore de Spring AI con patrón
      * Builder.
+     * <p>
+     * El nombre de tabla se inyecta como <b>parámetro del método</b> y no como campo anotado: un
+     * bean de configuración no debe tener estado mutable (ArchUnit {@code Rule_2.7}).
      */
     @Bean
     @Primary
-    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
+    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel,
+            @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
+            String tableName) {
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .vectorTableName(tableName)
                 .initializeSchema(
