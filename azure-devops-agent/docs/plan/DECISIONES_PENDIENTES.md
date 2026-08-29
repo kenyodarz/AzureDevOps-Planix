@@ -85,54 +85,6 @@ de 8 puntos») deja de ser mentira y pasa a describir el comportamiento real. No
 
 ---
 
-## DP-06 — Migrar el criterio de estimación de «días» a «horas» 🔴 ABIERTA
-
-- **Estado:** 🔴 ABIERTA — **requiere dato del usuario**
-- **Bloquea:** Fase 01 (redacción de prompts), Fase 02 (validaciones)
-- **No bloquea:** Fase 00
-
-**Contexto aportado por el usuario:** *«Para crear esta regla me basé en `HISTORIA_USUARIO.md`, solo
-que después bajé el estándar por una célula donde se trabajaba 1 día = 1 punto, pero es mejor usar el
-estándar por horas pues es mucho más medible.»*
-
-**Situación actual en el código:** los prompts **no mencionan ninguna unidad temporal**. Definen la
-estimación de forma cualitativa y con una regla de mínimos discutible:
-
-> `AgentChatUseCase.java:93` — «Cualquier desarrollo técnico que involucre múltiples endpoints
-> (CRUD/BFF), base de datos, seguridad (JWT/RBAC) o integraciones de APIs no puede ser estimado en
-> menos de **5 puntos**.»
-
-Esa regla de mínimos **contradice** el prompt de auditoría, que afirma lo contrario:
-
-> `AgentChatUseCase.java:182` — «la guía corporativa NO establece mínimos obligatorios de Story
-> Points para tareas de bases de datos, integraciones o APIs.»
-
-Es decir: **el mismo agente crea historias con una regla y las audita con la regla opuesta.**
-
-**Lo que NO puedo asumir** (`spring-rules.md` §6.1 y §6.5): la tabla exacta de equivalencia
-puntos → horas. Inventarla desalinearía todas las estimaciones del equipo.
-
-**Pregunta al usuario — necesito la equivalencia concreta:**
-
-| Story Points | Horas (¿?) |
-|---:|---|
-| 1 | _¿?_ |
-| 2 | _¿?_ |
-| 3 | _¿?_ |
-| 5 | _¿?_ |
-| 8 | _¿?_ |
-
-Y adicionalmente:
-
-1. ¿Las horas son de **una persona** o de la célula completa?
-2. ¿Incluyen pruebas, documentación y pipeline, o solo desarrollo?
-3. ¿Se **elimina** la «Regla de Mínimos de 5 puntos» para dejar solo el criterio de horas?
-   (Recomiendo eliminarla: hoy contradice al prompt de auditoría.)
-
-- **Resolución:** _(pendiente)_
-
----
-
 ## DP-03 — Default silencioso de `1` punto cuando el LLM no devuelve estimación
 
 - **Estado:** 🟡 PROPUESTA (recomendación pendiente de confirmar)
@@ -152,29 +104,9 @@ resultado como `Optional<ComplexityEstimation>` y, cuando esté vacío, mostrar
 
 ---
 
-## DP-04 — Nombres de recursos de prompts
+## DP-04 — Ver la sección «DP-04 ✅ RESUELTA» más abajo
 
-- **Estado:** 🟡 PROPUESTA (a confirmar en Fase 01)
-- **Bloquea:** Fase 01
-- **Contexto:** `spring-rules.md` §6.1 prohíbe asumir «paths de recursos».
-
-**Propuesta a validar:**
-
-```
-applications/app-service/src/main/resources/prompts/
-├── fase1-propuesta-inicial.md
-├── fase2-historia-estructurada.md
-├── division-historias.md
-├── refinamiento-historia.md
-├── auditoria-calidad.md
-└── creacion-estructurada.md
-```
-
-**Pregunta al usuario:**
-> ¿Se aceptan estos nombres y esta ruta, o prefieres otra convención?
-
-- **Resolución:** _(pendiente)_
-- **Fecha de resolución:** —
+Entrada original archivada. La decisión final (aprobada) está registrada al final de este documento.
 
 ---
 
@@ -197,55 +129,107 @@ implementación retorna `Mono.empty()`. Es un camino muerto en producción.
 
 ---
 
-## DP-07 — `buildPrompt()` y la plantilla de creación estructurada son código inalcanzable 🔴 ABIERTA
+## DP-07 — Ver la sección «DP-07 ✅ RESUELTA» más abajo
 
-- **Estado:** 🔴 ABIERTA — **hallazgo nuevo detectado durante la Fase 00**
-- **Bloquea:** Fase 03, Fase 04
-- **No bloquea:** Fase 00
-- **Ubicación:** `AgentChatUseCase.buildPrompt():561-588` y `shouldSearchPlanning():320-333`
+Entrada original archivada. La decisión final (eliminar) está registrada al final de este documento.
 
-**Hallazgo:** `buildPrompt()` contiene una rama que construye el prompt de creación estructurada de
-Historia de Usuario (con la plantilla corporativa y el desglose de tareas hijas) cuando el texto es
-`CREATE_STRUCTURED_USER_STORY`. **Esa rama nunca puede ejecutarse.**
+---
 
-Traza del enrutamiento:
+## DP-06 — Estimación por horas ✅ RESUELTA
 
-```text
-userText = "CREATE_STRUCTURED_USER_STORY"   (28 caracteres)
+- **Estado:** 🟢 RESUELTA
+- **Resuelta por:** Usuario · **Fecha:** 2026-08-28
+- **Se aplica en:** Fase 01 (contenido de los prompts), Fase 02 (validaciones)
 
-executeChat()
- └─> shouldSearchPlanning(userText)
-      ├─ trimmed.length() = 28  ->  NO es < 25          -> sigue
-      ├─ normalized = "create_structured_user_story"
-      ├─ ¿está en la lista de comandos cortos?  ->  NO
-      └─ return TRUE
- └─> runPlanningSimilarityFlow()     [gana siempre]
+**Tabla oficial de equivalencia aportada por el usuario:**
 
-handleSpecialCommands() -> NUNCA se alcanza
-buildPrompt()           -> NUNCA se alcanza
+| Story Point | Esfuerzo (Horas) | Complejidad |
+|---:|---|---|
+| 1 | < 1 hora | Muy baja |
+| 2 | 1 - 4 horas | Baja |
+| 3 | 4 - 8 horas (1 día) | Baja |
+| 5 | 8 - 24 horas (1-3 días) | Media |
+| 8 | 24 - 30 horas (1 semana) | Media - Alta |
+| 13 | > 30 horas (> 1 semana) | Alta |
+
+Esta tabla es la **única fuente de verdad** para estimar. Se inyecta literalmente en los prompts que
+estiman o auditan estimaciones: `fase2-historia-estructurada.md`, `division-historias.md`,
+`refinamiento-historia.md` y `auditoria-calidad.md`.
+
+**Coherencia con DP-02:** la tabla confirma el umbral. 8 SP = hasta 30 horas (1 semana) es el máximo
+admisible; 13 SP = más de una semana, que es exactamente el «>8 Requiere Dividir» de la guía
+corporativa. Ambas decisiones apuntan al mismo punto de corte.
+
+### Sub-decisión aplicada: eliminación de la «Regla de Mínimos de 5 puntos»
+
+**Contexto:** `AgentChatUseCase.java:93` obliga a estimar en **≥ 5 puntos** cualquier desarrollo con
+múltiples endpoints, base de datos, seguridad o integraciones.
+
+**Por qué se elimina:** con la tabla de horas, 5 SP equivale a **8-24 horas**. La regla afirmaría
+entonces que «publicar un CRUD nunca puede costar menos de 8 horas», lo cual contradice
+directamente el criterio medible por horas que el usuario adopta y el ejemplo de la guía corporativa
+(`HISTORIA_USUARIO.md:73`: *«2 = He realizado esto antes… Ej. Publicar un nuevo endpoint»*).
+
+Además **elimina una contradicción interna real**: el prompt de auditoría (`:182`) ya afirmaba lo
+opuesto («la guía corporativa NO establece mínimos obligatorios»). Hoy el agente **crea historias con
+una regla y las audita con la contraria**.
+
+**Resolución:** la «Regla de Mínimos» se sustituye íntegramente por la tabla de horas como criterio
+único. El prompt de auditoría queda automáticamente coherente con el de creación.
+
+> ⚠️ Sub-decisión derivada por implicación lógica directa de la tabla aportada, no confirmada de
+> forma explícita por el usuario. **Señalada al usuario para su ratificación o reversión.** Revertir
+> es trivial: reintroducir el párrafo en `fase2-historia-estructurada.md`.
+
+---
+
+## DP-04 — Nombres de recursos de prompts ✅ RESUELTA
+
+- **Estado:** 🟢 RESUELTA — **aprobada la propuesta**
+- **Resuelta por:** Usuario · **Fecha:** 2026-08-28
+- **Se aplica en:** Fase 01
+
+```
+applications/app-service/src/main/resources/prompts/
+├── fase1-propuesta-inicial.md
+├── fase2-historia-estructurada.md
+├── division-historias.md
+├── refinamiento-historia.md
+└── auditoria-calidad.md
 ```
 
-`buildPrompt()` solo se invoca desde la rama `else` de `handleSpecialCommands()`, y llegar allí
-exige `shouldSearchPlanning() == false`, es decir: texto de **menos de 25 caracteres** o comando
-corto exacto. El marcador tiene 28 caracteres, y la variante JSON
-(`{"intent":"CREATE_STRUCTURED_USER_STORY"}`) es aún más larga.
+**Nota:** el archivo `creacion-estructurada.md` de la propuesta original **queda descartado** por la
+resolución de DP-07. Son **5** plantillas, no 6.
 
-**Consecuencia:** la funcionalidad de creación estructurada con tareas hijas vinculadas
-(`createWorkItem` + `updateWorkItem` con jerarquía `System.LinkTypes.Hierarchy-Reverse`) **está
-implementada pero es inalcanzable**. Cualquier cliente que envíe ese marcador recibe una propuesta
-de planeación en prosa en lugar de la creación estructurada.
+---
 
-**Pregunta al usuario:**
-> **Opción A:** `CREATE_STRUCTURED_USER_STORY` es un marcador que el frontend **sí** envía y debe
-> funcionar. En ese caso pasa a ser una intención de primer nivel (`STRUCTURED_CREATION`), detectada
-> por marcador exacto **antes** de cualquier heurística de longitud. *(Recomendada, coherente con
-> DP-01.)*
-> **Opción B:** Es funcionalidad obsoleta. Se elimina `buildPrompt()` y su plantilla.
+## DP-07 — `buildPrompt()` y la plantilla de creación estructurada ✅ RESUELTA
 
-**Nota:** confirmar si `azure-devops-frontend` envía este marcador determina la respuesta. No lo
-asumo (`spring-rules.md` §6.2).
+- **Estado:** 🟢 RESUELTA — **Opción B: ELIMINAR**
+- **Resuelta por:** Usuario · **Fecha:** 2026-08-28
+- **Se aplica en:** Fase 01
 
-- **Resolución:** _(pendiente)_
+**Decisión del usuario:** *«Eliminémoslo. Cuando dejemos este back/agente al 100% y saltemos al
+front, allá determinamos si lo necesitamos y se reconstruye correctamente. Puede que sea dead code,
+pero ahora mismo no nos detengamos en eso.»*
+
+**Alcance de la eliminación:**
+
+1. Se elimina la rama `CREATE_STRUCTURED_USER_STORY` de `buildPrompt():569-586`, con su plantilla
+   inline de creación de Work Item y tareas hijas.
+2. `buildPrompt()` desaparece: su rama restante se limita a devolver el texto del usuario, y la
+   validación de contenido vacío ya ocurre antes en `executeChat():352-354`. La rama `else` de
+   `handleSpecialCommands()` pasa a invocar el gateway con `userText` directamente.
+3. **No** se crea `PromptTemplateId.STRUCTURED_CREATION` ni `creacion-estructurada.md`.
+
+**Impacto en los tests de la Fase 00:** ninguno funcional. El test
+`givenStructuredCreationMarker_whenChatAndRespond_thenPlanningFlowWinsAndTemplateIsNeverUsed`
+**sigue en verde** porque el marcador ya se enrutaba a Planificación. Se conserva como prueba de
+regresión y se actualiza su Javadoc para reflejar que DP-07 quedó resuelta por eliminación.
+
+**Reconstrucción futura:** si el frontend llega a necesitar creación estructurada, se implementará
+como intención de primer nivel (`STRUCTURED_CREATION`) detectada por marcador exacto antes de
+cualquier heurística de longitud, tal como exige DP-01.
 
 ---
 
@@ -255,4 +239,14 @@ asumo (`spring-rules.md` §6.2).
 |---|---|---|---|
 | DP-01 | Corregir la precedencia: `(ID: n)` + verbo gana sobre palabras clave genéricas; keywords por palabra completa | Usuario | 2026-08-28 |
 | DP-02 | Umbral de división `> 8` (`MAX_STORY_POINTS_PER_STORY = 8`), según tabla oficial de `HISTORIA_USUARIO.md` | Usuario | 2026-08-28 |
+| DP-04 | Aprobada la ruta `resources/prompts/` y los nombres de archivo (5 plantillas) | Usuario | 2026-08-28 |
+| DP-06 | Estimación por horas según tabla oficial; se elimina la «Regla de Mínimos de 5 puntos» | Usuario | 2026-08-28 |
+| DP-07 | Eliminar `buildPrompt()` y la plantilla de creación estructurada (dead code) | Usuario | 2026-08-28 |
+
+## Decisiones aún abiertas
+
+| ID | Descripción | Bloquea |
+|---|---|---|
+| DP-03 | Qué hacer si el LLM no devuelve estimación (recomendación: Opción C, aviso explícito) | Fase 02 |
+| DP-05 | Camino muerto `chat()` async contra `NoOpAgentResponseAdapter` | Fase 07 |
 

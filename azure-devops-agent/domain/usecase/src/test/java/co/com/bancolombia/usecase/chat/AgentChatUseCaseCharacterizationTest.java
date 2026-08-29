@@ -3,6 +3,7 @@ package co.com.bancolombia.usecase.chat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,8 @@ import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.planning.PlanningChunk;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
+import co.com.bancolombia.model.prompt.PromptTemplateId;
+import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,14 +40,17 @@ import reactor.test.StepVerifier;
  * <p><b>Propósito:</b> estas pruebas NO validan que el comportamiento sea correcto. Documentan y
  * congelan el comportamiento <i>actual</i> antes de la refactorización planificada en
  * {@code docs/plan/PLAN_MAESTRO.md}, de forma que cualquier desvío no intencionado durante las
- * fases 01 a 07 rompa el build de inmediato.
+ * fases 02 a 07 rompa el build de inmediato.
  *
- * <p><b>Identificación del flujo:</b> cada flujo se reconoce por un fragmento único e inequívoco
- * del prompt que recibe el {@link ChatGateway}, capturado con {@link ArgumentCaptor}.
+ * <p><b>Identificación del flujo:</b> desde la Fase 01 cada flujo se reconoce por el
+ * {@link PromptTemplateId} que solicita al {@link PromptTemplatePort}. Antes se identificaba por un
+ * fragmento del texto del prompt; el criterio actual es equivalente pero más preciso, porque
+ * compara un valor enumerado en lugar de una subcadena. El flujo General es el único que no usa
+ * plantilla: envía el texto del usuario tal cual.
  *
  * <p><b>Nota sobre {@code @InjectMocks}:</b> no se usa deliberadamente. El constructor de
- * {@link AgentChatUseCase} recibe 9 argumentos, 4 de ellos {@code String} consecutivos, lo que hace
- * que la inyección automática de Mockito sea ambigua y frágil. Se instancia manualmente en
+ * {@link AgentChatUseCase} recibe 10 argumentos, 4 de ellos {@code String} consecutivos, lo que
+ * hace que la inyección automática de Mockito sea ambigua y frágil. Se instancia manualmente en
  * {@link #setUp()}. Esta excepción a {@code rules/spring-rules.md} §5 desaparece en la Fase 05,
  * cuando los {@code String} se agrupen en Value Objects.
  *
@@ -54,25 +60,25 @@ import reactor.test.StepVerifier;
 @DisplayName("AgentChatUseCase - Caracterización del enrutamiento de flujos")
 class AgentChatUseCaseCharacterizationTest {
 
-    // ─── Fragmentos identificadores de cada flujo ──────────────────────────────
-    private static final String FRAGMENT_AUDIT = "Eres un Agile Coach y Quality Analyst de Bancolombia";
-    private static final String FRAGMENT_REFINEMENT = "Tu objetivo es analizar y proponer mejoras de refinamiento";
-    private static final String FRAGMENT_PLANNING = "Analiza la siguiente idea de desarrollo";
-    private static final String FRAGMENT_APPROVAL = "Genera el borrador estructurado en Markdown";
-    private static final String FRAGMENT_DIVISION = "Divide esta idea de desarrollo en múltiples Historias";
-    private static final String FRAGMENT_STRUCTURED_CREATION = "PASO 1 - Crear Historia de Usuario";
-    private static final String FRAGMENT_NO_RAG_CONTEXT = "No hay contexto de planeación adicional.";
-
-    // ─── Datos de prueba ───────────────────────────────────────────────────────
     private static final String TEMPLATE_MARKDOWN = "## Plantilla HU/HA corporativa";
     private static final String AGILE_GUIDE = "## Guía de agilidad";
     private static final String QUALITY_AUDIT_GUIDE = "## Estándares de auditoría";
     private static final String DEFAULT_ORG = "grupobancolombia";
     private static final String DEFAULT_PROJECT = "Vicepresidencia Servicios de Tecnología";
+    private static final String RENDERED_PROMPT = "Prompt renderizado por la plantilla";
     private static final String LLM_RESPONSE = "Respuesta simulada del modelo";
     private static final String NO_CONTENT = "No content provided";
     private static final String WORK_ITEM_ID = "12345";
     private static final int EXPECTED_RAG_RESULTS = 3;
+
+    private static final String VAR_WORK_ITEM_ID = "workItemId";
+    private static final String VAR_ORGANIZATION = "organizacion";
+    private static final String VAR_PROJECT = "proyecto";
+    private static final String VAR_AGILE_GUIDE = "guiaAgilidad";
+    private static final String VAR_STANDARDS = "estandares";
+    private static final String VAR_ORIGINAL_IDEA = "ideaOriginal";
+    private static final String VAR_RAG_CONTEXT = "contextoRag";
+    private static final String VAR_CORPORATE_TEMPLATE = "plantillaCorporativa";
 
     private static final String LONG_IDEA_TEXT =
             "Necesito construir un microservicio de notificaciones push para la app móvil";
@@ -89,6 +95,9 @@ class AgentChatUseCaseCharacterizationTest {
     @Mock
     private PlanningVectorStorePort vectorStorePort;
 
+    @Mock
+    private PromptTemplatePort promptTemplatePort;
+
     private AgentChatUseCase useCase;
 
     @BeforeEach
@@ -102,11 +111,12 @@ class AgentChatUseCaseCharacterizationTest {
                 AGILE_GUIDE,
                 DEFAULT_ORG,
                 DEFAULT_PROJECT,
-                QUALITY_AUDIT_GUIDE);
+                QUALITY_AUDIT_GUIDE,
+                promptTemplatePort);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Flujo General
+    // Flujo General — único flujo sin plantilla
     // ═══════════════════════════════════════════════════════════════════════════
 
     @Test
@@ -119,8 +129,9 @@ class AgentChatUseCaseCharacterizationTest {
         // WHEN
         SendMessageResponse response = executeAndGet(userText, "general-123");
 
-        // THEN: en el flujo General el prompt es exactamente el texto del usuario
+        // THEN: el flujo General envía el texto del usuario sin plantilla
         assertThat(capturePrompt()).isEqualTo(userText);
+        verifyNoTemplateWasRendered();
         assertThat(response.getTask().getStatus().getState()).isEqualTo(TaskState.COMPLETED);
     }
 
@@ -136,6 +147,7 @@ class AgentChatUseCaseCharacterizationTest {
 
         // THEN
         assertThat(capturePrompt()).isEqualTo(userText);
+        verifyNoTemplateWasRendered();
     }
 
     @Test
@@ -150,6 +162,7 @@ class AgentChatUseCaseCharacterizationTest {
 
         // THEN
         assertThat(capturePrompt()).isEqualTo(userText);
+        verifyNoTemplateWasRendered();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -160,16 +173,19 @@ class AgentChatUseCaseCharacterizationTest {
     @DisplayName("Verbo de auditoría + (ID: n) enruta al flujo de Auditoría de Calidad")
     void givenAuditRequestWithWorkItemId_whenChatAndRespond_thenExecutesQualityAuditFlow() {
         // GIVEN
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("Audita la historia (ID: " + WORK_ITEM_ID + ")", null);
 
         // THEN
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_AUDIT)
-                .contains(WORK_ITEM_ID)
-                .contains(DEFAULT_ORG)
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.QUALITY_AUDIT);
+        Map<String, Object> variables = captureTemplateVariables();
+        assertThat(variables).containsEntry(VAR_WORK_ITEM_ID, WORK_ITEM_ID)
+                .containsEntry(VAR_ORGANIZATION, DEFAULT_ORG)
+                .containsEntry(VAR_PROJECT, DEFAULT_PROJECT);
+        assertThat(variables.get(VAR_STANDARDS).toString())
+                .contains(AGILE_GUIDE)
                 .contains(QUALITY_AUDIT_GUIDE);
     }
 
@@ -181,16 +197,16 @@ class AgentChatUseCaseCharacterizationTest {
     @DisplayName("'Analicemos y refinemos' + (ID: n) enruta al flujo de Refinamiento")
     void givenRefinementRequestWithWorkItemId_whenChatAndRespond_thenExecutesRefinementFlow() {
         // GIVEN
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("Analicemos y refinemos la historia (ID: 999)", null);
 
         // THEN
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_REFINEMENT)
-                .contains("999")
-                .contains(DEFAULT_PROJECT);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.STORY_REFINEMENT);
+        assertThat(captureTemplateVariables()).containsEntry(VAR_WORK_ITEM_ID, "999")
+                .containsEntry(VAR_PROJECT, DEFAULT_PROJECT)
+                .containsEntry(VAR_AGILE_GUIDE, AGILE_GUIDE);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -210,15 +226,16 @@ class AgentChatUseCaseCharacterizationTest {
                 .build();
         when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
                 .thenReturn(Flux.just(chunk));
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet(LONG_IDEA_TEXT, null);
 
         // THEN
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_PLANNING)
-                .contains(LONG_IDEA_TEXT)
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
+        Map<String, Object> variables = captureTemplateVariables();
+        assertThat(variables).containsEntry(VAR_ORIGINAL_IDEA, LONG_IDEA_TEXT);
+        assertThat(variables.get(VAR_RAG_CONTEXT).toString())
                 .contains("Contenido de planeación relevante");
         verify(vectorStorePort).searchSimilarity(LONG_IDEA_TEXT, null, EXPECTED_RAG_RESULTS);
     }
@@ -229,14 +246,15 @@ class AgentChatUseCaseCharacterizationTest {
         // GIVEN
         when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
                 .thenReturn(Flux.error(new IllegalStateException("vector store caído")));
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         SendMessageResponse response = executeAndGet(LONG_IDEA_TEXT, null);
 
         // THEN
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_PLANNING).contains(FRAGMENT_NO_RAG_CONTEXT);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
+        assertThat(captureTemplateVariables().get(VAR_RAG_CONTEXT))
+                .isEqualTo("No hay contexto de planeación adicional.");
         assertThat(response.getTask().getStatus().getState()).isEqualTo(TaskState.COMPLETED);
     }
 
@@ -248,42 +266,43 @@ class AgentChatUseCaseCharacterizationTest {
     @DisplayName("El comando 'Aprobado' enruta al flujo de Aprobación (Fase 2)")
     void givenApprovalCommand_whenChatAndRespond_thenExecutesApprovalFlow() {
         // GIVEN
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("Aprobado", null);
 
         // THEN
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_APPROVAL)
-                .contains(TEMPLATE_MARKDOWN)
-                .contains(AGILE_GUIDE);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.STRUCTURED_STORY);
+        assertThat(captureTemplateVariables())
+                .containsEntry(VAR_CORPORATE_TEMPLATE, TEMPLATE_MARKDOWN)
+                .containsEntry(VAR_AGILE_GUIDE, AGILE_GUIDE);
     }
 
     @Test
     @DisplayName("El comando 'Sí' (con tilde) se normaliza y enruta al flujo de Aprobación")
     void givenApprovalCommandWithAccent_whenChatAndRespond_thenExecutesApprovalFlow() {
         // GIVEN
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("Sí", null);
 
         // THEN
-        assertThat(capturePrompt()).contains(FRAGMENT_APPROVAL);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.STRUCTURED_STORY);
     }
 
     @Test
     @DisplayName("El comando 'Dividir' enruta al flujo de División")
     void givenDivisionCommand_whenChatAndRespond_thenExecutesDivisionFlow() {
         // GIVEN
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("Dividir", null);
 
         // THEN
-        assertThat(capturePrompt()).contains(FRAGMENT_DIVISION).contains(AGILE_GUIDE);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.STORY_DIVISION);
+        assertThat(captureTemplateVariables()).containsEntry(VAR_AGILE_GUIDE, AGILE_GUIDE);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -299,6 +318,7 @@ class AgentChatUseCaseCharacterizationTest {
         // THEN
         assertThat(response.getMessage().extractText()).isEqualTo(NO_CONTENT);
         verify(chatGateway, never()).sendMessage(anyString(), any());
+        verifyNoTemplateWasRendered();
     }
 
     @Test
@@ -356,10 +376,9 @@ class AgentChatUseCaseCharacterizationTest {
         // WHEN
         executeAndGet(userText, null);
 
-        // THEN: hoy gana el flujo General y el prompt de auditoría nunca se construye
-        String prompt = capturePrompt();
-        assertThat(prompt).isEqualTo(userText);
-        assertThat(prompt).doesNotContain(FRAGMENT_AUDIT);
+        // THEN: hoy gana el flujo General y la plantilla de auditoría nunca se solicita
+        assertThat(capturePrompt()).isEqualTo(userText);
+        verifyNoTemplateWasRendered();
     }
 
     /**
@@ -385,34 +404,34 @@ class AgentChatUseCaseCharacterizationTest {
         // THEN: hoy gana el flujo General y nunca se consulta el vector store
         assertThat(capturePrompt()).isEqualTo(userText);
         verify(vectorStorePort, never()).searchSimilarity(anyString(), any(), anyInt());
+        verifyNoTemplateWasRendered();
     }
 
     /**
-     * Documenta el defecto <b>DP-07</b>: el marcador {@code CREATE_STRUCTURED_USER_STORY} tiene 28
-     * caracteres, por lo que {@code shouldSearchPlanning()} lo considera texto libre y lo enruta al
-     * flujo de Planificación. En consecuencia {@code buildPrompt()} y la plantilla de creación
-     * estructurada con tareas hijas son <b>código inalcanzable</b>.
+     * Regresión de <b>DP-07</b>, resuelta en la Fase 01 mediante eliminación.
      *
-     * <p><b>Comportamiento esperado hoy:</b> flujo de Planificación.
-     * <p><b>Comportamiento tras la Fase 03/04:</b> depende de la resolución de DP-07.
+     * <p>El marcador {@code CREATE_STRUCTURED_USER_STORY} tiene 28 caracteres, por lo que
+     * {@code shouldSearchPlanning()} lo considera texto libre y lo enruta al flujo de
+     * Planificación. La plantilla de creación estructurada era, por tanto, código inalcanzable y
+     * fue eliminada por decisión del usuario.
+     *
+     * <p>Este test permanece como prueba de regresión: el marcador se trata como texto libre.
      *
      * @see docs/plan/DECISIONES_PENDIENTES.md DP-07
      */
     @Test
-    @DisplayName("DEFECTO DP-07: el marcador de creación estructurada es código inalcanzable")
-    void givenStructuredCreationMarker_whenChatAndRespond_thenPlanningFlowWinsAndTemplateIsNeverUsed() {
+    @DisplayName("DP-07: el marcador de creación estructurada se trata como texto libre")
+    void givenStructuredCreationMarker_whenChatAndRespond_thenPlanningFlowWins() {
         // GIVEN
         when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
                 .thenReturn(Flux.empty());
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet("CREATE_STRUCTURED_USER_STORY", null);
 
-        // THEN: gana Planificación; el prompt de creación estructurada nunca se construye
-        String prompt = capturePrompt();
-        assertThat(prompt).contains(FRAGMENT_PLANNING);
-        assertThat(prompt).doesNotContain(FRAGMENT_STRUCTURED_CREATION);
+        // THEN
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -421,6 +440,11 @@ class AgentChatUseCaseCharacterizationTest {
 
     private void givenChatGatewayReturnsResponse() {
         when(chatGateway.sendMessage(anyString(), any())).thenReturn(Mono.just(LLM_RESPONSE));
+    }
+
+    private void givenTemplateAndGatewayRespond() {
+        when(promptTemplatePort.render(any(), anyMap())).thenReturn(RENDERED_PROMPT);
+        givenChatGatewayReturnsResponse();
     }
 
     private SendMessageRequest buildRequest(String text, String contextId) {
@@ -441,6 +465,24 @@ class AgentChatUseCaseCharacterizationTest {
         ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
         verify(chatGateway).sendMessage(promptCaptor.capture(), any());
         return promptCaptor.getValue();
+    }
+
+    private PromptTemplateId captureTemplateId() {
+        ArgumentCaptor<PromptTemplateId> idCaptor =
+                ArgumentCaptor.forClass(PromptTemplateId.class);
+        verify(promptTemplatePort).render(idCaptor.capture(), anyMap());
+        return idCaptor.getValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> captureTemplateVariables() {
+        ArgumentCaptor<Map<String, Object>> varsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(promptTemplatePort).render(any(), varsCaptor.capture());
+        return varsCaptor.getValue();
+    }
+
+    private void verifyNoTemplateWasRendered() {
+        verify(promptTemplatePort, never()).render(any(), anyMap());
     }
 }
 

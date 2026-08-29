@@ -4,6 +4,7 @@ import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
+import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ public class UseCasesConfig {
     public AgentChatUseCase agentChatUseCase(ChatGateway chatGateway,
             AgentResponseGateway agentResponseGateway, TaskStoreGateway taskStoreGateway,
             PlanningVectorStorePort planningVectorStorePort,
+            PromptTemplatePort promptTemplatePort,
             @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
             @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource,
             @Value("classpath:AUDITORIA_CALIDAD_HU.md") Resource qualityAuditResource) {
@@ -39,7 +41,7 @@ public class UseCasesConfig {
         String qualityAuditContent = readResource(qualityAuditResource);
         return new AgentChatUseCase(chatGateway, agentResponseGateway, taskStoreGateway,
                 templateContent, planningVectorStorePort, agileGuideContent, defaultOrg,
-                defaultProject, qualityAuditContent);
+                defaultProject, qualityAuditContent, promptTemplatePort);
     }
 
     private String readResource(Resource resource) {

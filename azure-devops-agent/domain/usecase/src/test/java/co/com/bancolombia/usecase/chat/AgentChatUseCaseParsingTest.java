@@ -2,6 +2,7 @@ package co.com.bancolombia.usecase.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
+import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,6 +50,7 @@ class AgentChatUseCaseParsingTest {
 
     private static final String APPROVAL_COMMAND = "Aprobado";
     private static final String AUDIT_COMMAND = "Audita la historia (ID: 12345)";
+    private static final String RENDERED_PROMPT = "Prompt renderizado por la plantilla";
 
     private static final String COMPLEXITY_ALERT_FRAGMENT = "Alerta de Complejidad";
     private static final String STORY_POINTS_LABEL = "Estimación de Complejidad (Story Points):";
@@ -74,6 +77,9 @@ class AgentChatUseCaseParsingTest {
     @Mock
     private PlanningVectorStorePort vectorStorePort;
 
+    @Mock
+    private PromptTemplatePort promptTemplatePort;
+
     private AgentChatUseCase useCase;
 
     @BeforeEach
@@ -87,7 +93,8 @@ class AgentChatUseCaseParsingTest {
                 AGILE_GUIDE,
                 DEFAULT_ORG,
                 DEFAULT_PROJECT,
-                QUALITY_AUDIT_GUIDE);
+                QUALITY_AUDIT_GUIDE,
+                promptTemplatePort);
     }
 
     @Test
@@ -240,6 +247,7 @@ class AgentChatUseCaseParsingTest {
     }
 
     private void givenLlmResponds(String llmResponse) {
+        when(promptTemplatePort.render(any(), anyMap())).thenReturn(RENDERED_PROMPT);
         when(chatGateway.sendMessage(anyString(), any())).thenReturn(Mono.just(llmResponse));
     }
 

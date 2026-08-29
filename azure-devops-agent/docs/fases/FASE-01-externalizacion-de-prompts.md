@@ -1,11 +1,43 @@
 # FASE 01 — Externalización de Prompts
 
-> **Estado:** 🔴 BLOQUEADA · **Depende de:** FASE 00 (🟢 completada) · **Riesgo:** Bajo
-> **Commit al cerrar:** `refactor(agent_prompts): externalizar plantillas de prompt a recursos`
+> **Estado:** 🟢 COMPLETADA (2026-08-28) · **Depende de:** FASE 00 · **Riesgo:** Bajo
+> **Commit:** `refactor(agent_prompts): externalizar plantillas de prompt a recursos`
+> **Siguiente fase:** `FASE-02-value-objects-de-estimacion.md`
 
-> ## ⛔ NO INICIAR ESTA FASE TODAVÍA
-> Bloqueada por **DP-04** y **DP-06** (ver §1.6). Ambas requieren una respuesta explícita del
-> usuario. `rules/spring-rules.md` §6: *«Nunca asumas información que no esté explícita.»*
+## Resultado de la ejecución
+
+| Resultado | Valor |
+|---|---|
+| Líneas `AgentChatUseCase` | **644 → 505** (−139) |
+| Constantes de prompt en el dominio | **5 → 0** |
+| Plantillas externalizadas | 5 archivos `.md` + 1 fragmento compartido |
+| Módulo nuevo | `infrastructure/driven-adapters/prompt-template` |
+| Tests totales del proyecto | **46 → 69** (0 fallos) |
+| Cobertura `prompt-template` | **94,2%** |
+| Cobertura `domain/usecase` | 81,5% |
+| Build | `BUILD SUCCESSFUL` |
+
+### Decisiones aplicadas
+
+- **DP-04** — Ruta y nombres aprobados. Se crearon 5 plantillas (no 6, por DP-07).
+- **DP-06** — Tabla de estimación por horas aplicada. Vive en un **único** fragmento compartido
+  (`prompts/fragmentos/tabla-estimacion.md`) que se inyecta automáticamente en las 4 plantillas que
+  estiman. Se eliminó la «Regla de Mínimos de 5 puntos», que contradecía al prompt de auditoría.
+- **DP-07** — `buildPrompt()` y su plantilla inline eliminados. La rama `else` de
+  `handleSpecialCommands()` envía el texto del usuario directamente.
+
+### Desviación respecto al plan original
+
+El plan preveía un test de **equivalencia byte a byte** contra las constantes originales. Al aplicar
+DP-06 el contenido de 4 de las 5 plantillas cambia por decisión de negocio, por lo que una
+comparación literal carecía de sentido. Se sustituyó por `PromptTemplateContentTest` (7 pruebas en
+`app-service`), que verifica integridad estructural (ningún marcador sin resolver) y contenido
+normativo (tabla de horas presente, «Regla de Mínimos» ausente, umbral de 8 puntos anunciado).
+
+También se actualizó el mecanismo de identificación de flujo en los tests de la Fase 00: pasó de
+buscar subcadenas del prompt a comparar el `PromptTemplateId` solicitado. Es un criterio
+equivalente pero más preciso. Los 16 + 7 casos y sus aserciones de comportamiento se conservan
+íntegros.
 
 ---
 

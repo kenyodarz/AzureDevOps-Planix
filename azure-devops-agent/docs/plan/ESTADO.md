@@ -3,22 +3,22 @@
 > **ÚNICA FUENTE DE VERDAD DEL PROGRESO.**
 > Debe actualizarse al cerrar cada fase, antes de hacer commit.
 
-**Última actualización:** 2026-08-28 · **Fase activa:** `FASE-01`
+**Última actualización:** 2026-08-28 · **Fase activa:** `FASE-02`
 
 ---
 
 ## Progreso
 
-| # | Fase | Archivo de instrucciones | Estado | Cerrada el | Commit |
-|---|---|---|---|---|---|
-| 00 | Baseline y caracterización | `fases/FASE-00-baseline-y-caracterizacion.md` | 🟢 COMPLETADA | 2026-08-28 | `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos` |
-| 01 | Externalización de prompts | `fases/FASE-01-externalizacion-de-prompts.md` | 🔴 BLOQUEADA (DP-04, DP-06) | — | — |
-| 02 | Value Objects de estimación | _(se genera al cerrar Fase 01)_ | ⚪ NO GENERADA | — | — |
-| 03 | Resolución de intención | _(se genera al cerrar Fase 02)_ | ⚪ NO GENERADA | — | — |
-| 04 | Separación de flujos (Strategy) | _(se genera al cerrar Fase 03)_ | ⚪ NO GENERADA | — | — |
-| 05 | Value Objects de configuración | _(se genera al cerrar Fase 04)_ | ⚪ NO GENERADA | — | — |
-| 06 | Separación del entry-point | _(se genera al cerrar Fase 05)_ | ⚪ NO GENERADA | — | — |
-| 07 | Endurecimiento y cierre | _(se genera al cerrar Fase 06)_ | ⚪ NO GENERADA | — | — |
+| # | Fase | Archivo de instrucciones | Estado | Cerrada el |
+|---|---|---|---|---|
+| 00 | Baseline y caracterización | `fases/FASE-00-baseline-y-caracterizacion.md` | 🟢 COMPLETADA | 2026-08-28 |
+| 01 | Externalización de prompts | `fases/FASE-01-externalizacion-de-prompts.md` | 🟢 COMPLETADA | 2026-08-28 |
+| 02 | Value Objects de estimación | `fases/FASE-02-value-objects-de-estimacion.md` | 🟡 PENDIENTE (DP-03 por confirmar) | — |
+| 03 | Resolución de intención | _(se genera al cerrar Fase 02)_ | ⚪ NO GENERADA | — |
+| 04 | Separación de flujos (Strategy) | _(se genera al cerrar Fase 03)_ | ⚪ NO GENERADA | — |
+| 05 | Value Objects de configuración | _(se genera al cerrar Fase 04)_ | ⚪ NO GENERADA | — |
+| 06 | Separación del entry-point | _(se genera al cerrar Fase 05)_ | ⚪ NO GENERADA | — |
+| 07 | Endurecimiento y cierre | _(se genera al cerrar Fase 06)_ | ⚪ NO GENERADA | — |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
 
@@ -26,37 +26,57 @@
 
 ## Métricas
 
-| Métrica | Baseline (pre Fase 00) | Actual | Objetivo |
-|---|---:|---:|---:|
-| Líneas `AgentChatUseCase` | 644 | 644 | ≤ 100 |
-| Líneas `Handler` | 495 | 495 | ≤ 150 |
-| Clases > 300 líneas | 2 | 2 | 0 |
-| **Cobertura `domain/usecase`** | **0%** (sin tests) | **81,7%** (884/1082 instr.) | ≥ 90% |
-| Cobertura `domain/model` | 0% (sin tests) | 0% (sin tests) | ≥ 90% |
-| Tests en `domain/usecase` | 0 | **23** | — |
-| Mutation score `domain/usecase` (pitest) | n/d | 62% (72/116), test strength 81% | ≥ 80% |
-| Constructores > 5 parámetros | 1 | 1 | 0 |
+| Métrica | Baseline | Tras Fase 00 | Tras Fase 01 | Objetivo |
+|---|---:|---:|---:|---:|
+| Líneas `AgentChatUseCase` | 644 | 644 | **505** | ≤ 100 |
+| Líneas `Handler` | 495 | 495 | 495 | ≤ 150 |
+| Clases > 300 líneas | 2 | 2 | 2 | 0 |
+| Constantes de prompt en el dominio | 5 | 5 | **0** | 0 |
+| Tests totales del proyecto | 23 | 46 | **69** | — |
+| Cobertura `domain/usecase` | 0% | 81,7% | 81,5% | ≥ 90% |
+| Cobertura `domain/model` | 0% | 0% | 0% | ≥ 90% |
+| Cobertura `prompt-template` | n/a | n/a | **94,2%** | ≥ 90% |
+| Constructores > 5 parámetros | 1 (9 args) | 1 (9 args) | 1 (**10 args**) | 0 |
+
+> El constructor sube a 10 argumentos de forma **deliberada y temporal**: se corrige en la Fase 05
+> agrupando los `String` en Value Objects. Hay un `// TODO Fase 05` en el código.
 
 ---
 
 ## Bitácora de sesiones
 
-| Fecha | Fase | Qué se hizo | Bloqueos encontrados |
+| Fecha | Fase | Qué se hizo | Bloqueos |
 |---|---|---|---|
-| 2026-08-28 | — | Creación del plan maestro, decisiones pendientes y Fase 00 | DP-01 a DP-05 abiertas |
-| 2026-08-28 | 00 | Usuario resolvió DP-01 (corregir precedencia) y DP-02 (umbral `> 8`). Creados `AgentChatUseCaseCharacterizationTest` (16 tests) y `AgentChatUseCaseParsingTest` (7 tests). Build verde. Cobertura de `domain/usecase` 0% → 81,7%. Código productivo intacto. | **DP-07 detectada** (código inalcanzable en `buildPrompt`). **DP-06 abierta** (equivalencia puntos→horas). 2 advertencias ArchUnit preexistentes. |
+| 2026-08-28 | — | Plan maestro, decisiones pendientes y Fase 00 | DP-01 a DP-05 abiertas |
+| 2026-08-28 | 00 | Usuario resolvió DP-01 y DP-02. Creados 23 tests de caracterización. Cobertura de `usecase` 0% → 81,7%. Código productivo intacto. | **DP-07 detectada**; DP-06 abierta |
+| 2026-08-28 | 01 | Usuario resolvió DP-04, DP-06 y DP-07. Creado módulo `prompt-template` con `PromptTemplatePort` + adaptador de classpath. 5 plantillas externalizadas + fragmento compartido con la tabla de horas. Eliminados `buildPrompt()` y la «Regla de Mínimos de 5 puntos». Use case 644 → 505 líneas. 69 tests verdes. | DP-03 pendiente para Fase 02 |
 
 ---
 
-## Bloqueos activos
+## Decisiones
 
-| ID | Descripción | Bloquea a | Desde |
+### Resueltas
+
+| ID | Decisión | Aplicada en |
+|---|---|---|
+| DP-01 | Corregir precedencia de intención: `(ID: n)` gana sobre palabras clave | Fase 03 |
+| DP-02 | Umbral de división `> 8` | Fase 02 |
+| DP-04 | Ruta y nombres de las plantillas aprobados | ✅ Fase 01 |
+| DP-06 | Estimación por horas; se elimina la «Regla de Mínimos de 5 puntos» | ✅ Fase 01 |
+| DP-07 | Eliminar `buildPrompt()` y su plantilla (dead code) | ✅ Fase 01 |
+
+### Abiertas
+
+| ID | Descripción | Bloquea | Desde |
 |---|---|---|---|
-| DP-04 | Nombres y ruta de los recursos de prompts | **Fase 01** | 2026-08-28 |
-| DP-06 | Tabla de equivalencia Story Points → horas | **Fase 01**, Fase 02 | 2026-08-28 |
-| DP-03 | Default silencioso de 1 punto (recomendación: Opción C) | Fase 02 | 2026-08-28 |
-| DP-07 | `buildPrompt()` inalcanzable: ¿el frontend envía `CREATE_STRUCTURED_USER_STORY`? | Fase 03, 04 | 2026-08-28 |
-| DP-05 | Camino muerto `chat()` async | Fase 07 | 2026-08-28 |
+| DP-03 | Qué mostrar si el LLM no devuelve estimación (recomendación: aviso explícito) | Fase 02 | 2026-08-28 |
+| DP-05 | Camino muerto `chat()` async contra `NoOpAgentResponseAdapter` | Fase 07 | 2026-08-28 |
+
+### Ratificación pendiente
+
+| Asunto | Detalle |
+|---|---|
+| Eliminación de la «Regla de Mínimos de 5 puntos» | Derivada por implicación de la tabla de horas de DP-06, no confirmada palabra por palabra. Revertir es trivial: reintroducir el párrafo en `prompts/fase2-historia-estructurada.md`. |
 
 ---
 
@@ -64,8 +84,8 @@
 
 | Hallazgo | Detectado en | Atender en |
 |---|---|---|
-| ArchUnit `Rule_2.7` violada 5 veces («Beans classes should only have final attributes»). Hoy es advertencia; el plugin avisa: *«This will cause a build error in future»*. | Fase 00 | Fase 07 |
+| ArchUnit `Rule_2.7` violada 5 veces («Beans classes should only have final attributes»). Hoy advertencia; el plugin avisa: *«This will cause a build error in future»*. | Fase 00 | Fase 07 |
 | ArchUnit `Rule_2.2` violada 1 vez («Domain classes should not be named with technology suffixes»). | Fase 00 | Fase 07 |
-| `jacocoMergedReport` falla con la configuration cache de Gradle por un problema del plugin `pitest` (`pitestReportAggregate`). Workaround: `--no-configuration-cache`. | Fase 00 | Fase 07 |
-| `domain/model` no tiene ningún test (0% de cobertura). | Fase 00 | Fase 07 |
+| `jacocoMergedReport` falla con la configuration cache de Gradle por el plugin `pitest`. Workaround: `--no-configuration-cache`. | Fase 00 | Fase 07 |
+| `domain/model` sigue sin tests (0% de cobertura). La Fase 02 crea los primeros. | Fase 00 | Fase 02 / 07 |
 
