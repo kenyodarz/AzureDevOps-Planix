@@ -8,9 +8,9 @@ Ningún agente puede resolverla por su cuenta.
 
 ---
 
-## DP-01 — El primer `if` de `executeChat()` secuestra flujos ✅ RESUELTA
+## DP-01 — El primer `if` de `executeChat()` secuestra flujos ✅ RESUELTA Y APLICADA
 
-- **Estado:** 🟢 RESUELTA — **Opción B: CORREGIR**
+- **Estado:** 🟢 RESUELTA — **Opción B: CORREGIR** · **Aplicada en la Fase 03 (2026-08-28)**
 - **Resuelta por:** Usuario · **Fecha:** 2026-08-28
 - **Se aplica en:** Fase 03 (`IntentResolver`)
 - **Ubicación del defecto:** `AgentChatUseCase.java:356-366`
@@ -50,6 +50,25 @@ con `userText.toLowerCase().contains("lista"|"busca"|"consulta"|"reporte")`.
 **Impacto en Fase 00:** los tests 15 y 16 se escriben capturando el comportamiento **actual
 (defectuoso)**, con Javadoc `@see DP-01` indicando que sus aserciones **se invertirán en la Fase 03**.
 Así el cambio de comportamiento queda explícito y versionado en el diff, no oculto.
+
+### Cómo se materializó (Fase 03)
+
+`co.com.bancolombia.model.agent.IntentResolver`, servicio de dominio puro con 100% de cobertura.
+La tabla se implementa con *early returns* encadenados (`Optional.or(...)`) y `AgentChatUseCase`
+se limita a `switch (resolution.intent())`.
+
+**Precisiones sobre la regla 2, derivadas durante la implementación:**
+
+1. La lista de palabras clave se mantiene en las **cuatro originales** (`lista`, `busca`,
+   `consulta`, `reporte`, con sus plurales). Las formas de infinitivo (`consultar`, `buscar`,
+   `listar`) **no** son palabra clave: incluirlas anularía el propósito literal de esta regla.
+2. ⚠️ **Ratificación pendiente:** una palabra clave gobernada por un pronombre relativo
+   (`que` / `quien` / `cual`) **no** enruta a General. En «un servicio *que consulta* el saldo», el
+   verbo describe el sistema a construir, no una acción pedida al agente. Sin esta precisión es
+   imposible cumplir a la vez los dos casos obligatorios de la fase: «Dame la **lista** de historias
+   del sprint actual» → General y «Necesito un servicio **que consulta** el saldo…» → Planificación,
+   pues ambas frases son largas y contienen una palabra clave completa.
+   **Revertir:** borrar los tres lookbehind de `GENERAL_KEYWORD_PATTERN`.
 
 ---
 
@@ -266,4 +285,11 @@ cualquier heurística de longitud, tal como exige DP-01.
 | ID | Descripción | Bloquea |
 |---|---|---|
 | DP-05 | Camino muerto `chat()` async contra `NoOpAgentResponseAdapter` | Fase 07 |
+
+## Pendientes de ratificación del usuario
+
+| Asunto | Fase | Cómo revertir |
+|---|---|---|
+| Eliminación de la «Regla de Mínimos de 5 puntos» | 01 | Reintroducir el párrafo en `prompts/fase2-historia-estructurada.md` |
+| Regla del pronombre relativo en las palabras clave genéricas (DP-01, regla 2) | 03 | Borrar los tres lookbehind de `IntentResolver.GENERAL_KEYWORD_PATTERN` |
 

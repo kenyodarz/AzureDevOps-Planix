@@ -10,6 +10,7 @@ import co.com.bancolombia.model.a2a.Message;
 import co.com.bancolombia.model.a2a.Part;
 import co.com.bancolombia.model.a2a.SendMessageRequest;
 import co.com.bancolombia.model.a2a.SendMessageResponse;
+import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
@@ -91,7 +92,8 @@ class AgentChatUseCaseParsingTest {
                 DEFAULT_ORG,
                 DEFAULT_PROJECT,
                 QUALITY_AUDIT_GUIDE,
-                promptTemplatePort);
+                promptTemplatePort,
+                new IntentResolver());
     }
 
     @Test

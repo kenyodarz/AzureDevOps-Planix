@@ -1,7 +1,8 @@
 # FASE 03 — Resolución de Intención
 
-> **Estado:** 🟡 PENDIENTE · **Depende de:** FASE 02 (🟢 completada) · **Riesgo:** Medio
+> **Estado:** 🟢 COMPLETADA · **Depende de:** FASE 02 (🟢 completada) · **Riesgo:** Medio
 > **Commit al cerrar:** `refactor(agent_intent): introducir resolutor de intencion en el dominio`
+> **Resultado de la ejecución:** `docs/resultados/RESULTADO-FASE-03.md`
 
 > ⚠️ **Esta es la primera fase que cambia el comportamiento visible para el usuario.**
 > Aplica DP-01: peticiones que hoy se atienden mal pasarán a atenderse bien.

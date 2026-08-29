@@ -14,6 +14,7 @@ import co.com.bancolombia.model.a2a.Part;
 import co.com.bancolombia.model.a2a.SendMessageRequest;
 import co.com.bancolombia.model.a2a.SendMessageResponse;
 import co.com.bancolombia.model.a2a.TaskState;
+import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
@@ -112,7 +113,8 @@ class AgentChatUseCaseCharacterizationTest {
                 DEFAULT_ORG,
                 DEFAULT_PROJECT,
                 QUALITY_AUDIT_GUIDE,
-                promptTemplatePort);
+                promptTemplatePort,
+                new IntentResolver());
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -309,6 +311,27 @@ class AgentChatUseCaseCharacterizationTest {
     // Casos borde
     // ═══════════════════════════════════════════════════════════════════════════
 
+    /**
+     * Sustituye a la antigua rama por defecto de {@code handleSpecialCommands()}, eliminada en la
+     * Fase 03: un texto corto que no es comando ni contiene palabra clave se atiende como consulta
+     * general, enviando el texto del usuario sin plantilla.
+     */
+    @Test
+    @DisplayName("Un texto corto que no es comando se envía al modelo sin plantilla")
+    void givenShortNonCommandText_whenChatAndRespond_thenExecutesGeneralFlow() {
+        // GIVEN
+        String userText = "Hola";
+        givenChatGatewayReturnsResponse();
+
+        // WHEN
+        SendMessageResponse response = executeAndGet(userText, null);
+
+        // THEN
+        assertThat(capturePrompt()).isEqualTo(userText);
+        verifyNoTemplateWasRendered();
+        assertThat(response.getTask().getStatus().getState()).isEqualTo(TaskState.COMPLETED);
+    }
+
     @Test
     @DisplayName("Texto vacío no invoca al LLM y retorna 'No content provided'")
     void givenEmptyText_whenChatAndRespond_thenReturnsNoContentWithoutCallingGateway() {
@@ -352,59 +375,69 @@ class AgentChatUseCaseCharacterizationTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Defectos conocidos — el comportamiento aquí capturado se CORREGIRÁ
+    // Defectos corregidos — DP-01 aplicada en la Fase 03
     // ═══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Documenta el defecto <b>DP-01</b>: la evaluación de {@code isGeneralFlow} ocurre antes que la
-     * detección de auditoría, por lo que la palabra genérica «reporte» secuestra una petición que
-     * incluye explícitamente un identificador de Work Item.
+     * <b>DP-01 aplicada.</b> Hasta la Fase 02 la evaluación de {@code isGeneralFlow} ocurría antes
+     * que la detección de auditoría, por lo que la palabra genérica «reporte» secuestraba una
+     * petición que incluye explícitamente un identificador de Work Item.
      *
-     * <p><b>Comportamiento esperado hoy:</b> flujo General.
-     * <p><b>Comportamiento tras la Fase 03:</b> flujo de Auditoría de Calidad.
-     * Esta aserción <b>debe invertirse</b> en esa fase.
+     * <p>Desde la Fase 03 la decisión vive en
+     * {@link co.com.bancolombia.model.agent.IntentResolver}, que aplica la tabla de precedencia: un
+     * {@code (ID: n)} junto a un verbo de auditoría es una señal fuerte y gana sobre cualquier
+     * palabra clave genérica.
+     *
+     * <p><b>Aserción invertida respecto a la Fase 00:</b> antes se exigía flujo General; ahora se
+     * exige flujo de Auditoría de Calidad.
      *
      * @see docs/plan/DECISIONES_PENDIENTES.md DP-01
      */
     @Test
-    @DisplayName("DEFECTO DP-01: 'reporte' secuestra una petición de auditoría con (ID: n)")
-    void givenAuditRequestContainingKeywordReporte_whenChatAndRespond_thenGeneralFlowWinsByPrecedence() {
+    @DisplayName("DP-01: 'reporte' ya no secuestra una petición de auditoría con (ID: n)")
+    void givenAuditRequestContainingKeywordReporte_whenChatAndRespond_thenExecutesQualityAuditFlow() {
         // GIVEN
         String userText = "Genera un reporte de calidad de la historia (ID: " + WORK_ITEM_ID + ")";
-        givenChatGatewayReturnsResponse();
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet(userText, null);
 
-        // THEN: hoy gana el flujo General y la plantilla de auditoría nunca se solicita
-        assertThat(capturePrompt()).isEqualTo(userText);
-        verifyNoTemplateWasRendered();
+        // THEN: gana la auditoría y el identificador viaja a la plantilla
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.QUALITY_AUDIT);
+        assertThat(captureTemplateVariables()).containsEntry(VAR_WORK_ITEM_ID, WORK_ITEM_ID);
     }
 
     /**
-     * Documenta el defecto <b>DP-01</b>: la palabra genérica «consulta» dentro de una idea de
-     * desarrollo larga secuestra el flujo de Planificación con RAG.
+     * <b>DP-01 aplicada.</b> Hasta la Fase 02 la palabra genérica «consulta» dentro de una idea de
+     * desarrollo secuestraba el flujo de Planificación con RAG, porque se buscaba como subcadena
+     * sobre la frase completa.
      *
-     * <p><b>Comportamiento esperado hoy:</b> flujo General, sin búsqueda vectorial.
-     * <p><b>Comportamiento tras la Fase 03:</b> flujo de Planificación.
-     * Esta aserción <b>debe invertirse</b> en esa fase.
+     * <p>Desde la Fase 03 las palabras clave se evalúan como palabra completa y se descartan las
+     * que van gobernadas por un pronombre relativo: en «un servicio <i>que consulta</i> el saldo»,
+     * «consulta» describe el sistema a construir, no una acción pedida al agente.
+     *
+     * <p><b>Aserción invertida respecto a la Fase 00:</b> antes se exigía flujo General sin
+     * búsqueda vectorial; ahora se exige flujo de Planificación consultando el vector store.
      *
      * @see docs/plan/DECISIONES_PENDIENTES.md DP-01
      */
     @Test
-    @DisplayName("DEFECTO DP-01: 'consulta' secuestra el flujo de Planificación")
-    void givenLongIdeaContainingKeywordConsulta_whenChatAndRespond_thenGeneralFlowWinsByPrecedence() {
+    @DisplayName("DP-01: 'consulta' ya no secuestra el flujo de Planificación")
+    void givenLongIdeaContainingKeywordConsulta_whenChatAndRespond_thenExecutesPlanningSimilarityFlow() {
         // GIVEN
         String userText = "Necesito un servicio que consulta el saldo del cliente desde el core";
-        givenChatGatewayReturnsResponse();
+        when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
+                .thenReturn(Flux.empty());
+        givenTemplateAndGatewayRespond();
 
         // WHEN
         executeAndGet(userText, null);
 
-        // THEN: hoy gana el flujo General y nunca se consulta el vector store
-        assertThat(capturePrompt()).isEqualTo(userText);
-        verify(vectorStorePort, never()).searchSimilarity(anyString(), any(), anyInt());
-        verifyNoTemplateWasRendered();
+        // THEN
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
+        assertThat(captureTemplateVariables()).containsEntry(VAR_ORIGINAL_IDEA, userText);
+        verify(vectorStorePort).searchSimilarity(userText, null, EXPECTED_RAG_RESULTS);
     }
 
     /**

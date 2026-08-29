@@ -1,5 +1,6 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
@@ -28,11 +29,21 @@ public class UseCasesConfig {
     @Value("${azure-devops.default-project:Vicepresidencia Servicios de Tecnología}")
     private String defaultProject;
 
+    /**
+     * Resolutor de intención: servicio de dominio sin estado ni dependencias, seguro como
+     * singleton compartido.
+     */
+    @Bean
+    public IntentResolver intentResolver() {
+        return new IntentResolver();
+    }
+
     @Bean
     public AgentChatUseCase agentChatUseCase(ChatGateway chatGateway,
             AgentResponseGateway agentResponseGateway, TaskStoreGateway taskStoreGateway,
             PlanningVectorStorePort planningVectorStorePort,
             PromptTemplatePort promptTemplatePort,
+            IntentResolver intentResolver,
             @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
             @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource,
             @Value("classpath:AUDITORIA_CALIDAD_HU.md") Resource qualityAuditResource) {
@@ -41,7 +52,7 @@ public class UseCasesConfig {
         String qualityAuditContent = readResource(qualityAuditResource);
         return new AgentChatUseCase(chatGateway, agentResponseGateway, taskStoreGateway,
                 templateContent, planningVectorStorePort, agileGuideContent, defaultOrg,
-                defaultProject, qualityAuditContent, promptTemplatePort);
+                defaultProject, qualityAuditContent, promptTemplatePort, intentResolver);
     }
 
     private String readResource(Resource resource) {
