@@ -1,7 +1,8 @@
 # FASE 06 — Separación del Entry-Point
 
-> **Estado:** 🟡 PENDIENTE · **Depende de:** FASE 05 (🟢 completada) · **Riesgo:** Alto
+> **Estado:** 🟢 COMPLETADA (2026-08-29) · **Depende de:** FASE 05 (🟢 completada) · **Riesgo:** Alto
 > **Commit al cerrar:** `refactor(agent_api): separar validacion y mapeo de errores del entry point`
+> **Resultado:** `docs/resultados/RESULTADO-FASE-06.md`
 
 > ⚠️ **Riesgo alto:** es la única fase que toca el **contrato público** de la API. Un error aquí es
 > visible para los consumidores del agente, no solo para el equipo.
