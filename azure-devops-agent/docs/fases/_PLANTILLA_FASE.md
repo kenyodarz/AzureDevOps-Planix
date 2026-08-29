@@ -73,13 +73,15 @@ exactas cuando aplique. Nunca dejar un nombre a criterio del ejecutor.>
 |---:|---|---|
 | 1 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar que la fase no está bloqueada |
 | 2 | ... | ... |
-| N-3 | Ejecutar `./gradlew build` | BUILD SUCCESSFUL |
+| N-4 | Ejecutar `./gradlew build` | BUILD SUCCESSFUL |
+| N-3 | **Escribir `docs/resultados/RESULTADO-FASE-XX.md`** con `_PLANTILLA_RESULTADO.md` y métricas reales | Trazabilidad de la ejecución |
 | N-2 | Actualizar `docs/plan/ESTADO.md`: fase 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
 | N-1 | **Generar `docs/fases/FASE-XX+1-<nombre>.md`** con esta misma plantilla | Checkpoint de continuidad creado |
 | N | Commit: `tipo(scope): descripcion` | Cambios versionados |
 
-> ⚠️ **El paso N-1 es innegociable.** Sin el MD de la siguiente fase, el trabajo no es reanudable
-> tras una desconexión y la fase se considera **incompleta**.
+> ⚠️ **Los pasos N-3 y N-1 son innegociables.** Sin el registro de resultado no hay trazabilidad, y
+> sin el MD de la siguiente fase el trabajo no es reanudable tras una desconexión. En cualquiera de
+> los dos casos la fase se considera **incompleta**.
 
 ### 3.1 Contenido mínimo del MD de la siguiente fase
 <Semilla concreta: objetivo, archivos y deudas que debe atacar la fase siguiente, para que el

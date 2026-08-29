@@ -85,22 +85,39 @@ de 8 puntos») deja de ser mentira y pasa a describir el comportamiento real. No
 
 ---
 
-## DP-03 — Default silencioso de `1` punto cuando el LLM no devuelve estimación
+## DP-03 — Estimación ausente del LLM ✅ RESUELTA
 
-- **Estado:** 🟡 PROPUESTA (recomendación pendiente de confirmar)
-- **Bloquea:** Fase 02
-- **Ubicación:** `AgentChatUseCase.extractPuntosFromLlmResponse():291`
+- **Estado:** 🟢 RESUELTA — **Opción C: aviso explícito**
+- **Resuelta por:** Usuario · **Fecha:** 2026-08-28
+- **Se aplica en:** Fase 02
+- **Ubicación del defecto:** `AgentChatUseCase.extractPuntosFromLlmResponse()`
 
 **Hallazgo:** si el LLM omite el bloque JSON, el método retorna `1` sin avisar. El usuario ve
 «📊 Estimación de Complejidad (Story Points): 1» aunque el modelo **nunca estimó nada**. Enmascara
 ausencia de dato como dato válido (espíritu de S2259).
 
-**Recomendación (Opción C), coherente con el criterio «anti dummies» de DP-01:** modelar el
-resultado como `Optional<ComplexityEstimation>` y, cuando esté vacío, mostrar
-«⚠️ El modelo no devolvió una estimación válida» en lugar de un número inventado.
+**Decisión del usuario:** *«Es la mejor opción, así el usuario sabe que debe estimar él mismo la
+historia y que ha fallado el proceso de estimación.»*
 
-- **Resolución:** _(pendiente de confirmación explícita)_
-- **Fecha de resolución:** —
+**Resolución:**
+
+1. `ComplexityEstimation.parseFrom(...)` devuelve `Optional<ComplexityEstimation>`. **Prohibido
+   devolver valores por defecto inventados.**
+2. Cuando el `Optional` viene vacío, el bloque informativo de estimación **se sustituye** por:
+
+   ```
+   ⚠️ **No se pudo obtener la estimación:** el modelo no devolvió una estimación válida.
+   Por favor, estima manualmente esta historia en Azure DevOps.
+   ```
+
+3. Al no haber estimación **no se puede evaluar `requiresSplit()`**, por lo que no se muestra la
+   alerta de complejidad. Sí se conserva la pregunta de confirmación propia del flujo
+   (crear / actualizar).
+
+**Fuera de alcance (confirmado por el usuario):** la regeneración automática de la historia ante un
+fallo de estimación. *«Si fue un fallo el proceso quizás volver a generar la historia, pero ese
+flujo no es para esta parte, solo dejemos el mensaje para que el usuario sepa del fallo.»*
+Queda anotado como posible mejora futura, no como deuda.
 
 ---
 
@@ -239,6 +256,7 @@ cualquier heurística de longitud, tal como exige DP-01.
 |---|---|---|---|
 | DP-01 | Corregir la precedencia: `(ID: n)` + verbo gana sobre palabras clave genéricas; keywords por palabra completa | Usuario | 2026-08-28 |
 | DP-02 | Umbral de división `> 8` (`MAX_STORY_POINTS_PER_STORY = 8`), según tabla oficial de `HISTORIA_USUARIO.md` | Usuario | 2026-08-28 |
+| DP-03 | Aviso explícito «no se pudo obtener la estimación» en lugar de inventar 1 punto | Usuario | 2026-08-28 |
 | DP-04 | Aprobada la ruta `resources/prompts/` y los nombres de archivo (5 plantillas) | Usuario | 2026-08-28 |
 | DP-06 | Estimación por horas según tabla oficial; se elimina la «Regla de Mínimos de 5 puntos» | Usuario | 2026-08-28 |
 | DP-07 | Eliminar `buildPrompt()` y la plantilla de creación estructurada (dead code) | Usuario | 2026-08-28 |
@@ -247,6 +265,5 @@ cualquier heurística de longitud, tal como exige DP-01.
 
 | ID | Descripción | Bloquea |
 |---|---|---|
-| DP-03 | Qué hacer si el LLM no devuelve estimación (recomendación: Opción C, aviso explícito) | Fase 02 |
 | DP-05 | Camino muerto `chat()` async contra `NoOpAgentResponseAdapter` | Fase 07 |
 

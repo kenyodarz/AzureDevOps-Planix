@@ -56,9 +56,6 @@ class AgentChatUseCaseParsingTest {
     private static final String STORY_POINTS_LABEL = "Estimación de Complejidad (Story Points):";
     private static final String UNCERTAINTY_LABEL = "Nivel de Incertidumbre:";
 
-    private static final String DEFAULT_UNCERTAINTY_LEVEL = "Media";
-    private static final String DEFAULT_JUSTIFICATION = "la complejidad del alcance propuesto";
-    private static final int DEFAULT_POINTS = 1;
 
     private static final int POINTS_LOW = 5;
     private static final int POINTS_AT_THRESHOLD = 8;
@@ -114,17 +111,15 @@ class AgentChatUseCaseParsingTest {
     }
 
     /**
-     * Documenta el defecto <b>DP-03</b>: cuando el LLM no devuelve el bloque JSON de estimación, el
-     * caso de uso inventa silenciosamente 1 punto e incertidumbre «Media». El usuario ve una
-     * estimación que el modelo nunca produjo.
-     *
-     * <p>Tras la Fase 02 esta aserción deberá reflejar el aviso explícito de estimación ausente.
+     * <b>DP-03 aplicada (Fase 02).</b> Cuando el modelo no devuelve el bloque JSON de estimación,
+     * el agente ya no inventa «1 punto, incertidumbre Media»: informa explícitamente del fallo para
+     * que el usuario sepa que debe estimar la historia manualmente.
      *
      * @see docs/plan/DECISIONES_PENDIENTES.md DP-03
      */
     @Test
-    @DisplayName("DEFECTO DP-03: sin JSON, se inventa una estimación de 1 punto e incertidumbre Media")
-    void givenLlmResponseWithoutJson_whenApprovalFlow_thenInfoBlockShowsDefaultValues() {
+    @DisplayName("DP-03: sin JSON se avisa del fallo en lugar de inventar una estimación")
+    void givenLlmResponseWithoutJson_whenApprovalFlow_thenShowsMissingEstimationNotice() {
         // GIVEN
         givenLlmResponds("```markdown\n# Historia sin bloque de estimación\n```");
 
@@ -132,9 +127,9 @@ class AgentChatUseCaseParsingTest {
         String output = executeApprovalFlow();
 
         // THEN
-        assertThat(output).contains(STORY_POINTS_LABEL + "** " + DEFAULT_POINTS)
-                .contains(UNCERTAINTY_LABEL + "** " + DEFAULT_UNCERTAINTY_LEVEL)
-                .contains(DEFAULT_JUSTIFICATION);
+        assertThat(output).contains("No se pudo obtener la estimación")
+                .contains("estima manualmente esta historia")
+                .doesNotContain(STORY_POINTS_LABEL);
     }
 
     @Test
@@ -151,18 +146,18 @@ class AgentChatUseCaseParsingTest {
     }
 
     /**
-     * Documenta el defecto <b>DP-02</b>: la condición actual es {@code puntos >= 13}, por lo que una
-     * estimación de 9 puntos —que según la guía corporativa
-     * ({@code HISTORIA_USUARIO.md}: «>8 Requiere Dividir») debería obligar a dividir— <b>no dispara
-     * ninguna alerta</b>. El LLM no siempre respeta la escala Fibonacci, así que este caso es real.
+     * <b>DP-02 aplicada (Fase 02).</b> El umbral pasó de {@code >= 13} a {@code > 8}, según la
+     * tabla oficial de {@code HISTORIA_USUARIO.md} («&gt;8 Requiere Dividir») y la equivalencia por
+     * horas acordada. Una estimación de 9 puntos —que el modelo puede producir al no respetar
+     * siempre la escala Fibonacci— ahora **sí** exige dividir.
      *
-     * <p>Tras la Fase 02 el umbral pasa a {@code > 8} y esta aserción <b>debe invertirse</b>.
+     * <p>Esta aserción era la inversa antes de la Fase 02.
      *
      * @see docs/plan/DECISIONES_PENDIENTES.md DP-02
      */
     @Test
-    @DisplayName("DEFECTO DP-02: 9 puntos NO disparan la alerta pese a superar el estándar de 8")
-    void givenLlmResponseWithNinePoints_whenApprovalFlow_thenDoesNotAppendAlertYet() {
+    @DisplayName("DP-02: 9 puntos disparan la alerta por superar el estándar de 8")
+    void givenLlmResponseWithNinePoints_whenApprovalFlow_thenAppendsComplexityAlert() {
         // GIVEN
         givenLlmResponds(estimationResponse(POINTS_ABOVE_THRESHOLD, "Alta", "varios flujos"));
 
@@ -170,7 +165,7 @@ class AgentChatUseCaseParsingTest {
         String output = executeApprovalFlow();
 
         // THEN
-        assertThat(output).doesNotContain(COMPLEXITY_ALERT_FRAGMENT);
+        assertThat(output).contains(COMPLEXITY_ALERT_FRAGMENT);
     }
 
     @Test
