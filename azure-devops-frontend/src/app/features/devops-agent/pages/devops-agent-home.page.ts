@@ -109,12 +109,12 @@ import {
                         </div>
                         @if (task.status?.message?.parts?.[0]?.text) {
                           <p class="text-[0.65rem] text-[#9ca3af] mt-1 leading-snug line-clamp-3">
-                            {{ task.status?.message?.parts?.[0]?.text }}
+                            {{ task.status.message.parts[0].text }}
                           </p>
                         }
                         @if (task.status?.timestamp) {
                           <span class="text-[0.62rem] text-[#6b7280] mt-0.5">
-                            Actualizado: {{ task.status?.timestamp }}
+                            Actualizado: {{ task.status.timestamp }}
                           </span>
                         }
                       </div>

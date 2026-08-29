@@ -32,17 +32,16 @@ bootJar {
 }
 
 def frontendDir = "$rootDir/../azure-devops-frontend"
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def pnpmCommand = isWindows ? ['cmd', '/c', 'corepack', 'pnpm'] : ['corepack', 'pnpm']
 
 tasks.register('npmInstall', Exec) {
     workingDir frontendDir
     inputs.file("$frontendDir/package.json")
+    inputs.file("$frontendDir/pnpm-lock.yaml")
     outputs.dir("$frontendDir/node_modules")
 
-    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
-        commandLine 'cmd', '/c', 'npm install'
-    } else {
-        commandLine 'npm', 'install'
-    }
+    commandLine pnpmCommand + ['install']
 }
 
 tasks.register('buildFrontend', Exec) {
@@ -51,13 +50,10 @@ tasks.register('buildFrontend', Exec) {
     inputs.dir("$frontendDir/src")
     inputs.file("$frontendDir/angular.json")
     inputs.file("$frontendDir/package.json")
+    inputs.file("$frontendDir/pnpm-lock.yaml")
     outputs.dir("$frontendDir/dist")
 
-    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
-        commandLine 'cmd', '/c', 'npm run build'
-    } else {
-        commandLine 'npm', 'run build'
-    }
+    commandLine pnpmCommand + ['run', 'build']
 }
 
 tasks.register('copyFrontendToStatic', Copy) {
@@ -67,4 +63,3 @@ tasks.register('copyFrontendToStatic', Copy) {
 }
 
 processResources.dependsOn copyFrontendToStatic
-

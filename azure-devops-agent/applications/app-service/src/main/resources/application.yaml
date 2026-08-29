@@ -40,7 +40,7 @@ spring:
         similarity-threshold: 0.75
     mcp:
       client:
-        enabled: "${SPRING_AI_MCP_CLIENT_ENABLED:true}"
+        enabled: "${SPRING_AI_MCP_CLIENT_ENABLED:false}"
         streamable-http:
           connections:
             azure-devops:
