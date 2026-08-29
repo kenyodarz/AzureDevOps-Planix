@@ -1,7 +1,20 @@
 # FASE 00 — Baseline y Caracterización
 
-> **Estado:** PENDIENTE · **Depende de:** — · **Riesgo:** Nulo (no se modifica código productivo)
-> **Commit al cerrar:** `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos`
+> **Estado:** 🟢 COMPLETADA (2026-08-28) · **Depende de:** — · **Riesgo:** Nulo
+> **Commit:** `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos`
+> **Siguiente fase:** `FASE-01-externalizacion-de-prompts.md` (🔴 bloqueada por DP-04 y DP-06)
+
+## Resultado de la ejecución
+
+| Resultado | Valor |
+|---|---|
+| Tests creados | **23** (16 de enrutamiento + 7 de parseo), todos en verde |
+| Cobertura `domain/usecase` | **0% → 81,7%** (884/1082 instrucciones) |
+| Mutation score (pitest) | 62% (72/116), test strength 81% |
+| Código productivo modificado | **Ninguno** (`git status` solo muestra `src/test` y `docs`) |
+| `build.gradle` modificado | **No fue necesario**: `spring-boot-starter-test` y `reactor-test` ya se heredan de `main.gradle` |
+| Build | `BUILD SUCCESSFUL` |
+| Hallazgo nuevo | **DP-07** — `buildPrompt()` es código inalcanzable |
 
 ---
 
@@ -82,8 +95,15 @@ Stack disponible confirmado: Java 25, Spring Boot 4.1.0, Reactor (`reactor-test`
 |---|---|---|
 | — | — | **Ninguna.** Esta fase documenta el comportamiento existente sin juzgarlo ni cambiarlo. |
 
+**Decisiones ya resueltas que condicionan cómo se escriben los tests:**
+
+| ID | Resolución | Efecto en esta fase |
+|---|---|---|
+| **DP-01** | 🟢 **CORREGIR** la precedencia de intención (Fase 03) | Los tests 15 y 16 capturan el comportamiento **actual y defectuoso**. Deben llevar Javadoc `@see DP-01` avisando de que sus aserciones **se invertirán en la Fase 03**. |
+| **DP-02** | 🟢 Umbral de división **`> 8`** (Fase 02) | El test 4 del Paso C captura que hoy 8 puntos **no** dispara alerta (comportamiento correcto que se mantiene) y el test 3 que 13 sí. Añadir el test 3-bis con **9 puntos**, que hoy **no** dispara alerta y a partir de la Fase 02 **sí** deberá hacerlo. |
+
 > ⚠️ Si al escribir los tests descubres comportamientos extraños adicionales (más allá de DP-01 a
-> DP-05 ya registrados), **no los corrijas**: añádelos como nueva entrada `DP-XX` en
+> DP-06 ya registrados), **no los corrijas**: añádelos como nueva entrada `DP-XX` en
 > `docs/plan/DECISIONES_PENDIENTES.md` y escribe el test reflejando el comportamiento **actual**.
 
 ---
@@ -175,12 +195,13 @@ Casos mínimos:
 |---:|---|---|---|
 | 1 | `givenLlmResponseWithValidJson_whenApprovalFlow_thenInfoBlockShowsParsedValues` | JSON con `"puntos": 5`, nivel `"Baja"`, justificación | Contiene `5`, `Baja` y la justificación |
 | 2 | `givenLlmResponseWithoutJson_whenApprovalFlow_thenInfoBlockShowsDefaultValues` | sin bloque JSON | Contiene `1` y `Media` → documenta **DP-03** |
-| 3 | `givenLlmResponseWithHighPoints_whenApprovalFlow_thenAppendsComplexityAlert` | `"puntos": 13` | Contiene `Alerta de Complejidad` |
-| 4 | `givenLlmResponseWithEightPoints_whenApprovalFlow_thenDoesNotAppendAlert` | `"puntos": 8` | **No** contiene la alerta → documenta **DP-02** |
+| 3 | `givenLlmResponseWithThirteenPoints_whenApprovalFlow_thenAppendsComplexityAlert` | `"puntos": 13` | Contiene `Alerta de Complejidad` |
+| 3b | `givenLlmResponseWithNinePoints_whenApprovalFlow_thenDoesNotAppendAlertYet` | `"puntos": 9` | **No** contiene la alerta → documenta el defecto de **DP-02**; se invertirá en Fase 02 |
+| 4 | `givenLlmResponseWithEightPoints_whenApprovalFlow_thenDoesNotAppendAlert` | `"puntos": 8` | **No** contiene la alerta (correcto, se mantiene tras DP-02) |
 | 5 | `givenLlmResponseWithJsonBlock_whenApprovalFlow_thenJsonIsStrippedFromOutput` | JSON en bloque ```json | La salida no contiene `"puntos"` crudo |
 | 6 | `givenAuditResponseWithMarkers_whenAuditFlow_thenAuditJsonBlockIsStripped` | respuesta con `AUDIT_JSON_START/END` | La salida no contiene los marcadores |
 
-Los tests 2 y 4 llevan Javadoc enlazando a **DP-03** y **DP-02** respectivamente.
+Los tests 2, 3b y 4 llevan Javadoc enlazando a **DP-03** y **DP-02** respectivamente.
 
 #### Paso D — Medir y registrar el baseline
 
