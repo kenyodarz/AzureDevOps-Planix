@@ -16,6 +16,13 @@ import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.usecase.chat.handler.ApprovalFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
+import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.GeneralFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.PlanningDraftFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.QualityAuditFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.RefinementFlowHandler;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,17 +90,20 @@ class AgentChatUseCaseParsingTest {
     @BeforeEach
     void setUp() {
         useCase = new AgentChatUseCase(
-                chatGateway,
                 agentResponseGateway,
                 taskStoreGateway,
-                TEMPLATE_MARKDOWN,
-                vectorStorePort,
-                AGILE_GUIDE,
-                DEFAULT_ORG,
-                DEFAULT_PROJECT,
-                QUALITY_AUDIT_GUIDE,
-                promptTemplatePort,
-                new IntentResolver());
+                new IntentResolver(),
+                new ChatFlowDispatcher(List.of(
+                        new GeneralFlowHandler(chatGateway),
+                        new QualityAuditFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
+                                DEFAULT_PROJECT, AGILE_GUIDE, QUALITY_AUDIT_GUIDE),
+                        new RefinementFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
+                                DEFAULT_PROJECT, AGILE_GUIDE),
+                        new ApprovalFlowHandler(chatGateway, promptTemplatePort, TEMPLATE_MARKDOWN,
+                                AGILE_GUIDE),
+                        new DivisionFlowHandler(chatGateway, promptTemplatePort, AGILE_GUIDE),
+                        new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
+                                vectorStorePort))));
     }
 
     @Test

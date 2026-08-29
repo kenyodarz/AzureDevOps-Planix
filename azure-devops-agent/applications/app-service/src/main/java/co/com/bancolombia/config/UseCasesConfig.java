@@ -7,7 +7,16 @@ import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
+import co.com.bancolombia.usecase.chat.handler.ApprovalFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
+import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.GeneralFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.PlanningDraftFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.QualityAuditFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.RefinementFlowHandler;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -38,21 +47,69 @@ public class UseCasesConfig {
         return new IntentResolver();
     }
 
+    // ─── Handlers de flujo, uno por AgentIntent ────────────────────────────────
+
     @Bean
-    public AgentChatUseCase agentChatUseCase(ChatGateway chatGateway,
-            AgentResponseGateway agentResponseGateway, TaskStoreGateway taskStoreGateway,
-            PlanningVectorStorePort planningVectorStorePort,
+    public GeneralFlowHandler generalFlowHandler(ChatGateway chatGateway) {
+        return new GeneralFlowHandler(chatGateway);
+    }
+
+    @Bean
+    public QualityAuditFlowHandler qualityAuditFlowHandler(ChatGateway chatGateway,
             PromptTemplatePort promptTemplatePort,
-            IntentResolver intentResolver,
-            @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
             @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource,
             @Value("classpath:AUDITORIA_CALIDAD_HU.md") Resource qualityAuditResource) {
-        String templateContent = readResource(templateResource);
-        String agileGuideContent = readResource(agileGuideResource);
-        String qualityAuditContent = readResource(qualityAuditResource);
-        return new AgentChatUseCase(chatGateway, agentResponseGateway, taskStoreGateway,
-                templateContent, planningVectorStorePort, agileGuideContent, defaultOrg,
-                defaultProject, qualityAuditContent, promptTemplatePort, intentResolver);
+        return new QualityAuditFlowHandler(chatGateway, promptTemplatePort, defaultOrg,
+                defaultProject, readResource(agileGuideResource), readResource(qualityAuditResource));
+    }
+
+    @Bean
+    public RefinementFlowHandler refinementFlowHandler(ChatGateway chatGateway,
+            PromptTemplatePort promptTemplatePort,
+            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
+        return new RefinementFlowHandler(chatGateway, promptTemplatePort, defaultOrg,
+                defaultProject, readResource(agileGuideResource));
+    }
+
+    @Bean
+    public ApprovalFlowHandler approvalFlowHandler(ChatGateway chatGateway,
+            PromptTemplatePort promptTemplatePort,
+            @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
+            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
+        return new ApprovalFlowHandler(chatGateway, promptTemplatePort,
+                readResource(templateResource), readResource(agileGuideResource));
+    }
+
+    @Bean
+    public DivisionFlowHandler divisionFlowHandler(ChatGateway chatGateway,
+            PromptTemplatePort promptTemplatePort,
+            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
+        return new DivisionFlowHandler(chatGateway, promptTemplatePort,
+                readResource(agileGuideResource));
+    }
+
+    @Bean
+    public PlanningDraftFlowHandler planningDraftFlowHandler(ChatGateway chatGateway,
+            PromptTemplatePort promptTemplatePort, PlanningVectorStorePort planningVectorStorePort) {
+        return new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
+                planningVectorStorePort);
+    }
+
+    /**
+     * Indexa los handlers por intención. Falla al arrancar si falta alguna o si hay duplicados.
+     */
+    @Bean
+    public ChatFlowDispatcher chatFlowDispatcher(List<ChatFlowHandler> chatFlowHandlers) {
+        return new ChatFlowDispatcher(chatFlowHandlers);
+    }
+
+    @Bean
+    public AgentChatUseCase agentChatUseCase(AgentResponseGateway agentResponseGateway,
+            TaskStoreGateway taskStoreGateway,
+            IntentResolver intentResolver,
+            ChatFlowDispatcher chatFlowDispatcher) {
+        return new AgentChatUseCase(agentResponseGateway, taskStoreGateway, intentResolver,
+                chatFlowDispatcher);
     }
 
     private String readResource(Resource resource) {
@@ -64,3 +121,4 @@ public class UseCasesConfig {
         }
     }
 }
+
