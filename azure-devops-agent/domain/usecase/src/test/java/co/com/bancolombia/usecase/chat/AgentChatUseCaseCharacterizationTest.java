@@ -14,6 +14,8 @@ import co.com.bancolombia.model.a2a.Part;
 import co.com.bancolombia.model.a2a.SendMessageRequest;
 import co.com.bancolombia.model.a2a.SendMessageResponse;
 import co.com.bancolombia.model.a2a.TaskState;
+import co.com.bancolombia.model.agent.AzureDevOpsScope;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
@@ -56,11 +58,13 @@ import reactor.test.StepVerifier;
  * compara un valor enumerado en lugar de una subcadena. El flujo General es el único que no usa
  * plantilla: envía el texto del usuario tal cual.
  *
- * <p><b>Nota sobre {@code @InjectMocks}:</b> no se usa deliberadamente. El constructor de
- * {@link AgentChatUseCase} recibe 10 argumentos, 4 de ellos {@code String} consecutivos, lo que
- * hace que la inyección automática de Mockito sea ambigua y frágil. Se instancia manualmente en
- * {@link #setUp()}. Esta excepción a {@code rules/spring-rules.md} §5 desaparece en la Fase 05,
- * cuando los {@code String} se agrupen en Value Objects.
+ * <p><b>Nota sobre {@code @InjectMocks}:</b> sigue sin usarse, pero por una razón distinta a la
+ * original. Hasta la Fase 04 el problema eran los 4 {@code String} consecutivos del constructor,
+ * que hacían ambigua la inyección automática. Desde la Fase 05 el constructor tiene 4 argumentos
+ * tipados y sin ambigüedad, pero uno de ellos —{@link ChatFlowDispatcher}— <b>no es un mock</b>:
+ * es un objeto real que debe ensamblarse con los seis handlers apuntando a los gateways simulados,
+ * porque es justamente el enrutamiento lo que estas pruebas caracterizan. Mockearlo vaciaría la
+ * suite de sentido. La construcción manual es aquí una decisión, no una limitación.
  *
  * @see docs/plan/DECISIONES_PENDIENTES.md
  */
@@ -122,15 +126,15 @@ class AgentChatUseCaseCharacterizationTest {
      * el caso de uso ya no conoce los puertos de cada flujo, solo el despachador.
      */
     private ChatFlowDispatcher buildDispatcher() {
+        AzureDevOpsScope scope = new AzureDevOpsScope(DEFAULT_ORG, DEFAULT_PROJECT);
+        CorporateKnowledge knowledge =
+                new CorporateKnowledge(TEMPLATE_MARKDOWN, AGILE_GUIDE, QUALITY_AUDIT_GUIDE);
         return new ChatFlowDispatcher(List.of(
                 new GeneralFlowHandler(chatGateway),
-                new QualityAuditFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                        DEFAULT_PROJECT, AGILE_GUIDE, QUALITY_AUDIT_GUIDE),
-                new RefinementFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                        DEFAULT_PROJECT, AGILE_GUIDE),
-                new ApprovalFlowHandler(chatGateway, promptTemplatePort, TEMPLATE_MARKDOWN,
-                        AGILE_GUIDE),
-                new DivisionFlowHandler(chatGateway, promptTemplatePort, AGILE_GUIDE),
+                new QualityAuditFlowHandler(chatGateway, promptTemplatePort, scope, knowledge),
+                new RefinementFlowHandler(chatGateway, promptTemplatePort, scope, knowledge),
+                new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
+                new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
                 new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, vectorStorePort)));
     }
 

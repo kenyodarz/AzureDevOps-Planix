@@ -1,6 +1,7 @@
 package co.com.bancolombia.usecase.chat.handler;
 
 import co.com.bancolombia.model.agent.AgentIntent;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.prompt.PromptTemplateId;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
@@ -21,7 +22,7 @@ public class DivisionFlowHandler implements ChatFlowHandler {
 
     private final ChatGateway chatGateway;
     private final PromptTemplatePort promptTemplatePort;
-    private final String agileGuideContent;
+    private final CorporateKnowledge knowledge;
 
     @Override
     public AgentIntent supports() {
@@ -31,7 +32,7 @@ public class DivisionFlowHandler implements ChatFlowHandler {
     @Override
     public Mono<String> handle(ChatFlowContext context) {
         String prompt = promptTemplatePort.render(PromptTemplateId.STORY_DIVISION,
-                Map.of(PromptVariables.AGILE_GUIDE, agileGuideContent));
+                Map.of(PromptVariables.AGILE_GUIDE, knowledge.agileGuide()));
         return chatGateway.sendMessage(prompt, context.contextId())
                 .map(llmResponse -> llmResponse + CONFIRM_CREATE_DIVIDED_STORIES);
     }

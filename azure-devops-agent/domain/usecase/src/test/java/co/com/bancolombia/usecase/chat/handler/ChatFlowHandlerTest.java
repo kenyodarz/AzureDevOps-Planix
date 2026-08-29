@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.model.agent.AgentIntent;
+import co.com.bancolombia.model.agent.AzureDevOpsScope;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.agent.IntentResolution;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.planning.PlanningChunk;
@@ -50,6 +52,11 @@ class ChatFlowHandlerTest {
     private static final String QUALITY_AUDIT_GUIDE = "## Estándares de auditoría";
     private static final String DEFAULT_ORG = "grupobancolombia";
     private static final String DEFAULT_PROJECT = "Vicepresidencia Servicios de Tecnología";
+
+    private static final AzureDevOpsScope SCOPE =
+            new AzureDevOpsScope(DEFAULT_ORG, DEFAULT_PROJECT);
+    private static final CorporateKnowledge KNOWLEDGE =
+            new CorporateKnowledge(TEMPLATE_MARKDOWN, AGILE_GUIDE, QUALITY_AUDIT_GUIDE);
 
     private static final String VAR_WORK_ITEM_ID = "workItemId";
     private static final String VAR_ORGANIZATION = "organizacion";
@@ -119,8 +126,8 @@ class ChatFlowHandlerTest {
 
         @BeforeEach
         void setUp() {
-            handler = new QualityAuditFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                    DEFAULT_PROJECT, AGILE_GUIDE, QUALITY_AUDIT_GUIDE);
+            handler = new QualityAuditFlowHandler(chatGateway, promptTemplatePort, SCOPE,
+                    KNOWLEDGE);
         }
 
         @Test
@@ -187,8 +194,7 @@ class ChatFlowHandlerTest {
 
         @BeforeEach
         void setUp() {
-            handler = new RefinementFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                    DEFAULT_PROJECT, AGILE_GUIDE);
+            handler = new RefinementFlowHandler(chatGateway, promptTemplatePort, SCOPE, KNOWLEDGE);
         }
 
         @Test
@@ -242,8 +248,7 @@ class ChatFlowHandlerTest {
 
         @BeforeEach
         void setUp() {
-            handler = new ApprovalFlowHandler(chatGateway, promptTemplatePort, TEMPLATE_MARKDOWN,
-                    AGILE_GUIDE);
+            handler = new ApprovalFlowHandler(chatGateway, promptTemplatePort, KNOWLEDGE);
         }
 
         @Test
@@ -297,7 +302,7 @@ class ChatFlowHandlerTest {
 
         @BeforeEach
         void setUp() {
-            handler = new DivisionFlowHandler(chatGateway, promptTemplatePort, AGILE_GUIDE);
+            handler = new DivisionFlowHandler(chatGateway, promptTemplatePort, KNOWLEDGE);
         }
 
         @Test

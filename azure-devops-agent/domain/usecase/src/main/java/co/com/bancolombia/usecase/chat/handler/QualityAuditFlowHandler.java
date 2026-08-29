@@ -1,6 +1,8 @@
 package co.com.bancolombia.usecase.chat.handler;
 
 import co.com.bancolombia.model.agent.AgentIntent;
+import co.com.bancolombia.model.agent.AzureDevOpsScope;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.prompt.PromptTemplateId;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
@@ -25,10 +27,8 @@ public class QualityAuditFlowHandler implements ChatFlowHandler {
 
     private final ChatGateway chatGateway;
     private final PromptTemplatePort promptTemplatePort;
-    private final String defaultOrg;
-    private final String defaultProject;
-    private final String agileGuideContent;
-    private final String qualityAuditContent;
+    private final AzureDevOpsScope scope;
+    private final CorporateKnowledge knowledge;
 
     @Override
     public AgentIntent supports() {
@@ -41,9 +41,9 @@ public class QualityAuditFlowHandler implements ChatFlowHandler {
         log.info("Ejecutando flujo de auditoría de calidad para Work Item ID: " + workItemId);
         String prompt = promptTemplatePort.render(PromptTemplateId.QUALITY_AUDIT, Map.of(
                 PromptVariables.WORK_ITEM_ID, workItemId,
-                PromptVariables.ORGANIZATION, defaultOrg,
-                PromptVariables.PROJECT, defaultProject,
-                PromptVariables.STANDARDS, agileGuideContent + "\n\n" + qualityAuditContent));
+                PromptVariables.ORGANIZATION, scope.organization(),
+                PromptVariables.PROJECT, scope.project(),
+                PromptVariables.STANDARDS, knowledge.auditStandards()));
         return chatGateway.sendMessage(prompt, context.contextId())
                 .map(llmResponse -> AUDIT_JSON_BLOCK.matcher(llmResponse).replaceAll("").trim());
     }

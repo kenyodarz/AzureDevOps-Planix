@@ -10,6 +10,8 @@ import co.com.bancolombia.model.a2a.Message;
 import co.com.bancolombia.model.a2a.Part;
 import co.com.bancolombia.model.a2a.SendMessageRequest;
 import co.com.bancolombia.model.a2a.SendMessageResponse;
+import co.com.bancolombia.model.agent.AzureDevOpsScope;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
@@ -89,19 +91,21 @@ class AgentChatUseCaseParsingTest {
 
     @BeforeEach
     void setUp() {
+        AzureDevOpsScope scope = new AzureDevOpsScope(DEFAULT_ORG, DEFAULT_PROJECT);
+        CorporateKnowledge knowledge =
+                new CorporateKnowledge(TEMPLATE_MARKDOWN, AGILE_GUIDE, QUALITY_AUDIT_GUIDE);
         useCase = new AgentChatUseCase(
                 agentResponseGateway,
                 taskStoreGateway,
                 new IntentResolver(),
                 new ChatFlowDispatcher(List.of(
                         new GeneralFlowHandler(chatGateway),
-                        new QualityAuditFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                                DEFAULT_PROJECT, AGILE_GUIDE, QUALITY_AUDIT_GUIDE),
-                        new RefinementFlowHandler(chatGateway, promptTemplatePort, DEFAULT_ORG,
-                                DEFAULT_PROJECT, AGILE_GUIDE),
-                        new ApprovalFlowHandler(chatGateway, promptTemplatePort, TEMPLATE_MARKDOWN,
-                                AGILE_GUIDE),
-                        new DivisionFlowHandler(chatGateway, promptTemplatePort, AGILE_GUIDE),
+                        new QualityAuditFlowHandler(chatGateway, promptTemplatePort, scope,
+                                knowledge),
+                        new RefinementFlowHandler(chatGateway, promptTemplatePort, scope,
+                                knowledge),
+                        new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
+                        new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
                         new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
                                 vectorStorePort))));
     }

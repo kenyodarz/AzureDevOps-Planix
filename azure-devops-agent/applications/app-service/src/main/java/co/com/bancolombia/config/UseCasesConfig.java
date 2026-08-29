@@ -1,5 +1,7 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.model.agent.AzureDevOpsScope;
+import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
@@ -47,6 +49,29 @@ public class UseCasesConfig {
         return new IntentResolver();
     }
 
+    // ─── Configuración tipada ──────────────────────────────────────────────────
+
+    /** Organización y proyecto sobre los que trabaja el agente. */
+    @Bean
+    public AzureDevOpsScope azureDevOpsScope() {
+        return new AzureDevOpsScope(defaultOrg, defaultProject);
+    }
+
+    /**
+     * Documentación corporativa que alimenta los prompts. Cada recurso del classpath se lee
+     * <b>una sola vez</b> al arrancar y se comparte con todos los handlers que lo necesitan.
+     */
+    @Bean
+    public CorporateKnowledge corporateKnowledge(
+            @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
+            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource,
+            @Value("classpath:AUDITORIA_CALIDAD_HU.md") Resource qualityAuditResource) {
+        return new CorporateKnowledge(
+                readResource(templateResource),
+                readResource(agileGuideResource),
+                readResource(qualityAuditResource));
+    }
+
     // ─── Handlers de flujo, uno por AgentIntent ────────────────────────────────
 
     @Bean
@@ -56,36 +81,28 @@ public class UseCasesConfig {
 
     @Bean
     public QualityAuditFlowHandler qualityAuditFlowHandler(ChatGateway chatGateway,
-            PromptTemplatePort promptTemplatePort,
-            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource,
-            @Value("classpath:AUDITORIA_CALIDAD_HU.md") Resource qualityAuditResource) {
-        return new QualityAuditFlowHandler(chatGateway, promptTemplatePort, defaultOrg,
-                defaultProject, readResource(agileGuideResource), readResource(qualityAuditResource));
+            PromptTemplatePort promptTemplatePort, AzureDevOpsScope scope,
+            CorporateKnowledge knowledge) {
+        return new QualityAuditFlowHandler(chatGateway, promptTemplatePort, scope, knowledge);
     }
 
     @Bean
     public RefinementFlowHandler refinementFlowHandler(ChatGateway chatGateway,
-            PromptTemplatePort promptTemplatePort,
-            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
-        return new RefinementFlowHandler(chatGateway, promptTemplatePort, defaultOrg,
-                defaultProject, readResource(agileGuideResource));
+            PromptTemplatePort promptTemplatePort, AzureDevOpsScope scope,
+            CorporateKnowledge knowledge) {
+        return new RefinementFlowHandler(chatGateway, promptTemplatePort, scope, knowledge);
     }
 
     @Bean
     public ApprovalFlowHandler approvalFlowHandler(ChatGateway chatGateway,
-            PromptTemplatePort promptTemplatePort,
-            @Value("classpath:Plantilla_HU_HA.md") Resource templateResource,
-            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
-        return new ApprovalFlowHandler(chatGateway, promptTemplatePort,
-                readResource(templateResource), readResource(agileGuideResource));
+            PromptTemplatePort promptTemplatePort, CorporateKnowledge knowledge) {
+        return new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge);
     }
 
     @Bean
     public DivisionFlowHandler divisionFlowHandler(ChatGateway chatGateway,
-            PromptTemplatePort promptTemplatePort,
-            @Value("classpath:HISTORIA_USUARIO.md") Resource agileGuideResource) {
-        return new DivisionFlowHandler(chatGateway, promptTemplatePort,
-                readResource(agileGuideResource));
+            PromptTemplatePort promptTemplatePort, CorporateKnowledge knowledge) {
+        return new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge);
     }
 
     @Bean

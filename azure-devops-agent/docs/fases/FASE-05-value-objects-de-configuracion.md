@@ -1,7 +1,8 @@
 # FASE 05 — Value Objects de Configuración
 
-> **Estado:** 🟡 PENDIENTE · **Depende de:** FASE 04 (🟢 completada) · **Riesgo:** Bajo
+> **Estado:** 🟢 COMPLETADA · **Depende de:** FASE 04 (🟢 completada) · **Riesgo:** Bajo
 > **Commit al cerrar:** `refactor(agent_config): agrupar configuracion en objetos de valor`
+> **Resultado de la ejecución:** `docs/resultados/RESULTADO-FASE-05.md`
 
 > ℹ️ **Esta fase se replanteó al cerrar la Fase 04.** El objetivo original —bajar el constructor de
 > `AgentChatUseCase` de 11 argumentos— **ya se cumplió** como efecto colateral de mover los flujos a
