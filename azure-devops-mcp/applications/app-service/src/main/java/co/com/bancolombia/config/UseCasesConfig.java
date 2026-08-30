@@ -3,12 +3,14 @@ package co.com.bancolombia.config;
 import co.com.bancolombia.model.createworkitem.gateways.CreateWorkItemRepository;
 import co.com.bancolombia.model.getworkitem.gateways.GetWorkItemRepository;
 import co.com.bancolombia.model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository;
+import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
 import co.com.bancolombia.model.querybywiql.gateways.QueryByWiqlRepository;
 import co.com.bancolombia.model.team.gateways.GetTeamFieldValuesRepository;
 import co.com.bancolombia.model.updateworkitem.gateways.UpdateWorkItemRepository;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
+import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
 import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
@@ -29,6 +31,16 @@ public class UseCasesConfig {
     public GetTeamFieldValuesUseCase getTeamFieldValuesUseCase(
             GetTeamFieldValuesRepository getTeamFieldValuesRepository) {
         return new GetTeamFieldValuesUseCase(getTeamFieldValuesRepository);
+    }
+
+    /**
+     * Gemelo del anterior para las iteraciones: resuelve el {@code IterationPath} preguntándoselo a
+     * Azure DevOps en lugar de fabricarlo con el año del calendario.
+     */
+    @Bean
+    public GetTeamIterationsUseCase getTeamIterationsUseCase(
+            GetTeamIterationsRepository getTeamIterationsRepository) {
+        return new GetTeamIterationsUseCase(getTeamIterationsRepository);
     }
 
     @Bean

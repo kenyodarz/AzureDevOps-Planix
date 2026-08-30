@@ -3,6 +3,8 @@ package co.com.bancolombia.consumer;
 import co.com.bancolombia.model.createworkitem.gateways.CreateWorkItemRepository;
 import co.com.bancolombia.model.getworkitem.gateways.GetWorkItemRepository;
 import co.com.bancolombia.model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository;
+import co.com.bancolombia.model.iteration.TeamIteration;
+import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
 import co.com.bancolombia.model.querybywiql.gateways.QueryByWiqlRepository;
 import co.com.bancolombia.model.team.TeamFieldValues;
 import co.com.bancolombia.model.team.gateways.GetTeamFieldValuesRepository;
@@ -32,7 +34,8 @@ public class RestConsumer implements
         UpdateWorkItemRepository,
         QueryByWiqlRepository,
         GetWorkItemsBatchRepository,
-        GetTeamFieldValuesRepository {
+        GetTeamFieldValuesRepository,
+        GetTeamIterationsRepository {
 
     private final WebClient client;
 
@@ -138,7 +141,44 @@ public class RestConsumer implements
                 .map(this::toDomain);
     }
 
+    /**
+     * Iteraciones configuradas del equipo. Es la consulta gemela de
+     * {@link #getTeamFieldValues(String, String, String)}: la que devuelve el {@code IterationPath}
+     * real en lugar de obligar a fabricarlo con el año del calendario.
+     */
+    @Override
+    @CircuitBreaker(name = "getTeamIterations")
+    public Mono<List<TeamIteration>> getTeamIterations(String organization, String project,
+            String team) {
+        log.info("Fetching Team Iterations | Org: {}, Project: {}, Team: {}", organization,
+                project, team);
+        return client.get()
+                .uri("/{organization}/{project}/{team}/_apis/work/teamsettings/iterations?api-version=7.0",
+                        organization, project, team)
+                .retrieve()
+                .bodyToMono(TeamIterationsDTO.class)
+                .map(this::toDomain);
+    }
+
     // --- MAPPING METHODS ---
+
+    private List<TeamIteration> toDomain(TeamIterationsDTO dto) {
+        if (dto == null || dto.getValue() == null) {
+            return List.of();
+        }
+        return dto.getValue().stream().map(this::toDomain).toList();
+    }
+
+    private TeamIteration toDomain(TeamIterationDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return TeamIteration.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .path(dto.getPath())
+                .build();
+    }
 
     private TeamFieldValues toDomain(TeamFieldValuesDTO dto) {
         if (dto == null) {

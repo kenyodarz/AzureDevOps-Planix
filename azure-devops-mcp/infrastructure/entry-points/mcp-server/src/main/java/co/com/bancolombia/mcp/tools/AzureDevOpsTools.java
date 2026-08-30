@@ -9,6 +9,7 @@ import co.com.bancolombia.model.workitem.WorkItemsBatchRequest;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
+import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
 import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
@@ -35,6 +36,7 @@ public class AzureDevOpsTools {
     private final QueryByWiqlUseCase queryByWiqlUseCase;
     private final GetWorkItemsBatchUseCase getWorkItemsBatchUseCase;
     private final GetTeamFieldValuesUseCase getTeamFieldValuesUseCase;
+    private final GetTeamIterationsUseCase getTeamIterationsUseCase;
 
     /**
      * Obtener un Work Item por ID.
@@ -118,8 +120,8 @@ public class AzureDevOpsTools {
     public Mono<WiqlResult> listWorkItemsByTeamAndSprint(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. grupobancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps (ej. Vicepresidencia Servicios de Tecnología)", required = true) String project,
-            @McpToolParam(description = "Ruta completa de área de la célula (ej. Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA)", required = true) String teamName,
-            @McpToolParam(description = "Ruta completa de iteración del sprint (ej. Vicepresidencia Servicios de Tecnología\\2026\\Sprint 247)", required = true) String sprintName,
+            @McpToolParam(description = "Nombre de la célula o su ruta de área completa (ej. EQU1096 - EXODIA)", required = true) String teamName,
+            @McpToolParam(description = "Nombre del sprint o su ruta de iteración completa (ej. Sprint 247). Se resuelve consultando las iteraciones del equipo en Azure DevOps.", required = true) String sprintName,
             @McpToolParam(description = "Tipos de elementos de trabajo separados por coma (por defecto: Historia de Usuario, Habilitador)", required = false) String workItemTypes,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.0)", required = false) String apiVersion
     ) {
@@ -127,10 +129,9 @@ public class AzureDevOpsTools {
         String cleanTeam = teamName.replace("\\\\", "\\");
         String cleanSprint = sprintName.replace("\\\\", "\\");
 
-        String teamNameParam = cleanTeam;
-        if (cleanTeam.contains("\\")) {
-            teamNameParam = cleanTeam.substring(cleanTeam.lastIndexOf("\\") + 1).trim();
-        }
+        final String teamNameParam = cleanTeam.contains("\\")
+                ? cleanTeam.substring(cleanTeam.lastIndexOf("\\") + 1).trim()
+                : cleanTeam;
 
         return getTeamFieldValuesUseCase.getTeamFieldValues(organization, project, teamNameParam)
                 .map(TeamFieldValues::getDefaultValue)
@@ -140,21 +141,51 @@ public class AzureDevOpsTools {
                             cleanTeam, e);
                     return Mono.just(resolveAreaPath(project, cleanTeam));
                 })
-                .flatMap(finalAreaPath -> {
-                    log.info("Resolución de AreaPath final para célula {}: {}", cleanTeam,
-                            finalAreaPath);
-                    String finalIterationPath = resolveIterationPath(project, cleanSprint);
-                    String typesStr = parseWorkItemTypes(workItemTypes);
+                .flatMap(finalAreaPath -> resolveIteration(organization, project, teamNameParam,
+                        cleanSprint)
+                        .flatMap(finalIterationPath -> {
+                            log.info("Resolución de AreaPath final para célula {}: {}", cleanTeam,
+                                    finalAreaPath);
+                            log.info("Resolución de IterationPath final para sprint {}: {}",
+                                    cleanSprint, finalIterationPath);
+                            String typesStr = parseWorkItemTypes(workItemTypes);
 
-                    String query = String.format(
-                            "SELECT [System.Id] FROM workitems WHERE [System.TeamProject] = @project AND [System.IterationPath] = '%s' AND [System.AreaPath] = '%s' AND [System.WorkItemType] IN (%s) ORDER BY [System.Id]",
-                            finalIterationPath, finalAreaPath, typesStr
-                    );
-                    log.info("WIQL Query construida: {}", query);
+                            String query = String.format(
+                                    "SELECT [System.Id] FROM workitems WHERE [System.TeamProject] = @project AND [System.IterationPath] = '%s' AND [System.AreaPath] = '%s' AND [System.WorkItemType] IN (%s) ORDER BY [System.Id]",
+                                    finalIterationPath, finalAreaPath, typesStr
+                            );
+                            log.info("WIQL Query construida: {}", query);
 
-                    WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
-                    return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery,
-                            apiVersion);
+                            WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
+                            return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery,
+                                    apiVersion);
+                        }));
+    }
+
+    /**
+     * Pregunta a Azure DevOps por el {@code IterationPath} del sprint y solo concatena si esa
+     * consulta falla.
+     *
+     * <p>Este método es el arreglo del fallo más caro del sistema. Antes se llamaba directamente a
+     * {@link #resolveIterationPath(String, String)}, que para un sprint con formato
+     * {@code "Sprint N"} intercalaba {@code LocalDate.now().getYear()}. Pero un sprint que va de
+     * diciembre a enero pertenece al año en que <b>empezó</b>: consultado en enero, la ruta
+     * apuntaba a una iteración que no existe, la consulta WIQL devolvía cero ítems y el tablero
+     * salía vacío <b>sin error, sin aviso y sin log</b>. Nadie podía distinguir «este sprint no
+     * tiene historias» de «preguntamos por un sprint inexistente».
+     *
+     * <p>La concatenación se conserva como repliegue para no introducir ninguna regresión si Azure
+     * DevOps no responde, pero ahora deja rastro en el log en lugar de fallar en silencio.
+     */
+    private Mono<String> resolveIteration(String organization, String project, String team,
+            String cleanSprint) {
+        return getTeamIterationsUseCase.resolveIterationPath(organization, project, team,
+                        cleanSprint)
+                .onErrorResume(e -> {
+                    log.warn(
+                            "No se pudo obtener el IterationPath dinámico para el sprint: {}. Se usará la normalización por defecto.",
+                            cleanSprint, e);
+                    return Mono.just(resolveIterationPath(project, cleanSprint));
                 });
     }
 
@@ -165,6 +196,13 @@ public class AzureDevOpsTools {
         return cleanTeam;
     }
 
+    /**
+     * Repliegue histórico: fabrica la ruta por concatenación cuando Azure DevOps no puede
+     * responder. El año calculado aquí es incorrecto para los sprints que cruzan el cambio de
+     * ejercicio, y por eso este método <b>dejó de ser el camino principal</b>: hoy solo se usa
+     * desde el {@code onErrorResume} de {@link #resolveIteration(String, String, String, String)}.
+     * Se conserva para no cambiar el comportamiento cuando la consulta falla.
+     */
     private String resolveIterationPath(String project, String cleanSprint) {
         if (!cleanSprint.startsWith(project)) {
             if (cleanSprint.matches("Sprint \\d+")) {
