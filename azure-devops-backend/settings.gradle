@@ -19,10 +19,10 @@ include ':usecase'
 project(':app-service').projectDir = file('./applications/app-service')
 project(':model').projectDir = file('./domain/model')
 project(':usecase').projectDir = file('./domain/usecase')
-include ':task-store-inmemory'
-project(':task-store-inmemory').projectDir = file('./infrastructure/driven-adapters/task-store-inmemory')
-include ':mcp-client'
-project(':mcp-client').projectDir = file('./infrastructure/driven-adapters/mcp-client')
+include ':task-store-postgres'
+project(':task-store-postgres').projectDir = file('./infrastructure/driven-adapters/task-store-postgres')
+include ':agent-client'
+project(':agent-client').projectDir = file('./infrastructure/driven-adapters/agent-client')
 include ':reactive-web'
 project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
 include ':pgvector-store'
@@ -31,3 +31,5 @@ include ':metrics'
 project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
 include ':s3-repository'
 project(':s3-repository').projectDir = file('./infrastructure/driven-adapters/s3-repository')
+include ':report-storage-file'
+project(':report-storage-file').projectDir = file('./infrastructure/driven-adapters/report-storage-file')

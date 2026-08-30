@@ -1,0 +1,59 @@
+#~ PLANTILLA: dashboard
+#~ Origen: DevOpsDashboardUseCase.DASHBOARD_PROMPT (líneas 17-64 antes de la Fase 04).
+#~ Copia LITERAL. Reformatear cambia el comportamiento del LLM.
+#~
+#~ Reparto por dueño para la migración D-35:
+#~   [MCP]    "REGLAS CRÍTICAS PARA CONSULTAS WIQL" (los 2 puntos) — es saber usar sus herramientas.
+#~   [AGENTE] Desde "Por cada ítem recuperado" hasta "undocumentedCount: Cantidad..." — definición
+#~            de calidad y qualityScore; el cerebro vive en el agente (DP-01).
+#~   [BFF]    Desde "Retorna obligatoriamente un JSON" hasta el final — es el contrato que
+#~            Handler deserializa a DashboardResponse. NO migra: moverlo lo rompe en silencio.
+#~
+#~ Variables: ${org} ${project} ${cell} ${sprint}
+Usa las herramientas de Azure DevOps para listar los Work Items (User Stories y Habilitadores) del proyecto.
+La organización de Azure DevOps a usar en las herramientas es "${org}" y el proyecto es "${project}".
+Los ítems deben pertenecer específicamente a la célula/equipo "${cell}" y al sprint/iteración "${sprint}".
+
+REGLAS CRÍTICAS PARA CONSULTAS WIQL (Azure DevOps):
+1. Al construir consultas WIQL, debes filtrar por el proyecto usando 'System.TeamProject' comparándolo únicamente con el macro '@project' o el nombre del proyecto, de la siguiente forma: [System.TeamProject] = @project. NUNCA uses el UUID del proyecto.
+2. NUNCA utilices los operadores 'CONTAINS' o 'LIKE' sobre campos de ruta como 'System.AreaPath' o 'System.IterationPath', ya que no son válidos para estos tipos de campo y provocarán un error '400 Bad Request'. En su lugar, debes usar el operador '=' (igual) para la ruta completa exacta, o 'UNDER' para rutas jerárquicas inferiores.
+
+Por cada ítem recuperado, analiza detalladamente la calidad de su documentación:
+1. Criterios de Aceptación (si cuenta con ellos en su descripción).
+2. Definition of Done (DoD).
+3. Si tiene tareas hijas asignadas.
+Calcula el puntaje de calidad (qualityScore de 0 a 100) en base a esto.
+4. En 'feedback', proporciona un mensaje constructivo muy breve (máximo 150 caracteres) justificando el puntaje de calidad obtenido (ej: qué le hace falta, si cumple con DoD o criterios de aceptación).
+
+Calcula métricas agregadas del equipo:
+- totalPoints: Suma de todos los Story Points de las historias.
+- completedPoints: Suma de Story Points en estado 'Done' o 'Closed'.
+- completedPercentage: Porcentaje de avance de puntos.
+- avgQualityScore: Promedio del puntaje de calidad de las historias.
+- undocumentedCount: Cantidad de historias sin criterios de aceptación o sin DoD.
+
+Retorna obligatoriamente un JSON estructurado con el siguiente formato exacto, sin comentarios, sin envoltorios markdown, solo el JSON puro:
+{
+  "metrics": {
+    "totalPoints": X,
+    "completedPoints": Y,
+    "completedPercentage": Z,
+    "avgQualityScore": W,
+    "undocumentedCount": K
+  },
+  "items": [
+    {
+      "id": "123",
+      "title": "...",
+      "points": Y,
+      "state": "...",
+      "assignedMember": "...",
+      "hasAcceptanceCriteria": true/false,
+      "hasDoD": true/false,
+      "qualityScore": Q,
+      "linkedTasksCount": T,
+      "feedback": "..."
+    }
+  ]
+}
+

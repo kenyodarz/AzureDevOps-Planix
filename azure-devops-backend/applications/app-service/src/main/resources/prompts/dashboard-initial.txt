@@ -1,0 +1,51 @@
+#~ PLANTILLA: dashboard-initial
+#~ Origen: DevOpsDashboardUseCase.DASHBOARD_INITIAL_PROMPT (líneas 66-106 antes de la Fase 04).
+#~ Copia LITERAL. Reformatear cambia el comportamiento del LLM.
+#~
+#~ Reparto por dueño para la migración D-35:
+#~   [MCP]    "REGLAS CRÍTICAS PARA CONSULTAS WIQL" (los 2 puntos).
+#~   [AGENTE] "Para esta fase inicial..." y "Calcula métricas agregadas básicas..." — es la
+#~            estrategia de dos pasos (listar rápido, auditar después), decisión del cerebro.
+#~   [BFF]    Desde "Retorna obligatoriamente un JSON" hasta el final — contrato de
+#~            deserialización. NO migra.
+#~
+#~ Variables: ${org} ${project} ${cell} ${sprint}
+Usa las herramientas de Azure DevOps para listar los Work Items (User Stories y Habilitadores) del proyecto.
+La organización de Azure DevOps a usar en las herramientas es "${org}" y el proyecto es "${project}".
+Los ítems deben pertenecer específicamente a la célula/equipo "${cell}" y al sprint/iteración "${sprint}".
+
+REGLAS CRÍTICAS PARA CONSULTAS WIQL (Azure DevOps):
+1. Al construir consultas WIQL, debes filtrar por el proyecto usando 'System.TeamProject' comparándolo únicamente con el macro '@project' o el nombre del proyecto, de la siguiente forma: [System.TeamProject] = @project. NUNCA uses el UUID del proyecto.
+2. NUNCA utilices los operadores 'CONTAINS' o 'LIKE' sobre campos de ruta como 'System.AreaPath' o 'System.IterationPath', ya que no son válidos para estos tipos de campo y provocarán un error '400 Bad Request'. En su lugar, debes usar el operador '=' (igual) para la ruta completa exacta, o 'UNDER' para rutas jerárquicas inferiores.
+
+Para esta fase inicial, solo necesitamos listar los ítems rápidamente. NO analices la calidad de la documentación ni DoD en este paso. El campo "assignedMember" debe corresponder a la persona asignada al Work Item (System.AssignedTo).
+Defina todos los campos de chequeo (hasAcceptanceCriteria, hasDoD) como false y qualityScore como 0 de momento.
+
+Calcula métricas agregadas básicas (totalPoints, completedPoints, completedPercentage) usando los Story Points.
+avgQualityScore debe ser 0 y undocumentedCount debe ser 0 en esta fase.
+
+Retorna obligatoriamente un JSON estructurado con el siguiente formato exacto, sin comentarios, sin envoltorios markdown, solo el JSON puro:
+{
+  "metrics": {
+    "totalPoints": X,
+    "completedPoints": Y,
+    "completedPercentage": Z,
+    "avgQualityScore": 0,
+    "undocumentedCount": 0
+  },
+  "items": [
+    {
+      "id": "123",
+      "title": "...",
+      "points": Y,
+      "state": "...",
+      "assignedMember": "...",
+      "hasAcceptanceCriteria": false,
+      "hasDoD": false,
+      "qualityScore": 0,
+      "linkedTasksCount": 0,
+      "feedback": ""
+    }
+  ]
+}
+

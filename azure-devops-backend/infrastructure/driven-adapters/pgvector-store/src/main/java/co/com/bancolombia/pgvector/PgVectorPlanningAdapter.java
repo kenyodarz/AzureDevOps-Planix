@@ -2,16 +2,17 @@ package co.com.bancolombia.pgvector;
 
 import co.com.bancolombia.model.planning.PlanningChunk;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
+import co.com.bancolombia.pgvector.config.PgVectorProperties;
+import co.com.bancolombia.pgvector.entity.PlanningChunkEntity;
+import co.com.bancolombia.pgvector.entity.PlanningChunkEntityMapper;
 import co.com.bancolombia.pgvector.exceptions.PlanningVectorStoreException;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,6 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Component
 @Primary
-@RequiredArgsConstructor
 @Slf4j
 public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
 
@@ -36,11 +36,24 @@ public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
     private final JdbcTemplate jdbcTemplate;
     private final JsonMapper jsonMapper;
 
-    @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
-    private String tableName;
+    /**
+     * <b>Fase 08 (T-05).</b> Estos dos valores llegaban por {@code @Value} <b>sobre campos</b>,
+     * que es lo que <i>Rule_2.7</i> penaliza: un campo anotado no puede ser {@code final} y el
+     * objeto existe un instante en estado incompleto. Ahora entran por constructor desde
+     * {@link PgVectorProperties} y son finales. El cuerpo de la clase no cambia: sigue leyendo
+     * {@code tableName} y {@code similarityThreshold}.
+     */
+    private final String tableName;
+    private final double similarityThreshold;
 
-    @Value("${spring.ai.vectorstore.pgvector.similarity-threshold:0.75}")
-    private double similarityThreshold;
+    public PgVectorPlanningAdapter(VectorStore vectorStore, JdbcTemplate jdbcTemplate,
+            JsonMapper jsonMapper, PgVectorProperties properties) {
+        this.vectorStore = vectorStore;
+        this.jdbcTemplate = jdbcTemplate;
+        this.jsonMapper = jsonMapper;
+        this.tableName = properties.tableName();
+        this.similarityThreshold = properties.similarityThreshold();
+    }
 
     @Override
     public Mono<Void> saveChunks(List<PlanningChunk> chunks) {
@@ -187,16 +200,7 @@ public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
                     try {
                         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, initiativeId);
                         return rows.stream()
-                                .map(row -> {
-                                    String chunkJsonValue = (String) row.get(CHUNK_JSON_KEY);
-                                    try {
-                                        return jsonMapper.readValue(chunkJsonValue, PlanningChunk.class);
-                                    } catch (Exception e) {
-                                        throw new IllegalStateException(
-                                                "Error al deserializar PlanningChunk desde la base de datos",
-                                                e);
-                                    }
-                                })
+                                .map(row -> deserializeChunk((String) row.get(CHUNK_JSON_KEY)))
                                 .toList();
                     } catch (Exception e) {
                         log.error("Error al obtener chunks para la iniciativa {} en la tabla {}",
@@ -216,11 +220,29 @@ public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
         }
     }
 
+    /**
+     * Serializa la <b>entidad de persistencia</b>, no el modelo de dominio (D-14). Antes de la Fase
+     * 07 aquí se serializaba {@code PlanningChunk} directamente, de modo que un renombrado en el
+     * dominio cambiaba el formato almacenado sin que nadie se enterara.
+     */
     private String serializeChunk(PlanningChunk chunk) {
         try {
-            return jsonMapper.writeValueAsString(chunk);
+            return jsonMapper.writeValueAsString(PlanningChunkEntityMapper.toEntity(chunk));
         } catch (Exception e) {
             throw new IllegalArgumentException("Error al serializar el chunk a JSON string", e);
+        }
+    }
+
+    /**
+     * Contrapartida de {@link #serializeChunk}: se lee la entidad y se traduce al dominio (D-14).
+     */
+    private PlanningChunk deserializeChunk(String chunkJsonValue) {
+        try {
+            return PlanningChunkEntityMapper.toDomain(
+                    jsonMapper.readValue(chunkJsonValue, PlanningChunkEntity.class));
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Error al deserializar PlanningChunk desde base de datos", e);
         }
     }
 
@@ -230,11 +252,6 @@ public class PgVectorPlanningAdapter implements PlanningVectorStorePort {
             throw new IllegalStateException(
                     "Metadata '" + CHUNK_JSON_KEY + "' no encontrada en el documento vectorial");
         }
-        try {
-            return jsonMapper.readValue(chunkJsonValue, PlanningChunk.class);
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    "Error al deserializar PlanningChunk desde base de datos", e);
-        }
+        return deserializeChunk(chunkJsonValue);
     }
 }

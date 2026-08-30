@@ -10,6 +10,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -22,10 +23,19 @@ import tools.jackson.databind.json.JsonMapper;
  * Sigue el patrón establecido en AgentRegistry para consumir el modelo de embeddings local.
  */
 @Configuration
+@EnableConfigurationProperties(PgVectorProperties.class)
 public class PgVectorConfig {
 
-    @Value("${spring.ai.vectorstore.pgvector.table-name:planning_chunks}")
-    private String tableName;
+    /**
+     * <b>Fase 08 (T-05).</b> Antes había aquí un {@code @Value} sobre campo con el nombre de
+     * tabla, y otro idéntico en {@code PgVectorPlanningAdapter}. Ahora los dos leen el mismo
+     * {@link PgVectorProperties}, así que no pueden divergir.
+     */
+    private final PgVectorProperties properties;
+
+    public PgVectorConfig(PgVectorProperties properties) {
+        this.properties = properties;
+    }
 
     /**
      * Bean de EmbeddingModel personalizado que invoca al servicio localmente en
@@ -132,7 +142,7 @@ public class PgVectorConfig {
     @Primary
     public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
-                .vectorTableName(tableName)
+                .vectorTableName(properties.tableName())
                 .initializeSchema(
                         false) // Deshabilitado para crear la tabla de forma controlada vía DDL sql
                 .build();

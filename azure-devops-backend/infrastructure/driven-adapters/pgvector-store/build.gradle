@@ -5,6 +5,15 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-pgvector-store:2.0.0'
     implementation 'org.postgresql:postgresql'
 
+    // Modelo de embeddings (spring.ai.openai.embedding.model). PgVectorStore necesita un
+    // EmbeddingModel en el contexto para poder indexar y buscar.
+    //
+    // Fase 08 (D-32, B-11): esta dependencia estaba declarada en el módulo `mcp-client`, que se
+    // eliminó por no hablar el BFF con ningún MCP. `mcp-client` era el portador silencioso del
+    // starter de OpenAI para todo el proyecto: borrarlo sin mover esto habría dejado al vector
+    // store sin EmbeddingModel y el fallo habría aparecido en arranque, lejos de su causa.
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai:2.0.0'
+
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework:spring-web'
     implementation 'org.springframework.boot:spring-boot-starter'

@@ -1,0 +1,40 @@
+#~ PLANTILLA: batch-audit
+#~ Origen: DevOpsDashboardUseCase.BATCH_AUDIT_PROMPT (líneas 107-133 antes de la Fase 04).
+#~ Copia LITERAL. Reformatear cambia el comportamiento del LLM.
+#~
+#~ OJO: el orden de ${project} y ${org} está invertido respecto a las otras dos plantillas.
+#~ Es el comportamiento actual, congelado por DevOpsDashboardUseCaseTest. No se corrige aquí.
+#~
+#~ Reparto por dueño para la migración D-35:
+#~   [MCP]    La mención a la herramienta `getWorkItem` — quien define la herramienta define su uso.
+#~   [AGENTE] "Sigue estas reglas para calcular" (los 5 puntos) — definición de calidad (DP-01).
+#~   [BFF]    Desde "Retorna obligatoriamente un JSON" hasta el final — es el mapa de actualización
+#~            que Handler deserializa a BatchUpdatesEvent. NO migra.
+#~
+#~ Variables: ${batchSize} ${project} ${org} ${idsCsv}
+Analiza detalladamente la calidad de la documentación de los siguientes ${batchSize} Work Items en el proyecto "${project}" de la organización "${org}".
+Usa la herramienta `getWorkItem` para cada uno de los IDs dados para obtener su descripción, criterios de aceptación, DoD y tareas hijas.
+
+IDs a analizar: ${idsCsv}
+
+Sigue estas reglas para calcular:
+1. contains 'Criterios de Aceptación' o escenario estructurado -> hasAcceptanceCriteria = true.
+2. hasDoD = true si menciona criterios para el DoD.
+3. linkedTasksCount es el número de dependencias o tareas hijas vinculadas que tenga.
+4. Calcula qualityScore (0-100) según la solidez de la documentación.
+5. En 'feedback', genera una frase corta y descriptiva en español explicando qué le hace falta al ítem (ej: "Falta definición de criterios de aceptación", "DoD incompleto" o "Excelente documentación" si el score es >= 80).
+
+Retorna obligatoriamente un JSON estructurado en el formato exacto de mapa de actualización, sin comentarios, sin envoltorios markdown, solo el JSON puro:
+{
+  "updates": [
+    {
+      "id": "...",
+      "hasAcceptanceCriteria": true/false,
+      "hasDoD": true/false,
+      "qualityScore": Q,
+      "linkedTasksCount": T,
+      "feedback": "..."
+    }
+  ]
+}
+

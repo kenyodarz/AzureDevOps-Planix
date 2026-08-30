@@ -1,0 +1,60 @@
+{
+  "metrics": {
+    "totalPoints": 29,
+    "completedPoints": 13,
+    "completedPercentage": 44,
+    "avgQualityScore": 78,
+    "undocumentedCount": 2
+  },
+  "items": [
+    {
+      "id": "1001",
+      "title": "BFF Aegis Backend | HA: Desarrollar endpoints BFF para gestión de reglas",
+      "points": 8,
+      "state": "Approved",
+      "assignedMember": "Jorge Mario Mina Diaz",
+      "hasAcceptanceCriteria": true,
+      "hasDoD": false,
+      "qualityScore": 66,
+      "linkedTasksCount": 6,
+      "feedback": "El ítem cuenta con criterios de aceptación pero le falta definir el DoD (Definition of Done)."
+    },
+    {
+      "id": "1002",
+      "title": "Core Engine | feat: Procesador de reglas de negocio en memoria",
+      "points": 5,
+      "state": "Done",
+      "assignedMember": "Giancarlo Vasquez Sepulveda",
+      "hasAcceptanceCriteria": true,
+      "hasDoD": true,
+      "qualityScore": 100,
+      "linkedTasksCount": 8,
+      "feedback": "Excelente documentación. Cumple con DoD y Criterios de Aceptación estructurados."
+    },
+    {
+      "id": "1003",
+      "title": "Portal Angular | UI: Implementar panel de simulación de reglas",
+      "points": 8,
+      "state": "Committed",
+      "assignedMember": "Jorge Mario Mina Diaz",
+      "hasAcceptanceCriteria": false,
+      "hasDoD": false,
+      "qualityScore": 33,
+      "linkedTasksCount": 2,
+      "feedback": "Faltan criterios de aceptación y definir el DoD en el backlog."
+    },
+    {
+      "id": "1004",
+      "title": "Configurador DB | chore: Script de inicialización PostgreSQL",
+      "points": 8,
+      "state": "Done",
+      "assignedMember": "Giancarlo Vasquez Sepulveda",
+      "hasAcceptanceCriteria": true,
+      "hasDoD": true,
+      "qualityScore": 100,
+      "linkedTasksCount": 3,
+      "feedback": "Excelente documentación. Cumple con DoD y Criterios de Aceptación estructurados."
+    }
+  ]
+}
+
