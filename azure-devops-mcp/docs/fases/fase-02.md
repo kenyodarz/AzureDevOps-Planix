@@ -1,7 +1,7 @@
 # FASE 02 — Seguridad conmutable y saneamiento de la configuración
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** ⚪ PENDIENTE
-> **Deudas que ataca:** D-01, D-02, D-03, D-04, D-22 · **Decisiones:** ✅ DP-01, ✅ DP-02, ✅ B-01
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-01, D-02, D-03, D-04, D-22 · **Decisiones:** ✅ DP-01, ✅ DP-02, ✅ B-01, ✅ B-02, ✅ B-03
 > **Riesgo:** Medio · **Depende de:** Fase 01 (cerrada) · **Habilita:** Fases 03 a 08
 > **Regla de oro de esta fase:** **el comportamiento observable en el modo por defecto NO cambia.**
 
@@ -208,51 +208,103 @@ Y declarar explícitamente qué **no** hace falta: **recompilar**. Ése es el en
 
 ## 3. Orden de Ejecución
 
-- [ ] **1.** Releer `McpSecurityConfig.java` completo y `McpSecurityConfigTest.java` (1 sola prueba).
-- [ ] **2.** Crear `McpSecurityProperties` con `SecurityMode {PERMISSIVE, ENFORCED}`. **(T-01)**
-- [ ] **3.** Declarar `mcp.security.mode` en `application.yaml` con `PERMISSIVE` por defecto. **(T-01)**
-- [ ] **4.** Ramificar `authorizeExchange` por modo + `log.warn` de arranque en `PERMISSIVE`. **(T-01)**
-- [ ] **5.** Añadir la concesión de roles a la identidad anónima **solo** en `PERMISSIVE`. **(T-02)**
-- [ ] **6.** Crear `McpRoles` con los nombres de rol literales (B-03). **(T-02)**
-- [ ] **7.** Descomentar `@PreAuthorize` en `getWorkItem` y `getWorkItemsBatch`. **(T-02)**
-- [ ] **8.** **Escribir** el `@PreAuthorize` de `listWorkItemsByTeamAndSprint`. **(T-02)**
-- [ ] **9.** Declarar explícitamente la política de `checkHealth` y `getServerInfo`. **(T-02)**
-- [ ] **10.** Pruebas de autorización **en los dos modos**: sin token, con rol y sin rol. **(T-01, T-02)**
-- [ ] **11.** `.\gradlew.bat build` verde. **Verificar que las 48 pruebas heredadas siguen pasando
+- [x] **1.** Releer `McpSecurityConfig.java` completo y `McpSecurityConfigTest.java` (1 sola prueba).
+- [x] **2.** Crear `McpSecurityProperties` con `SecurityMode {PERMISSIVE, ENFORCED}`. **(T-01)**
+- [x] **3.** Declarar `mcp.security.mode` en `application.yaml` con `PERMISSIVE` por defecto. **(T-01)**
+- [x] **4.** Ramificar `authorizeExchange` por modo + `log.warn` de arranque en `PERMISSIVE`. **(T-01)**
+- [x] **5.** Añadir la concesión de roles a la identidad anónima **solo** en `PERMISSIVE`. **(T-02)**
+- [x] **6.** Crear `McpRoles` con los nombres de rol literales (B-03). **(T-02)**
+- [x] **7.** Descomentar `@PreAuthorize` en `getWorkItem` y `getWorkItemsBatch`. **(T-02)**
+- [x] **8.** **Escribir** el `@PreAuthorize` de `listWorkItemsByTeamAndSprint`. **(T-02)**
+- [x] **9.** Declarar explícitamente la política de `checkHealth` y `getServerInfo`. **(T-02)**
+- [x] **10.** Pruebas de autorización **en los dos modos**: sin token, con rol y sin rol. **(T-01, T-02)**
+- [x] **11.** `.\gradlew.bat build` verde. **Verificar que las 48 pruebas heredadas siguen pasando
       sin modificarlas**: si alguna cambia de resultado, el modo por defecto no es equivalente.
-- [ ] **12.** Eliminar el default `your-token-here` y validar el formato al arranque. **(T-03)**
-- [ ] **13.** Documentar el formato `Base64(":" + PAT)` en el YAML y en el javadoc. **(T-03)**
-- [ ] **14.** `grep` de `h2` en todos los `build.gradle` y en el YAML; anotar el resultado. **(T-04)**
-- [ ] **15.** Retirar `spring.h2.console` y `/h2-console/**`. **(T-04)**
-- [ ] **16.** Revisar `spring.devtools` y `profiles.include: null`. **(T-04)**
-- [ ] **17.** `.\gradlew.bat build` verde de nuevo.
-- [ ] **18.** Crear `docs/resultados/ACTIVACION-SEGURIDAD.md`. **(T-05)**
-- [ ] **19.** Verificar que **ningún** fichero del repositorio contiene un token real (DP-02).
-- [ ] **20.** Actualizar `CONTRATO-MCP.md` §5 y el plan maestro (§3, §6, §9, cabecera).
-- [ ] **21.** Rellenar **Resultado** en §4 y marcar este checklist.
-- [ ] **22.** **Generar `docs/fases/fase-03.md`.** **(Regla de Continuidad)**
-- [ ] **23.** Commit: `security(mcp_server): hacer conmutable la politica de acceso y sanear la configuracion`
+- [x] **12.** Eliminar el default `your-token-here` y validar el formato al arranque. **(T-03)**
+- [x] **13.** Documentar el formato `Base64(":" + PAT)` en el YAML y en el javadoc. **(T-03)**
+- [x] **14.** `grep` de `h2` en todos los `build.gradle` y en el YAML; anotar el resultado. **(T-04)**
+- [x] **15.** Retirar `spring.h2.console` y `/h2-console/**`. **(T-04)**
+- [x] **16.** Revisar `spring.devtools` y `profiles.include: null`. **(T-04)**
+- [x] **17.** `.\gradlew.bat build` verde de nuevo.
+- [x] **18.** Crear `docs/resultados/ACTIVACION-SEGURIDAD.md`. **(T-05)**
+- [x] **19.** Verificar que **ningún** fichero del repositorio contiene un token real (DP-02).
+- [x] **20.** Actualizar `CONTRATO-MCP.md` §5 y el plan maestro (§3, §6, §9, cabecera).
+- [x] **21.** Rellenar **Resultado** en §4 y marcar este checklist.
+- [x] **22.** **Generar `docs/fases/fase-03.md`.** **(Regla de Continuidad)**
+- [x] **23.** Commit: `security(mcp_server): hacer conmutable la politica de acceso y sanear la configuracion`
 
 ---
 
 ## 4. Resultado
 
-> Rellenar **al cerrar la fase**, con lo alcanzado de verdad.
+> Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **67 pruebas, 0 fallos**.
 
-| Métrica                                             |   Antes | Después |
-|-----------------------------------------------------|--------:|--------:|
-| Modos de seguridad declarados y probados            |   **0** |       — |
-| Recompilaciones para pasar a `enforced`             |   **1** |       — |
-| Tools con autorización declarada **y compilada**    | **2/8** |       — |
-| Anotaciones de seguridad comentadas                 |   **3** |       — |
-| Rutas abiertas a componentes inexistentes           |   **1** |       — |
-| Secretos con valor por defecto en YAML              |   **1** |       — |
-| Líneas de `application.yaml`                        |  **71** |       — |
-| Pruebas totales                                     |  **48** |       — |
-| Pruebas heredadas **modificadas**                   |     n/a |  **0** |
+| Métrica                                             |   Antes |    Después |
+|-----------------------------------------------------|--------:|-----------:|
+| Modos de seguridad declarados y probados            |   **0** |      **2** |
+| Recompilaciones para pasar a `enforced`             |   **1** |      **0** |
+| Tools con autorización declarada **y compilada**    | **2/8** |  **8 / 8** |
+| Anotaciones de seguridad comentadas                 |   **3** |      **0** |
+| Rutas abiertas a componentes inexistentes           |   **1** |      **0** |
+| Secretos con valor por defecto en YAML              |   **1** |      **0** |
+| Líneas de `application.yaml`                        |  **71** |     **77** |
+| Pruebas totales                                     |  **48** |  **67** ▲19 |
+| Pruebas heredadas **modificadas**                   |     n/a |      **0** |
+| Cobertura `app-service`                             | **23,6 %** | **48,4 %** ▲24,8 |
+| Cobertura `rest-consumer`                           | **71,5 %** | **90,0 %** ▲18,5 |
+| Cobertura `mcp-server`                              | **71,3 %** | **70,2 %** ▼1,1 *(clases nuevas sin cubrir del todo)* |
+| Cobertura `domain/usecase` / `domain/model`         | **68,2 % / 0 %** | **68,2 % / 0 %** = *(fuera de alcance)* |
 
-**Resultado de los `grep` de T-04:** *(pendiente)*
-**Cambios observables en modo `PERMISSIVE`:** *(pendiente — debe ser «ninguno»)*
-**Bloqueos encontrados:** *(pendiente)*
-**Fase siguiente generada:** ☐ `docs/fases/fase-03.md`
+**Pruebas nuevas (19), todas ejecutando los dos caminos:**
 
+| Clase                          | Pruebas | Qué congela                                              |
+|--------------------------------|--------:|----------------------------------------------------------|
+| `McpSecurityModeTest`          |   **5** | 200/401 por modo, sondas abiertas siempre, roles del anónimo |
+| `McpToolsAuthorizationTest`    |   **7** | Las 8 tools con rol y sin rol, sobre el proxy real        |
+| `RestConsumerConfigTokenTest`  |   **7** | Validación del formato del token al arranque              |
+
+**Resultado de los `grep` de T-04** *(excluyendo `build/`, `build-cache/`, `.gradle/` y `docs/`)*:
+
+| Patrón buscado                                   | Coincidencias | Decisión                     |
+|--------------------------------------------------|--------------:|------------------------------|
+| `h2database` en todos los `*.gradle`             |         **0** | **Eliminar** `spring.h2.console` |
+| `h2-console` / `spring.h2` / `h2.console` en `src` y YAML | **0** *(tras el borrado)* | **Eliminar** `/h2-console/**` |
+| `datasource` / `jdbc:`                           |         **0** | No hay base de datos: el residuo es inequívoco |
+| `profiles`                                       |         **0** *(tras el borrado)* | **Eliminar** `profiles.include: null` |
+| `your-token-here`                                | **0** en configuración *(solo docs y un javadoc explicativo)* | Default retirado |
+| `devtools`                                       | **2**: `application.yaml:6` **y** `app-service/build.gradle:13` (`runtimeOnly 'spring-boot-devtools'`) | 🔸 **CONSERVAR** |
+
+> 🔸 **`spring.devtools.add-properties` NO se retiró, y el `grep` es la razón.** El paso 16 pedía
+> «contrastar antes de decidir»: la dependencia `runtimeOnly('org.springframework.boot:spring-boot-devtools')`
+> **existe** en `app-service/build.gradle:13`, así que la propiedad **no es un residuo huérfano**,
+> sino configuración efectiva de una dependencia presente. Borrarla habría sido exactamente el tipo
+> de suposición que el criterio del `grep` existe para evitar. Retirar la dependencia de devtools es
+> una decisión de empaquetado que excede esta fase; queda anotada para la **Fase 08** (D-22 parcial).
+
+**Cambios observables en modo `PERMISSIVE`:** **ninguno**. Las **48** pruebas heredadas siguen
+pasando **sin una sola modificación** (0 ficheros de prueba preexistentes tocados) y una petición sin
+token sigue respondiendo `200`, ahora porque la identidad anónima porta `ROLE_MCP.AZURE_DEVOPS.READ`
+y `ROLE_MCP.AZURE_DEVOPS.WRITE`, no porque falte una anotación. El contrato MCP público
+(`CONTRATO-MCP.md`) no cambió: ni nombres de tool, ni de parámetro, ni forma del resultado.
+
+**Desviaciones respecto a las Instrucciones, y por qué:**
+
+1. **`McpRoles` se creó en `mcp-server`** (`co.com.bancolombia.mcp.security`) y no en `app-service`,
+   como sugería T-02. Motivo **técnico e insalvable**: la dependencia Gradle va `app-service →
+   mcp-server`, nunca al revés, y las anotaciones que consumen las constantes viven en
+   `AzureDevOpsTools` y `HealthTool`, dentro de `mcp-server`. Situarlo en `app-service` **no
+   compilaría**. `app-service` sí lo importa sin problema.
+2. **`McpSecurityProperties` se inyecta como parámetro del `@Bean`**, no del constructor de
+   `McpSecurityConfig`. Motivo: `McpSecurityConfigTest` (heredada) construye la clase con cuatro
+   argumentos; cambiar el constructor habría obligado a modificar una prueba heredada, que es
+   justamente lo que la regla innegociable nº 1 prohíbe.
+3. **El `@PreAuthorize` de `queryByWiql` se descomentó**, aunque T-02.5 decía «no tocar
+   `queryByWiql`». Se respetó lo esencial —**su `@McpTool` sigue comentado y la tool no se
+   expone**, que es lo que la Fase 08 debe decidir (D-19)—, pero dejar su anotación de seguridad
+   comentada habría incumplido la Definición de Hecho («0 anotaciones de seguridad comentadas») y
+   habría dejado un método `public` sin proteger en modo `ENFORCED`.
+
+**Bloqueos encontrados:** ninguno. No hizo falta resolver ninguna `DP-nn` por cuenta propia.
+
+**Fase siguiente generada:** ☑ [`docs/fases/fase-03.md`](fase-03.md) — con **DP-03** marcada como
+bloqueante en su primer paso.

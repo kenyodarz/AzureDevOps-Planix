@@ -43,7 +43,7 @@
 | `apiVersion`  | `String` | ❌          | Por defecto `7.1`                       |
 
 **Retorna:** `Mono<WorkItem>` → `{ id, rev, fields: Map<String,Object>, relations[], url }`
-**Autorización:** 🟠 `@PreAuthorize` **comentado** (`MCP.AZURE_DEVOPS.READ`)
+**Autorización:** ✅ `hasRole('MCP.AZURE_DEVOPS.READ')` *(activa desde la Fase 02)*
 
 ### 2.2 `createWorkItem`
 
@@ -83,7 +83,7 @@
 | `apiVersion`    | `String` | ❌          | Por defecto `7.0`                                       |
 
 **Retorna:** `Mono<WiqlResult>` → `{ queryType, queryResultType, asOf, workItems: [{ id, url }] }`
-**Autorización:** 🔴 **ninguna, ni siquiera comentada**
+**Autorización:** ✅ `hasRole('MCP.AZURE_DEVOPS.READ')` *(escrita en la Fase 02; antes no existía ni comentada)*
 
 **Es la tool más usada y la única con lógica compuesta.** Su sentencia WIQL está congelada carácter
 a carácter en `WiqlCharacterizationTest` (Fase 01, T-02). Contrato interno observable:
@@ -121,7 +121,7 @@ contrato de facto, aunque no estén documentados en la descripción de la tool):
 | `apiVersion`  | `String`        | ❌          | Por defecto `7.1`                            |
 
 **Retorna:** `Mono<List<WorkItem>>`
-**Autorización:** 🟠 `@PreAuthorize` **comentado**
+**Autorización:** ✅ `hasRole('MCP.AZURE_DEVOPS.READ')` *(activa desde la Fase 02)*
 
 > El entry-point construye internamente un **`WorkItemsBatchRequest`**, que es un modelo de dominio
 > (§3) y la clase que provoca la violación de ArchUnit `Rule_2.2` (D-17).
@@ -130,8 +130,8 @@ contrato de facto, aunque no estén documentados en la descripción de la tool):
 
 | Tool            | Parámetros | Retorna       | Autorización |
 |-----------------|------------|---------------|--------------|
-| `checkHealth`   | ninguno    | `Mono<String>` | 🔴 ninguna   |
-| `getServerInfo` | ninguno    | `Mono<String>` | 🔴 ninguna   |
+| `checkHealth`   | ninguno    | `Mono<String>` | ✅ `permitAll()` **declarado** *(Fase 02)* |
+| `getServerInfo` | ninguno    | `Mono<String>` | ✅ `permitAll()` **declarado** *(Fase 02)* |
 
 `getServerInfo` devuelve la cadena literal `"Server:  v1.0.0 - Package: co.com.bancolombia"`, con la
 versión hardcodeada y **un placeholder sin rellenar** (doble espacio tras `Server:`). Ambas duplican
@@ -164,7 +164,7 @@ Y en el **retorno**, la misma fuga en sentido contrario: `WorkItem`, `WorkItemRe
 
 | Elemento     | Estado                                                                                     |
 |--------------|--------------------------------------------------------------------------------------------|
-| `queryByWiql`| 🟠 **Camino muerto (D-19).** El `@McpTool` está **comentado**, pero el método sigue siendo `public`, y su caso de uso, su gateway y su prueba de adaptador existen y funcionan. **No forma parte del contrato público de hoy.** La Fase 08 debe decidir: exponerla o retirarla |
+| `queryByWiql`| 🟠 **Camino muerto (D-19).** El `@McpTool` sigue **comentado**, pero el método es `public`, y su caso de uso, su gateway y su prueba de adaptador existen y funcionan. **No forma parte del contrato público de hoy.** La Fase 08 debe decidir: exponerla o retirarla. **Cambio de la Fase 02:** su `@PreAuthorize` **ya no está comentado** (`hasRole('MCP.AZURE_DEVOPS.READ')`), de modo que el método público queda protegido sin exponer la tool |
 | `@McpResource` | Capacidad `resource: true` anunciada, **cero implementaciones**                            |
 | `@McpPrompt`   | Capacidad `prompt: true` anunciada, **cero implementaciones**                              |
 
@@ -172,14 +172,31 @@ Y en el **retorno**, la misma fuga en sentido contrario: `WorkItem`, `WorkItemRe
 
 ## 5. Resumen de autorización
 
+> **Actualizado al cierre de la Fase 02 (2026-08-30).**
+
 | Estado                                    | Tools |
 |-------------------------------------------|------:|
-| ✅ Con `@PreAuthorize` **activo**         | **2** *(`createWorkItem`, `updateWorkItem`)* |
-| 🟠 Con `@PreAuthorize` **comentado**      | **3** *(`getWorkItem`, `getWorkItemsBatch`, `queryByWiql`)* |
-| 🔴 **Sin ninguna**, ni comentada          | **3** *(`listWorkItemsByTeamAndSprint`, `checkHealth`, `getServerInfo`)* |
+| ✅ Con autorización **declarada y compilada** | **8 de 8** |
+| 🟠 Con `@PreAuthorize` **comentado**      | **0** |
+| 🔴 **Sin ninguna**, ni comentada          | **0** |
 
-> Conforme a **DP-01** esto es **deliberado**: falta el Service Principal. La Fase 02 **no cambia la
-> postura**, pero sí exige que las ocho queden **declaradas y compiladas**, para que activarlas sea
-> una variable de entorno y no una recompilación. Nótese que `listWorkItemsByTeamAndSprint` —la más
-> usada— **no tiene ni la línea comentada que descomentar**: hay que escribirla.
+| Tool                          | Expresión                           |
+|-------------------------------|-------------------------------------|
+| `getWorkItem`                 | `hasRole('MCP.AZURE_DEVOPS.READ')`  |
+| `getWorkItemsBatch`           | `hasRole('MCP.AZURE_DEVOPS.READ')`  |
+| `listWorkItemsByTeamAndSprint`| `hasRole('MCP.AZURE_DEVOPS.READ')`  |
+| `queryByWiql` *(no expuesta)* | `hasRole('MCP.AZURE_DEVOPS.READ')`  |
+| `createWorkItem`              | `hasRole('MCP.AZURE_DEVOPS.WRITE')` |
+| `updateWorkItem`              | `hasRole('MCP.AZURE_DEVOPS.WRITE')` |
+| `checkHealth`                 | `permitAll()`                       |
+| `getServerInfo`               | `permitAll()`                       |
 
+Los nombres de rol **se conservaron literalmente** (B-03) y se centralizaron en
+`mcp-server/.../mcp/security/McpRoles.java`.
+
+> **El contrato público NO cambió.** Conforme a **DP-01** la postura sigue siendo laxa: el modo por
+> defecto es `PERMISSIVE` y en él la identidad anónima porta los dos roles, de modo que **una
+> llamada sin token se sigue atendiendo exactamente igual que antes**. Lo que cambió es que activar
+> la exigencia ya no requiere recompilar, sino exportar `MCP_SECURITY_MODE=ENFORCED`
+> (ver [`ACTIVACION-SEGURIDAD.md`](ACTIVACION-SEGURIDAD.md)). Las ocho expresiones se ejecutan en los
+> dos modos y están cubiertas por `McpToolsAuthorizationTest`.

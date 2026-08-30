@@ -5,12 +5,6 @@ spring:
     name: "McpAzureDevOps"
   devtools:
     add-properties: false
-  h2:
-    console:
-      enabled: true
-      path: "/h2"
-  profiles:
-    include: null
   ai:
     mcp:
       server:
@@ -38,11 +32,27 @@ spring:
           client-id: "${CLIENT_ID:dummy_client}"
 jwt:
   json-exp-roles: "/roles"
+# Postura de acceso del servidor MCP (B-02: propiedad, no perfil de Spring).
+#   PERMISSIVE -> no se exige token. Es el comportamiento historico y el valor por defecto mientras
+#                 no exista el Service Principal (DP-01). En este modo la identidad anonima recibe
+#                 los roles de lectura y escritura, de modo que los @PreAuthorize de las tools se
+#                 ejecutan sin cambiar el comportamiento observable.
+#   ENFORCED   -> toda peticion ajena a /actuator/health e /actuator/info exige un token valido.
+# Activarlo NO requiere recompilar: basta exportar MCP_SECURITY_MODE=ENFORCED.
+mcp:
+  security:
+    mode: "${MCP_SECURITY_MODE:PERMISSIVE}"
 adapter:
   restconsumer:
     timeout: 5000
     url: "https://dev.azure.com"
-    token: "${AZURE_DEVOPS_TOKEN:your-token-here}"
+    # Credencial de Azure DevOps. Formato esperado: Base64(":" + PAT) -- usuario VACIO, dos puntos
+    # y el Personal Access Token. El adaptador solo antepone el prefijo "Basic "; NO codifica.
+    # El PAT no es la fusion de dos claves: el usuario se ignora, por eso "loquesea:PAT" tambien
+    # funciona. Un PAT crudo aqui produce un 401 mudo, por eso el valor se valida al arranque.
+    # Sin valor por defecto a proposito (D-04): la credencial viene de variable de entorno o
+    # secreto (DP-02) y jamas se versiona en este repositorio.
+    token: "${AZURE_DEVOPS_TOKEN:}"
 management:
   health:
     circuitbreakers:

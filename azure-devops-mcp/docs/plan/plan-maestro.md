@@ -6,8 +6,8 @@
 > [`COMMIT_RULES.md`](../../COMMIT_RULES.md)
 > **Precedentes:** `azure-devops-agent/docs/resultados/CIERRE-DEL-PLAN.md` ·
 > `azure-devops-backend/docs/resultados/CIERRE-DEL-PLAN.md`
-> **Fases:** 8 (01 → 08) · **Fase activa:** [`docs/fases/fase-02.md`](../fases/fase-02.md) ·
-> **Completadas:** **01**
+> **Fases:** 8 (01 → 08) · **Fase activa:** [`docs/fases/fase-03.md`](../fases/fase-03.md) ·
+> **Completadas:** **01, 02**
 
 ---
 
@@ -190,10 +190,10 @@ incorporan aquí con su identificador original entre paréntesis:
 
 | ID       | Deuda                                                                                                                                                                                                                | Regla violada        |
 |----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
-| **D-01** | La postura de acceso está **cableada en código** (`.anyExchange().permitAll()`), no configurada. Pasar a `enforced` exige **recompilar**, así que el binario de producción **no será** el probado en la POC — lo contrario del objetivo de DP-01 | Configuración, DP-01 |
-| **D-02** | Los `@PreAuthorize` de lectura están **comentados** y `listWorkItemsByTeamAndSprint` **nunca tuvo ninguno**. Código comentado **no compila ni se prueba**: el día del SP se activarían por primera vez en producción, y en la tool más usada hay que **acordarse de escribirlo** | Código muerto, riesgo latente |
-| **D-03** | `spring.h2.console.enabled: true` **y** `/h2-console/**` con `permitAll`, en un proyecto **sin dependencia H2 ni datasource**: esto **no es** una decisión de la POC, es un residuo del scaffold                       | Seguridad            |
-| **D-04** | `adapter.restconsumer.token` con valor por defecto `your-token-here`: la aplicación **arranca sin credencial** y falla después con un 401 opaco. Además `RestConsumerConfig` **asume que la propiedad ya viene en Base64** y solo antepone `Basic ` — si alguien pone el PAT crudo, el fallo es el mismo 401 mudo | S2068, arranque silencioso |
+| ~~**D-01**~~ | ✅ **SALDADA (Fase 02).** La postura de acceso es ahora **configuración**: `mcp.security.mode` (`PERMISSIVE` por defecto / `ENFORCED`), leída de `MCP_SECURITY_MODE`. **Cero recompilaciones** para endurecerla; los dos modos están probados (`McpSecurityModeTest`) | Configuración, DP-01 |
+| ~~**D-02**~~ | ✅ **SALDADA (Fase 02).** Las **8 tools** tienen autorización **declarada, compilada y ejecutada en los dos modos** (`McpToolsAuthorizationTest`), incluida `listWorkItemsByTeamAndSprint`, que nunca la tuvo. **0 anotaciones de seguridad comentadas**. Roles centralizados en `McpRoles` (B-03) | Código muerto, riesgo latente |
+| ~~**D-03**~~ | ✅ **SALDADA (Fase 02).** Retirados `spring.h2.console.*` y `/h2-console/**`, previo `grep` con **0 coincidencias** de `h2database`, `datasource` y `jdbc:` en todo el repositorio | Seguridad            |
+| ~~**D-04**~~ | ✅ **SALDADA (Fase 02).** Eliminado el default `your-token-here`; el formato `Base64(":" + PAT)` se **valida al arranque** (decodificable y con `:`) y se documenta en el YAML y en el javadoc. En `ENFORCED` la ausencia **rompe el arranque**; en `PERMISSIVE` deja un `WARN` (B-01: el formato **no** cambió) | S2068, arranque silencioso |
 | **D-05** | 🔽 **DEGRADADA a 🟡 en la Fase 01.** `UseCasesConfig` combina `@ComponentScan(..., includeFilters REGEX "^.+UseCase$")` con siete `@Bean` manuales del mismo tipo, pero **se midió y el escaneo es inerte**: cada caso de uso resuelve a **exactamente un bean**. No es un riesgo de arranque, es **código muerto que induce a error**. *Fase 08* | SRP, claridad        |
 | **D-06** | Los siete `@CircuitBreaker` nombran instancias que **no existen** en `application.yaml`, que solo declara `testGet` y `testPost`: corren con la configuración por defecto sin que nadie la haya elegido                | Operación            |
 
@@ -221,7 +221,7 @@ incorporan aquí con su identificador original entre paréntesis:
 | **D-19** | La tool `queryByWiql` tiene su `@McpTool` **comentado**: el método es público, el caso de uso y el gateway existen, pero **no se expone**. Camino muerto sin documentar | Claridad            |
 | **D-20** | `HealthTool` **duplica el actuator** y devuelve la versión hardcodeada con un placeholder sin rellenar: `"Server:  v1.0.0"`                                       | DRY                 |
 | **D-21** | `RestConsumerTest` (127 líneas) **no cubre** `getTeamFieldValues` ni `getTeamIterations`: las dos consultas que sostienen la resolución de rutas *(← D-36)*      | Cobertura           |
-| **D-22** | Residuos del scaffold en `application.yaml`: `spring.devtools`, `spring.h2.console`, `profiles.include: null`                                                    | Limpieza            |
+| **D-22** | 🔽 **SALDADA EN SU MAYOR PARTE (Fase 02).** Retirados `spring.h2.console` y `profiles.include: null`. **`spring.devtools.add-properties` se conservó deliberadamente**: el `grep` demostró que la dependencia `runtimeOnly('spring-boot-devtools')` **existe** en `app-service/build.gradle:13`, luego la propiedad no es un residuo huérfano. Retirar la dependencia es una decisión de empaquetado → *Fase 08* | Limpieza            |
 | **D-23** | `McpAuditAspect` llama a `joinPoint.proceed()` **antes** de resolver el contexto de seguridad y **no audita** la rama no reactiva (solo un `warn`)               | Auditoría           |
 | **D-24** | Sin `timeout` reactivo por operación: solo hay timeouts de Netty de 5 s **compartidos** por todas las llamadas, incluida la de lote                              | Resiliencia         |
 | **D-25** | 🟠 **El informe de ArchUnit para Sonar sale vacío pese a existir una violación real.** `checkWithWarning` descarta en silencio toda incidencia cuyo fichero no resuelva: los **seis** `issues.json` son `{"issues":[],"rules":[]}` mientras el log grita `Rule_2.2 ... violated (1 times)`. **SonarQube nunca ha visto una sola violación de arquitectura de este repositorio** *(hallazgo de la Fase 01)* | Observabilidad      |
@@ -343,44 +343,46 @@ su propio `fase-NN.md`, sección **Resultado**.
 
 ## 6. Criterios de aceptación
 
-| Métrica                                                        |        Baseline |   Objetivo |
-|----------------------------------------------------------------|----------------:|-----------:|
-| Modos de seguridad declarados y probados                       |           **0** | **2** *(`permissive` + `enforced`)* |
-| Recompilaciones necesarias para pasar a `enforced`             |           **1** |      **0** |
-| Tools MCP con autorización declarada **y compilada**           |           **2** |  **8 de 8** |
-| Anotaciones de seguridad comentadas                            |           **3** |      **0** |
-| Rutas abiertas a componentes inexistentes (`/h2-console/**`)   |           **1** |      **0** |
-| Secretos con valor por defecto en YAML                         |           **1** |      **0** |
-| Arranques posibles sin credencial en modo `enforced`           |         **sí** |     **no** |
-| Mecanismos de wiring por bean                                  |           **2** |      **1** |
-| Cortacircuitos declarados **sin** configuración correspondiente|           **7** |      **0** |
-| Líneas de `AzureDevOpsTools`                                   |         **267** |    **≤ 120** |
-| Líneas de `RestConsumer` (clase única)                         |         **237** | **≤ 120 por adaptador resultante** |
-| Clases productivas > 200 líneas                                |           **2** |      **0** |
-| Reglas de negocio en `entry-points`                            |       **4** *(WIQL, rutas, tipos, defaults)* | **0** |
-| Sentencias WIQL construidas con `String.format`                |           **1** |      **0** |
-| Cálculos del año por calendario                                |           **1** | **1, medido y en un solo punto del dominio** |
-| Modelos de dominio serializados por Jackson/`WebClient`        |           **3** |      **0** |
-| Modelos de dominio deserializados como `@McpToolParam`         |           **2** |      **0** |
-| Mappers en la frontera de salida                               |           **0** |  **≥ 3**   |
-| Excepciones de dominio                                         |           **0** |  **≥ 3**   |
-| Errores técnicos que llegan crudos al cliente MCP              |         **todos** |    **0** |
-| Puertos por agregado (hoy por operación CRUD)                  |       **7 / 1** | **≤ 3 puertos, agrupados por agregado** |
-| Puertos huérfanos                                              |           **1** |      **0** |
-| Versiones de API hardcodeadas                                  |           **7** |      **0** |
-| Clases de `domain/model` con `@Setter`                         |          **21** |      **0** |
-| ArchUnit `Rule_2.2` (violaciones reales)                       |           **1** |      **0** |
-| ArchUnit — violaciones **exportadas a Sonar**                  | **0 de 1** *(informe roto, D-25)* | **= reales** |
-| ArchUnit ejecutado como                                        |     **warning** | **error**  |
-| Módulos sin carpeta de pruebas                                 |           **1** *(`domain/model`)* | **0** |
-| Tests totales                                                  |          **33** |  **≥ 120** |
-| Tests fallando                                                 |           **0** |      **0** |
-| Cobertura `domain/model`                                       | **0 %** *(sin pruebas)* |  **≥ 90 %** |
-| Cobertura `domain/usecase`                                     |      **68,2 %** |   **≥ 90 %** |
-| Cobertura `mcp-server` / `rest-consumer` / `app-service`       | **70,5 % / 51,1 % / 17,0 %** | **≥ 80 / 80 / 60 %** |
-| Mutaciones eliminadas (Pitest)                                 |      **5 / 44** |   **≥ 60 %** |
-| Cobertura de `getTeamFieldValues` y `getTeamIterations`        |           **0 %** | **cubiertas** |
-| Complejidad cognitiva máx. por método                          | *por medir (Fase 04)* |     **≤ 15** |
+> Columna **Fase 02** añadida al cierre de la Fase 02 (2026-08-30) con cifras **medidas**.
+
+| Métrica                                                        |        Baseline | Fase 02 |   Objetivo |
+|----------------------------------------------------------------|----------------:|--------:|-----------:|
+| Modos de seguridad declarados y probados                       |           **0** | ✅ **2** | **2** *(`permissive` + `enforced`)* |
+| Recompilaciones necesarias para pasar a `enforced`             |           **1** | ✅ **0** |      **0** |
+| Tools MCP con autorización declarada **y compilada**           |           **2** | ✅ **8** |  **8 de 8** |
+| Anotaciones de seguridad comentadas                            |           **3** | ✅ **0** |      **0** |
+| Rutas abiertas a componentes inexistentes (`/h2-console/**`)   |           **1** | ✅ **0** |      **0** |
+| Secretos con valor por defecto en YAML                         |           **1** | ✅ **0** |      **0** |
+| Arranques posibles sin credencial en modo `enforced`           |         **sí** | ✅ **no** |     **no** |
+| Mecanismos de wiring por bean                                  |           **2** |   **2** |      **1** |
+| Cortacircuitos declarados **sin** configuración correspondiente|           **7** |   **7** |      **0** |
+| Líneas de `AzureDevOpsTools`                                   |         **267** | **275** |    **≤ 120** |
+| Líneas de `RestConsumer` (clase única)                         |         **237** | **237** | **≤ 120 por adaptador resultante** |
+| Clases productivas > 200 líneas                                |           **2** |   **2** |      **0** |
+| Reglas de negocio en `entry-points`                            |       **4** *(WIQL, rutas, tipos, defaults)* | **4** | **0** |
+| Sentencias WIQL construidas con `String.format`                |           **1** |   **1** |      **0** |
+| Cálculos del año por calendario                                |           **1** |   **1** | **1, medido y en un solo punto del dominio** |
+| Modelos de dominio serializados por Jackson/`WebClient`        |           **3** |   **3** |      **0** |
+| Modelos de dominio deserializados como `@McpToolParam`         |           **2** |   **2** |      **0** |
+| Mappers en la frontera de salida                               |           **0** |   **0** |  **≥ 3**   |
+| Excepciones de dominio                                         |           **0** |   **0** |  **≥ 3**   |
+| Errores técnicos que llegan crudos al cliente MCP              |         **todos** | **todos** |    **0** |
+| Puertos por agregado (hoy por operación CRUD)                  |       **7 / 1** | **7 / 1** | **≤ 3 puertos, agrupados por agregado** |
+| Puertos huérfanos                                              |           **1** |   **1** |      **0** |
+| Versiones de API hardcodeadas                                  |           **7** |   **7** |      **0** |
+| Clases de `domain/model` con `@Setter`                         |          **21** |  **21** |      **0** |
+| ArchUnit `Rule_2.2` (violaciones reales)                       |           **1** |   **1** |      **0** |
+| ArchUnit — violaciones **exportadas a Sonar**                  | **0 de 1** *(informe roto, D-25)* | **0 de 1** | **= reales** |
+| ArchUnit ejecutado como                                        |     **warning** | **warning** | **error**  |
+| Módulos sin carpeta de pruebas                                 |           **1** *(`domain/model`)* | **1** | **0** |
+| Tests totales                                                  |          **33** | **67** ▲19 |  **≥ 120** |
+| Tests fallando                                                 |           **0** | ✅ **0** |      **0** |
+| Cobertura `domain/model`                                       | **0 %** *(sin pruebas)* | **0 %** |  **≥ 90 %** |
+| Cobertura `domain/usecase`                                     |      **68,2 %** | **68,2 %** |   **≥ 90 %** |
+| Cobertura `mcp-server` / `rest-consumer` / `app-service`       | **70,5 % / 51,1 % / 17,0 %** | **70,2 % / 90,0 % / 48,4 %** | **≥ 80 / 80 / 60 %** |
+| Mutaciones eliminadas (Pitest)                                 |      **5 / 44** | *por remedir* |   **≥ 60 %** |
+| Cobertura de `getTeamFieldValues` y `getTeamIterations`        |           **0 %** | **cubiertas** | **cubiertas** |
+| Complejidad cognitiva máx. por método                          | *por medir (Fase 04)* | *por medir* |     **≤ 15** |
 
 **Criterio transversal:** al cerrar cada fase, `./gradlew build` termina en verde y **el contrato MCP
 público no cambia** —nombres de tool, nombres de parámetro y forma del resultado— salvo donde una
@@ -451,8 +453,8 @@ Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de 
 | Fase | Estado             | Fecha      |        Tests | Resultado |
 |------|--------------------|------------|-------------:|-----------|
 | 01   | 🟢 **COMPLETADA**  | 2026-08-30 | **48** (0 ❌) | [`fase-01.md`](../fases/fase-01.md) · [`BASELINE.md`](../resultados/BASELINE.md) · [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) · **+15 pruebas** · **D-21 saldada** · **sentencia WIQL congelada carácter a carácter (8 ramas)** · `rest-consumer` 51,1 % → **71,5 %** · **D-06 y D-17 confirmadas** · **D-05 degradada a 🟡** (el `@ComponentScan` es inerte) · **D-25, D-26 y D-27 detectadas** · **0 ficheros de `src/main` tocados** |
-| 02   | ⚪ Pendiente       | —          |            — | [`fase-02.md`](../fases/fase-02.md) · generada · DP-01, DP-02 y B-01 resueltas |
-| 03   | ⚪ Pendiente    | —     | —     | — |
+| 02   | 🟢 **COMPLETADA**  | 2026-08-30 | **67** (0 ❌) | [`fase-02.md`](../fases/fase-02.md) · [`ACTIVACION-SEGURIDAD.md`](../resultados/ACTIVACION-SEGURIDAD.md) · **+19 pruebas** · **D-01, D-02, D-03 y D-04 saldadas**; **D-22 saldada en su mayor parte** · **2 modos de seguridad** (`PERMISSIVE`/`ENFORCED`) conmutables por `MCP_SECURITY_MODE`, **sin recompilar** · **8/8 tools con autorización declarada, compilada y probada con rol y sin rol**; **0 anotaciones comentadas** · token sin default, **validado al arranque** (B-01: formato intacto) · `/h2-console/**` y `spring.h2.console` retirados tras `grep` con **0 coincidencias**; **`spring.devtools` conservado porque el `grep` demostró que su dependencia existe** · `rest-consumer` 71,5 % → **90 %**, `app-service` 23,6 % → **48,4 %** · **0 pruebas heredadas modificadas** y **0 cambios observables** en `PERMISSIVE` |
+| 03   | 🔵 **Activa**   | —     | —     | [`fase-03.md`](../fases/fase-03.md) · generada · **bloqueada por DP-03** en su primer paso |
 | 04   | ⚪ Pendiente    | —     | —     | — |
 | 05   | ⚪ Pendiente    | —     | —     | — |
 | 06   | ⚪ Pendiente    | —     | —     | — |
@@ -484,7 +486,7 @@ Formato obligatorio de `COMMIT_RULES.md`: `tipo(scope_snake_case): descripción 
 |---------------------------------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------|
 | Cerrar la seguridad deja **sin servicio** al agente y al BFF, que hoy no envían token | **Alto** | **Resuelto por DP-01:** no se cierra. `permissive` es el valor por defecto y reproduce el comportamiento actual; `enforced` existe, se prueba y **no se activa** hasta que haya Service Principal |
 | El día del Service Principal, seis `@PreAuthorize` se estrenan en producción sin haberse ejecutado nunca | **Alto** | La Fase 02 los **descomenta y los prueba en los dos modos**: en `enforced` con roles concedidos y denegados. Es el motivo principal de que la fase exista |
-| Configurar mal el PAT produce un **401 mudo** imposible de diagnosticar | Medio | **B-01**: la propiedad pasa a recibir el PAT crudo y el adaptador codifica; validación y `WARN` explícito al arranque si el valor parece ya codificado |
+| Configurar mal el PAT produce un **401 mudo** imposible de diagnosticar | Medio | ✅ **Mitigado en la Fase 02.** **B-01** decidió que el formato **no cambia**: la propiedad sigue recibiendo el `Base64(":" + PAT)` ya calculado. Lo que se añadió es **validación al arranque** (decodificable y con `:`), documentación en el YAML y en el javadoc, y un fallo explícito en `ENFORCED` |
 | Renombrar un tipo que Jackson deserializa rompe el contrato MCP en silencio | **Alto** | **DP-03**; la Fase 01 congela el contrato con pruebas de caracterización que comparan nombres y forma del payload |
 | Mover el WIQL de sitio cambia la consulta y el tablero sale vacío           | **Alto** | La Fase 01 fija la sentencia WIQL **byte a byte**; la Fase 04 debe reproducirla idéntica antes de tocarla        |
 | Partir `RestConsumer` altera el comportamiento de los cortacircuitos        | Medio   | La Fase 06 fija primero los nombres y umbrales reales (D-06); la 05 solo mueve código                            |

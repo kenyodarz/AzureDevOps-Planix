@@ -1,5 +1,6 @@
 package co.com.bancolombia.mcp.tools;
 
+import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.model.team.TeamFieldValues;
 import co.com.bancolombia.model.workitem.JsonPatchOperation;
 import co.com.bancolombia.model.workitem.WiqlQuery;
@@ -45,7 +46,7 @@ public class AzureDevOpsTools {
             name = "getWorkItem",
             description = "Recupera los detalles de un elemento de trabajo específico (User Story, Task, Issue) en Azure DevOps utilizando su identificador numérico."
     )
-//    @PreAuthorize("hasRole('MCP.AZURE_DEVOPS.READ')")
+    @PreAuthorize(McpRoles.HAS_READ)
     public Mono<WorkItem> getWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
@@ -62,7 +63,7 @@ public class AzureDevOpsTools {
             name = "createWorkItem",
             description = "Crea un nuevo elemento de trabajo (como User Story, Task, Issue) en Azure DevOps utilizando una lista de operaciones JSON Patch."
     )
-    @PreAuthorize("hasRole('MCP.AZURE_DEVOPS.WRITE')")
+    @PreAuthorize(McpRoles.HAS_WRITE)
     public Mono<WorkItem> createWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
@@ -80,7 +81,7 @@ public class AzureDevOpsTools {
             name = "updateWorkItem",
             description = "Actualiza los campos o relaciones (vínculos jerárquicos de padre-hijo) de un Work Item existente usando JSON Patch."
     )
-    @PreAuthorize("hasRole('MCP.AZURE_DEVOPS.WRITE')")
+    @PreAuthorize(McpRoles.HAS_WRITE)
     public Mono<WorkItem> updateWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
@@ -93,12 +94,17 @@ public class AzureDevOpsTools {
 
     /**
      * Consultar Work Items usando WIQL.
+     *
+     * <p>La anotación {@code @McpTool} sigue comentada a propósito: esta tool <b>no forma parte del
+     * contrato MCP público</b> y su destino se decide en la Fase 08 (D-19). Lo que sí se activa aquí
+     * es su autorización, para que el método —que es público y sí se invoca internamente— quede
+     * protegido en modo {@code ENFORCED} sin necesidad de recompilar.
      */
     // @McpTool(
     //         name = "queryByWiql",
     //         description = "Realiza una consulta estructurada en lenguaje WIQL (Work Item Query Language) para buscar y listar elementos de trabajo."
     // )
-//    @PreAuthorize("hasRole('MCP.AZURE_DEVOPS.READ')")
+    @PreAuthorize(McpRoles.HAS_READ)
     public Mono<WiqlResult> queryByWiql(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
@@ -117,6 +123,7 @@ public class AzureDevOpsTools {
             name = "listWorkItemsByTeamAndSprint",
             description = "Busca y lista los elementos de trabajo (User Stories y Habilitadores) asignados a una célula/equipo y sprint específicos en Azure DevOps."
     )
+    @PreAuthorize(McpRoles.HAS_READ)
     public Mono<WiqlResult> listWorkItemsByTeamAndSprint(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. grupobancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps (ej. Vicepresidencia Servicios de Tecnología)", required = true) String project,
@@ -245,7 +252,7 @@ public class AzureDevOpsTools {
             name = "getWorkItemsBatch",
             description = "Obtiene de manera masiva los detalles de múltiples elementos de trabajo a partir de sus IDs en una sola llamada."
     )
-//    @PreAuthorize("hasRole('MCP.AZURE_DEVOPS.READ')")
+    @PreAuthorize(McpRoles.HAS_READ)
     public Mono<List<WorkItem>> getWorkItemsBatch(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
