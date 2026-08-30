@@ -76,6 +76,26 @@ export interface DashboardData {
   items: DashboardStoryItem[];
 }
 
+/**
+ * Tipo de evento que emite el stream SSE del tablero.
+ *
+ * `ERROR` lo añadió la Fase 06 del backend: desde entonces el stream nunca termina en error, sino
+ * que el fallo viaja como un evento más para que el navegador llegue a recibir la cabecera
+ * `text/event-stream` y el usuario pueda leer el motivo (D-31).
+ */
+export type DashboardStreamEventType = 'INITIAL' | 'BATCH_UPDATE' | 'ERROR';
+
+/**
+ * Evento del stream `GET /api/devops/dashboard/stream`.
+ *
+ * En los eventos `INITIAL` y `BATCH_UPDATE` viaja `data`; en los `ERROR`, `message`.
+ */
+export interface DashboardStreamEvent {
+  event: DashboardStreamEventType;
+  data: DashboardData | null;
+  message?: string | null;
+}
+
 export interface AgentTaskStatus {
   state: 'submitted' | 'working' | 'completed' | 'failed' | 'canceled' | 'rejected' | 'input-required';
   message?: Message;

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { DevopsAgentApiService } from './devops-agent-api.service';
-import { AgentCard, SendMessageRequest, IngestPayload } from '../models/devops-agent.model';
+import { AgentCard, IngestPayload, SendMessageRequest } from '../models/devops-agent.model';
 
 describe('GIVEN DevopsAgentApiService', () => {
   let service: DevopsAgentApiService;
@@ -10,11 +10,7 @@ describe('GIVEN DevopsAgentApiService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        DevopsAgentApiService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      providers: [DevopsAgentApiService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(DevopsAgentApiService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -29,7 +25,7 @@ describe('GIVEN DevopsAgentApiService', () => {
       const mockCard: AgentCard = {
         name: 'Test Scrum Master',
         version: '1.2.3',
-        description: 'Test Description'
+        description: 'Test Description',
       };
 
       service.getAgentCard().subscribe((card) => {
@@ -50,15 +46,15 @@ describe('GIVEN DevopsAgentApiService', () => {
           role: 'user',
           messageId: 'msg-123',
           contextId: 'session-456',
-          parts: [{ text: 'hello' }]
-        }
+          parts: [{ text: 'hello' }],
+        },
       };
 
       const mockResponse = {
         message: {
           role: 'agent',
-          parts: [{ text: 'response text' }]
-        }
+          parts: [{ text: 'response text' }],
+        },
       };
 
       service.sendMessage(payload).subscribe((res) => {
@@ -77,7 +73,7 @@ describe('GIVEN DevopsAgentApiService', () => {
       const payload: IngestPayload = {
         initiativeId: 'guardian-q3',
         title: 'Guardián Q3',
-        markdownContent: '# Planeación'
+        markdownContent: '# Planeación',
       };
 
       service.uploadPlanning(payload).subscribe((res) => {
@@ -125,4 +121,98 @@ describe('GIVEN DevopsAgentApiService', () => {
       req.flush(null);
     });
   });
+
+  describe('WHEN getDashboardDataStream receives an ERROR event (D-40)', () => {
+    let originalEventSource: typeof EventSource;
+
+    beforeEach(() => {
+      originalEventSource = globalThis.EventSource;
+      globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
+    });
+
+    afterEach(() => {
+      globalThis.EventSource = originalEventSource;
+    });
+
+    it('THEN propagates the backend message instead of completing in silence', () => {
+      // GIVEN
+      let received: string | null = null;
+      let completed = false;
+      service.getDashboardDataStream('EQU1096', 'Sprint 247').subscribe({
+        error: (error: Error) => (received = error.message),
+        complete: () => (completed = true),
+      });
+
+      // WHEN
+      EventSourceStub.last?.emit(
+        'ERROR',
+        JSON.stringify({ event: 'ERROR', data: null, message: 'agente caído' }),
+      );
+
+      // THEN
+      expect(received).toBe('agente caído');
+      expect(completed).toBe(false);
+      expect(EventSourceStub.last?.closed).toBe(true);
+    });
+
+    it('THEN falls back to a readable message when the event carries no detail', () => {
+      // GIVEN
+      let received: string | null = null;
+      service
+        .getDashboardDataStream('EQU1096', 'Sprint 247')
+        .subscribe({ error: (error: Error) => (received = error.message) });
+
+      // WHEN
+      EventSourceStub.last?.emit('ERROR', JSON.stringify({ event: 'ERROR', data: null }));
+
+      // THEN
+      expect(received).toBe('Fallo en la comunicación con el agente o MCP.');
+    });
+
+    it('THEN still forwards INITIAL events as data', () => {
+      // GIVEN
+      const events: unknown[] = [];
+      service
+        .getDashboardDataStream('EQU1096', 'Sprint 247')
+        .subscribe({ next: (event) => events.push(event) });
+
+      // WHEN
+      EventSourceStub.last?.emit(
+        'INITIAL',
+        JSON.stringify({ event: 'INITIAL', data: { metrics: {}, items: [] } }),
+      );
+
+      // THEN
+      expect(events).toHaveLength(1);
+    });
+  });
 });
+
+/**
+ * Doble de `EventSource`: el entorno de pruebas no abre conexiones reales, así que el stub permite
+ * disparar los eventos del stream a mano y comprobar qué hace el servicio con cada uno.
+ */
+class EventSourceStub {
+  static last: EventSourceStub | null = null;
+
+  onerror: (() => void) | null = null;
+  closed = false;
+
+  private readonly listeners = new Map<string, (event: MessageEvent<string>) => void>();
+
+  constructor(public readonly url: string) {
+    EventSourceStub.last = this;
+  }
+
+  addEventListener(type: string, handler: (event: MessageEvent<string>) => void): void {
+    this.listeners.set(type, handler);
+  }
+
+  close(): void {
+    this.closed = true;
+  }
+
+  emit(type: string, data: string): void {
+    this.listeners.get(type)?.({ data } as MessageEvent<string>);
+  }
+}
