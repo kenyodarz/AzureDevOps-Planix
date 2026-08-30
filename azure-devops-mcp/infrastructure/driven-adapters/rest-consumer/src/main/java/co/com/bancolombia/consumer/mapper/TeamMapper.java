@@ -4,8 +4,8 @@ import co.com.bancolombia.consumer.dto.TeamFieldValueDTO;
 import co.com.bancolombia.consumer.dto.TeamFieldValuesDTO;
 import co.com.bancolombia.consumer.dto.TeamIterationDTO;
 import co.com.bancolombia.consumer.dto.TeamIterationsDTO;
-import co.com.bancolombia.model.iteration.TeamIteration;
 import co.com.bancolombia.model.team.TeamFieldValues;
+import co.com.bancolombia.model.team.TeamIteration;
 import java.util.List;
 
 /**

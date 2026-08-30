@@ -4,14 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
-import co.com.bancolombia.model.createworkitem.gateways.CreateWorkItemRepository;
-import co.com.bancolombia.model.getworkitem.gateways.GetWorkItemRepository;
-import co.com.bancolombia.model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository;
-import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
-import co.com.bancolombia.model.querybywiql.gateways.QueryByWiqlRepository;
-import co.com.bancolombia.model.team.gateways.GetTeamFieldValuesRepository;
-import co.com.bancolombia.model.updateworkitem.gateways.UpdateWorkItemRepository;
+import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import co.com.bancolombia.model.workitem.gateways.TeamScopeFallbackMetrics;
+import co.com.bancolombia.model.workitem.gateways.WorkItemCommandPort;
+import co.com.bancolombia.model.workitem.gateways.WorkItemQueryPort;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
@@ -48,10 +44,15 @@ import org.springframework.context.annotation.Import;
  * («{@code UseCasesConfigTest} miente»). Se deja intacto en la Fase 01 —cuya regla es no tocar
  * nada— y su sustitución queda para la <b>Fase 08</b>.
  *
- * <p><b>Qué verifica esta clase.</b> Registra los siete gateways como dobles y comprueba que el
- * contexto arranca de verdad y que <b>cada caso de uso resuelve a exactamente un bean</b>. Eso
- * responde D-05: si el {@code @ComponentScan} con filtro por expresión regular registrase las
- * clases <i>además</i> de los siete {@code @Bean} manuales, aquí se vería.
+ * <p><b>Qué verifica esta clase.</b> Registra los puertos como dobles y comprueba que el contexto
+ * arranca de verdad y que <b>cada caso de uso resuelve a exactamente un bean</b>. Eso responde
+ * D-05: si el {@code @ComponentScan} con filtro por expresión regular registrase las clases
+ * <i>además</i> de los {@code @Bean} manuales, aquí se vería.
+ *
+ * <p><b>Cambio de la Fase 05 (D-14).</b> Los dobles pasan de <b>siete gateways por operación CRUD a
+ * tres puertos por agregado y responsabilidad</b> ({@link WorkItemQueryPort},
+ * {@link WorkItemCommandPort} y {@link TeamScopePort}). <b>La aserción no ha cambiado</b>, ni el
+ * número de casos de uso comprobados: solo el tipo de los dobles que hacen arrancar el contexto.
  */
 class UseCasesConfigWiringTest {
 
@@ -97,38 +98,18 @@ class UseCasesConfigWiringTest {
     static class GatewaysTestConfig {
 
         @Bean
-        GetTeamFieldValuesRepository getTeamFieldValuesRepository() {
-            return mock(GetTeamFieldValuesRepository.class);
+        TeamScopePort teamScopePort() {
+            return mock(TeamScopePort.class);
         }
 
         @Bean
-        GetTeamIterationsRepository getTeamIterationsRepository() {
-            return mock(GetTeamIterationsRepository.class);
+        WorkItemQueryPort workItemQueryPort() {
+            return mock(WorkItemQueryPort.class);
         }
 
         @Bean
-        GetWorkItemRepository getWorkItemRepository() {
-            return mock(GetWorkItemRepository.class);
-        }
-
-        @Bean
-        CreateWorkItemRepository createWorkItemRepository() {
-            return mock(CreateWorkItemRepository.class);
-        }
-
-        @Bean
-        UpdateWorkItemRepository updateWorkItemRepository() {
-            return mock(UpdateWorkItemRepository.class);
-        }
-
-        @Bean
-        QueryByWiqlRepository queryByWiqlRepository() {
-            return mock(QueryByWiqlRepository.class);
-        }
-
-        @Bean
-        GetWorkItemsBatchRepository getWorkItemsBatchRepository() {
-            return mock(GetWorkItemsBatchRepository.class);
+        WorkItemCommandPort workItemCommandPort() {
+            return mock(WorkItemCommandPort.class);
         }
 
         /**

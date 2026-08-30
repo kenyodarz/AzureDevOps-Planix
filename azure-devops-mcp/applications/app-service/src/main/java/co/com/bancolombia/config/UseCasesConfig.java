@@ -1,13 +1,9 @@
 package co.com.bancolombia.config;
 
-import co.com.bancolombia.model.createworkitem.gateways.CreateWorkItemRepository;
-import co.com.bancolombia.model.getworkitem.gateways.GetWorkItemRepository;
-import co.com.bancolombia.model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository;
-import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
-import co.com.bancolombia.model.querybywiql.gateways.QueryByWiqlRepository;
-import co.com.bancolombia.model.team.gateways.GetTeamFieldValuesRepository;
-import co.com.bancolombia.model.updateworkitem.gateways.UpdateWorkItemRepository;
+import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import co.com.bancolombia.model.workitem.gateways.TeamScopeFallbackMetrics;
+import co.com.bancolombia.model.workitem.gateways.WorkItemCommandPort;
+import co.com.bancolombia.model.workitem.gateways.WorkItemQueryPort;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
@@ -32,48 +28,46 @@ import org.springframework.context.annotation.FilterType;
 public class UseCasesConfig {
 
     @Bean
-    public GetTeamFieldValuesUseCase getTeamFieldValuesUseCase(
-            GetTeamFieldValuesRepository getTeamFieldValuesRepository) {
-        return new GetTeamFieldValuesUseCase(getTeamFieldValuesRepository);
+    public GetTeamFieldValuesUseCase getTeamFieldValuesUseCase(TeamScopePort teamScopePort) {
+        return new GetTeamFieldValuesUseCase(teamScopePort);
     }
 
     /**
      * Gemelo del anterior para las iteraciones: resuelve el {@code IterationPath} preguntándoselo a
      * Azure DevOps en lugar de fabricarlo con el año del calendario.
+     *
+     * <p>Desde la Fase 05 ambos reciben el <b>mismo</b> puerto: las dos consultas describen el
+     * ámbito de un equipo y ya no viven en dos gateways de dos paquetes distintos (D-14).
      */
     @Bean
-    public GetTeamIterationsUseCase getTeamIterationsUseCase(
-            GetTeamIterationsRepository getTeamIterationsRepository) {
-        return new GetTeamIterationsUseCase(getTeamIterationsRepository);
+    public GetTeamIterationsUseCase getTeamIterationsUseCase(TeamScopePort teamScopePort) {
+        return new GetTeamIterationsUseCase(teamScopePort);
     }
 
     @Bean
-    public GetWorkItemUseCase getWorkItemUseCase(GetWorkItemRepository getWorkItemRepository) {
-        return new GetWorkItemUseCase(getWorkItemRepository);
+    public GetWorkItemUseCase getWorkItemUseCase(WorkItemQueryPort workItemQueryPort) {
+        return new GetWorkItemUseCase(workItemQueryPort);
 
     }
 
     @Bean
-    public CreateWorkItemUseCase createWorkItemUseCase(
-            CreateWorkItemRepository createWorkItemRepository) {
-        return new CreateWorkItemUseCase(createWorkItemRepository);
+    public CreateWorkItemUseCase createWorkItemUseCase(WorkItemCommandPort workItemCommandPort) {
+        return new CreateWorkItemUseCase(workItemCommandPort);
     }
 
     @Bean
-    public UpdateWorkItemUseCase updateWorkItemUseCase(
-            UpdateWorkItemRepository updateWorkItemRepository) {
-        return new UpdateWorkItemUseCase(updateWorkItemRepository);
+    public UpdateWorkItemUseCase updateWorkItemUseCase(WorkItemCommandPort workItemCommandPort) {
+        return new UpdateWorkItemUseCase(workItemCommandPort);
     }
 
     @Bean
-    public QueryByWiqlUseCase queryByWiqlUseCase(QueryByWiqlRepository queryByWiqlRepository) {
-        return new QueryByWiqlUseCase(queryByWiqlRepository);
+    public QueryByWiqlUseCase queryByWiqlUseCase(WorkItemQueryPort workItemQueryPort) {
+        return new QueryByWiqlUseCase(workItemQueryPort);
     }
 
     @Bean
-    public GetWorkItemsBatchUseCase getWorkItemsBatchUseCase(
-            GetWorkItemsBatchRepository getWorkItemsBatchRepository) {
-        return new GetWorkItemsBatchUseCase(getWorkItemsBatchRepository);
+    public GetWorkItemsBatchUseCase getWorkItemsBatchUseCase(WorkItemQueryPort workItemQueryPort) {
+        return new GetWorkItemsBatchUseCase(workItemQueryPort);
     }
 
     /**

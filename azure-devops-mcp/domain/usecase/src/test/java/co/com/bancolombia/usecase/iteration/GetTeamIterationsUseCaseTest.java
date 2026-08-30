@@ -4,8 +4,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import co.com.bancolombia.model.iteration.TeamIteration;
-import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
+import co.com.bancolombia.model.team.TeamIteration;
+import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +27,12 @@ class GetTeamIterationsUseCaseTest {
     private static final String PROJECT = "Vicepresidencia Servicios de Tecnología";
     private static final String TEAM = "EQU1096 - EXODIA";
 
-    private GetTeamIterationsRepository repository;
+    private TeamScopePort repository;
     private GetTeamIterationsUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        repository = mock(GetTeamIterationsRepository.class);
+        repository = mock(TeamScopePort.class);
         useCase = new GetTeamIterationsUseCase(repository);
     }
 

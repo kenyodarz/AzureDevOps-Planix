@@ -1,8 +1,5 @@
 package co.com.bancolombia.consumer;
 
-import co.com.bancolombia.model.workitem.JsonPatchOperation;
-import co.com.bancolombia.model.workitem.WiqlQuery;
-import co.com.bancolombia.model.workitem.WorkItemBatchCriteria;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -18,15 +15,29 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class RestConsumerTest {
+/**
+ * Red de seguridad del adaptador de <b>ámbito de equipo</b> — Fase 05, D-10.
+ *
+ * <p>Los seis escenarios vienen de {@code RestConsumerTest} y se conservan <b>literalmente</b>.
+ * Cubren las dos consultas que resuelven el {@code AreaPath} y el {@code IterationPath}, es decir,
+ * justo las que sostienen el arreglo del fallo del año (D-21, heredada como D-36 del plan del BFF),
+ * más la caracterización del manejo de errores de D-13.
+ *
+ * <p>⚠️ Las dos últimas pruebas <b>no validan un buen comportamiento: fijan el ACTUAL</b>. Hoy el
+ * adaptador no traduce nada, así que un fallo de Azure DevOps viaja crudo hasta el cliente MCP como
+ * {@code WebClientResponseException}, una excepción de Spring, en un flujo cuyo contrato debería ser
+ * de dominio. La <b>Fase 06</b> introducirá excepciones de dominio y estas aserciones deberán
+ * cambiar de tipo esperado. Cuando eso ocurra será un cambio DELIBERADO y visible, que es justo lo
+ * que estas pruebas existen para garantizar.
+ */
+class TeamScopeAdapterTest {
 
-    private static RestConsumer restConsumer;
+    private static TeamScopeAdapter adapter;
     private static MockWebServer mockBackEnd;
 
     @BeforeAll
@@ -34,111 +45,13 @@ class RestConsumerTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var webClient = WebClient.builder().baseUrl(mockBackEnd.url("/").toString()).build();
-        restConsumer = new RestConsumer(webClient);
+        adapter = new TeamScopeAdapter(webClient);
     }
 
     @AfterAll
     static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
-
-    @Test
-    @DisplayName("Validate the function getWorkItem.")
-    void validateGetWorkItem() {
-        mockBackEnd.enqueue(new MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"id\": 7539457, \"rev\": 1, \"url\": \"https://dev.azure.com\", \"fields\": {\"System.Title\": \"Test Title\"}}"));
-
-        var response = restConsumer.getWorkItem("Org", "Proj", 7539457, "7.1");
-
-        StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539457 && "Test Title".equals(workItem.getFields().get("System.Title")))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Validate the function createWorkItem.")
-    void validateCreateWorkItem() {
-        mockBackEnd.enqueue(new MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"id\": 7539458, \"rev\": 1, \"url\": \"https://dev.azure.com\", \"fields\": {\"System.Title\": \"New Story\"}}"));
-
-        List<JsonPatchOperation> patch = List.of(
-                JsonPatchOperation.builder().op("add").path("/fields/System.Title").value("New Story").build()
-        );
-
-        var response = restConsumer.createWorkItem("Org", "Proj", "User Story", patch, "7.1");
-
-        StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539458 && "New Story".equals(workItem.getFields().get("System.Title")))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Validate the function updateWorkItem.")
-    void validateUpdateWorkItem() {
-        mockBackEnd.enqueue(new MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"id\": 7539458, \"rev\": 2, \"url\": \"https://dev.azure.com\", \"fields\": {\"System.Title\": \"Updated Title\"}}"));
-
-        List<JsonPatchOperation> patch = List.of(
-                JsonPatchOperation.builder().op("replace").path("/fields/System.Title").value("Updated Title").build()
-        );
-
-        var response = restConsumer.updateWorkItem("Org", "Proj", 7539458, patch, "7.1");
-
-        StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539458 && "Updated Title".equals(workItem.getFields().get("System.Title")))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Validate the function queryByWiql.")
-    void validateQueryByWiql() {
-        mockBackEnd.enqueue(new MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"queryType\": \"flat\", \"queryResultType\": \"workItem\", \"workItems\": [{\"id\": 7539457, \"url\": \"https://dev.azure.com\"}]}"));
-
-        WiqlQuery query = WiqlQuery.builder().query("SELECT ...").build();
-        var response = restConsumer.queryByWiql("Org", "Proj", query, "7.0");
-
-        StepVerifier.create(response)
-                .expectNextMatches(result -> "flat".equals(result.getQueryType()) && result.getWorkItems().size() == 1 && result.getWorkItems().get(0).getId() == 7539457)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Validate the function getWorkItemsBatch.")
-    void validateGetWorkItemsBatch() {
-        mockBackEnd.enqueue(new MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"count\": 1, \"value\": [{\"id\": 7539457, \"fields\": {\"System.Title\": \"Batch Story\"}}]}"));
-
-        WorkItemBatchCriteria request = WorkItemBatchCriteria.builder()
-                .ids(List.of(7539457))
-                .fields(List.of("System.Id", "System.Title"))
-                .build();
-
-        var response = restConsumer.getWorkItemsBatch("Org", "Proj", request, "7.1");
-
-        StepVerifier.create(response)
-                .expectNextMatches(list -> list.size() == 1 && list.get(0).getId() == 7539457 && "Batch Story".equals(list.get(0).getFields().get("System.Title")))
-                .verifyComplete();
-    }
-
-    // -------------------------------------------------------------------------------------------
-    // Resolución de rutas de Azure DevOps — deuda D-21 (heredada como D-36 del plan del BFF).
-    //
-    // `getTeamFieldValues` y `getTeamIterations` son las DOS consultas que resuelven el `AreaPath`
-    // y el `IterationPath`, es decir, justo las que sostienen el arreglo del fallo del año. Hasta
-    // la Fase 01 ninguna de las dos tenía prueba de integración: eran el 48,9 % no cubierto de
-    // este adaptador.
-    // -------------------------------------------------------------------------------------------
 
     /**
      * Descarta las peticiones registradas por pruebas anteriores. El {@link MockWebServer} es
@@ -164,7 +77,7 @@ class RestConsumerTest {
                         + " \"values\": [{\"value\": \"Proj\\\\Team\", \"includeChildren\": true}]}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamFieldValues("Org", "Proj", "Team");
+        var response = adapter.getTeamFieldValues("Org", "Proj", "Team");
 
         // Assert (THEN)
         StepVerifier.create(response)
@@ -189,7 +102,7 @@ class RestConsumerTest {
                 .setBody("{\"defaultValue\": \"Proj\\\\Team\"}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamFieldValues("Org", "Proj", "Team");
+        var response = adapter.getTeamFieldValues("Org", "Proj", "Team");
 
         // Assert (THEN)
         StepVerifier.create(response)
@@ -210,7 +123,7 @@ class RestConsumerTest {
                         + "{\"id\": \"b2\", \"name\": \"Sprint 248\", \"path\": \"Proj\\\\2026\\\\Sprint 248\"}]}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamIterations("Org", "Proj", "Team");
+        var response = adapter.getTeamIterations("Org", "Proj", "Team");
 
         // Assert (THEN) — el path llega tal cual lo declara Azure DevOps, con SU año, no con el del
         // calendario. Es la razón de ser de esta consulta.
@@ -237,26 +150,13 @@ class RestConsumerTest {
                 .setBody("{\"count\": 0}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamIterations("Org", "Proj", "Team");
+        var response = adapter.getTeamIterations("Org", "Proj", "Team");
 
         // Assert (THEN)
         StepVerifier.create(response)
                 .expectNextMatches(iterations -> iterations != null && iterations.isEmpty())
                 .verifyComplete();
     }
-
-    // -------------------------------------------------------------------------------------------
-    // Caracterización del manejo de errores — deuda D-13.
-    //
-    // ⚠️ Las dos pruebas siguientes NO validan un buen comportamiento: fijan el ACTUAL. Hoy el
-    // adaptador no traduce nada, así que un fallo de Azure DevOps viaja crudo hasta el cliente MCP
-    // como `WebClientResponseException`, una excepción de Spring, en un flujo cuyo contrato debería
-    // ser de dominio.
-    //
-    // La FASE 06 introducirá excepciones de dominio y estas aserciones deberán cambiar de tipo
-    // esperado. Cuando eso ocurra será un cambio DELIBERADO y visible, que es justo lo que estas
-    // pruebas existen para garantizar.
-    // -------------------------------------------------------------------------------------------
 
     @Test
     @DisplayName("GIVEN Azure DevOps responde 401 WHEN getTeamFieldValues THEN el error tecnico llega crudo, sin traducir (D-13)")
@@ -268,7 +168,7 @@ class RestConsumerTest {
                 .setBody("{\"message\": \"TF400813: El usuario no esta autorizado\"}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamFieldValues("Org", "Proj", "Team");
+        var response = adapter.getTeamFieldValues("Org", "Proj", "Team");
 
         // Assert (THEN)
         StepVerifier.create(response)
@@ -287,7 +187,7 @@ class RestConsumerTest {
                 .setBody("{\"message\": \"Internal Server Error\"}"));
 
         // Act (WHEN)
-        var response = restConsumer.getTeamIterations("Org", "Proj", "Team");
+        var response = adapter.getTeamIterations("Org", "Proj", "Team");
 
         // Assert (THEN)
         StepVerifier.create(response)
@@ -296,3 +196,4 @@ class RestConsumerTest {
                 .verify();
     }
 }
+

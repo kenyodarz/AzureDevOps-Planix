@@ -1,10 +1,11 @@
 # FASE 05 — Segregación de puertos y adaptadores
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** ⚪ PENDIENTE
-> **Deudas que ataca:** D-10, D-14, D-15 · **Decisión bloqueante:** ⛔ **DP-05 (ABIERTA)**
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-10, D-14, D-15 *(las tres **saldadas**)* · **Decisión bloqueante:** ✅ **DP-05 (RESUELTA)**
 > **Riesgo:** 🟠 Medio · **Depende de:** Fases 01 a 04 (cerradas) · **Habilita:** Fases 06 a 08
 > **Regla de oro de esta fase:** **ni una URL, ni un parámetro de consulta, ni un cuerpo JSON
 > cambian.** Esta fase mueve código de sitio; no cambia una sola llamada HTTP.
+> ✅ **No cambió ninguna:** diff literal de URLs, verbos, `contentType` y cuerpos a **0 diferencias**.
 
 ---
 
@@ -170,40 +171,82 @@ Cada adaptador resultante **≤ 120 líneas**. La cobertura de `rest-consumer` *
 
 ## 3. Orden de Ejecución
 
-- [ ] **0.** ⛔ **Plantear DP-05 (y B-05, B-06, B-07) al propietario y esperar respuesta.**
-- [ ] **1.** Releer `CONTRATO-MCP.md` §3 y el §4 de `fase-03.md`: qué mapper vive dónde y por qué.
-- [ ] **2.** Inventariar los 7 gateways, sus 7 URLs y sus 7 nombres de cortacircuito.
-- [ ] **3.** Partir `RestConsumer` en adaptadores, repartiendo los mappers. **(T-01)**
-- [ ] **4.** `.\gradlew.bat build` verde: **ni una URL ni un cuerpo alterados**. **(T-01)**
-- [ ] **5.** Aplicar lo que decida DP-05 sobre paquetes y puertos. **(T-02)**
-- [ ] **6.** Aplicar lo que decida B-06 sobre el puerto huérfano. **(T-03)**
-- [ ] **7.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
-- [ ] **8.** Medir líneas por adaptador (objetivo ≤ 120) y cobertura. **(T-04)**
-- [ ] **9.** `.\gradlew.bat build` verde de nuevo, con **≥ 148** pruebas y **0** fallos.
-- [ ] **10.** Actualizar `CONTRATO-MCP.md` y el plan maestro (§3, §6, §7, §9, cabecera). **(T-05)**
-- [ ] **11.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
-- [ ] **12.** **Generar `fase-06.md` y `PROMPT-FASE-06.md`** con DP-06 bloqueante.
-- [ ] **13.** Commit: `refactor(rest_consumer): segregar los adaptadores de azure devops por agregado`
+- [x] **0.** ⛔ **Plantear DP-05 (y B-05, B-06, B-07) al propietario y esperar respuesta.**
+- [x] **1.** Releer `CONTRATO-MCP.md` §3 y el §4 de `fase-03.md`: qué mapper vive dónde y por qué.
+- [x] **2.** Inventariar los 7 gateways, sus 7 URLs y sus 7 nombres de cortacircuito.
+- [x] **3.** Partir `RestConsumer` en adaptadores, repartiendo los mappers. **(T-01)**
+- [x] **4.** `.\gradlew.bat build` verde: **ni una URL ni un cuerpo alterados**. **(T-01)**
+- [x] **5.** Aplicar lo que decida DP-05 sobre paquetes y puertos. **(T-02)**
+- [x] **6.** Aplicar lo que decida B-06 sobre el puerto huérfano. **(T-03)**
+- [x] **7.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
+- [x] **8.** Medir líneas por adaptador (objetivo ≤ 120) y cobertura. **(T-04)**
+- [x] **9.** `.\gradlew.bat build` verde de nuevo, con **≥ 148** pruebas y **0** fallos.
+- [x] **10.** Actualizar `CONTRATO-MCP.md` y el plan maestro (§3, §6, §7, §9, cabecera). **(T-05)**
+- [x] **11.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
+- [x] **12.** **Generar `fase-06.md` y `PROMPT-FASE-06.md`** con DP-06 bloqueante.
+- [x] **13.** Commit: `refactor(rest_consumer): segregar los adaptadores de azure devops por agregado`
 
 ---
 
 ## 4. Resultado
 
-> Rellenar **al cerrar la fase**, con lo alcanzado de verdad.
+> Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **148 pruebas, 0 fallos**.
 
 | Métrica | Antes | Después |
 |---------|------:|--------:|
-| Gateways implementados por una sola clase | **7** | — |
-| Líneas de la clase de adaptador mayor | **191** | — |
-| Puertos por agregado | **7 / 1** | — |
-| Puertos huérfanos | **1** | — |
-| URLs o cuerpos HTTP alterados (debe ser 0) | n/a | — |
-| Pruebas totales | **148** | — |
-| Pruebas heredadas **modificadas** | n/a | — |
-| Cobertura `rest-consumer` | **88,2 %** | — |
+| Gateways implementados por una sola clase | **7** | ✅ **3 / 2 / 2** *(uno por adaptador)* |
+| Líneas de la clase de adaptador mayor | **191** | ✅ **115** ▼76 |
+| Puertos por agregado | **7 / 1** | ✅ **3**, agrupados en `workitem/` y `team/` |
+| Puertos huérfanos | **1** | ✅ **0** |
+| URLs o cuerpos HTTP alterados (debe ser 0) | n/a | ✅ **0** |
+| Pruebas totales | **148** | **148** = |
+| Pruebas heredadas **modificadas** | n/a | **5** *(adaptación mecánica autorizada)* |
+| Cobertura `rest-consumer` | **88,2 %** | ✅ **88,4 %** ▲0,2 |
 
-**Decisión DP-05:** *(pendiente)*
-**Cambios en el contrato MCP público:** *(pendiente — debe ser «ninguno»)*
-**Bloqueos encontrados:** *(pendiente)*
-**Fase siguiente generada:** ☐ `docs/fases/fase-06.md` · ☐ `docs/fases/PROMPT-FASE-06.md`
+**Decisión DP-05:** ✅ resuelta el 2026-08-30. **Opción (a)**: se reagrupan **paquetes y puertos**.
+Los siete puertos por operación CRUD se funden en **tres por agregado y responsabilidad** —
+`WorkItemQueryPort`, `WorkItemCommandPort` (`model/workitem/gateways/`) y `TeamScopePort`
+(`model/team/gateways/`)—, y los siete paquetes quedan en **dos**: `workitem/` y `team/`.
+**El `ArchitectureTest` no se tocó**: importa `co.com.bancolombia.model` como raíz y no nombra
+ningún subpaquete, así que la reagrupación no le afecta. El aviso «Please do not modify this file»
+queda intacto.
+
+**Sub-decisiones:**
+
+| ID | Respuesta |
+|----|-----------|
+| **B-05** | **Renombrar por adaptador.** Los siete `@CircuitBreaker` pasan a **tres** instancias: `workItemQuery`, `workItemCommand` y `teamScope`. **El comportamiento no cambia**: ni las siete viejas ni las tres nuevas están declaradas en `application.yaml` (D-06), luego todas corrían y siguen corriendo con la configuración por defecto de Resilience4j. Lo que se gana es que la Fase 06 encuentre ya los nombres definitivos que tiene que configurar |
+| **B-06** | **Borrado.** `workitem/gateways/WorkItemRepository` era una interfaz **vacía** (`{}`) que nadie implementaba ni usaba. Puertos huérfanos: **1 → 0** |
+| **B-07** | **`WebClient` compartido + helper común de versión de API.** Los tres adaptadores reciben por constructor el **mismo** bean `WebClient` de `RestConsumerConfig`, que **no se tocó**, y el ternario de versión —copiado **cinco** veces— se centraliza en `consumer/ApiVersions`. **Los dos literales (`7.1` y `7.0`) y la condición son exactamente los que había**; tiparlos y llevarlos a configuración sigue siendo D-18, Fase 06 |
+
+**Cambios en el contrato MCP público:** **ninguno.** Ni un nombre de tool, ni un nombre de
+parámetro, ni un nombre de campo, ni la forma de un resultado. Lo único que cambió son **nombres de
+clase e interfaz Java** y **el paquete en que viven**, que no viajan por el cable.
+
+**Bloqueos encontrados:** ninguno. DP-05 se respondió en el primer paso.
+
+**Fase siguiente generada:** ☑ `docs/fases/fase-06.md` · ☑ `docs/fases/PROMPT-FASE-06.md`
+
+### 4.1 Qué se construyó
+
+| Capa | Antes | Después |
+|------|-------|---------|
+| `domain/model` | 7 paquetes CRUD (`getworkitem`, `createworkitem`, `updateworkitem`, `getworkitemsbatch`, `querybywiql`, `team`, `iteration`) · 7 puertos · 1 huérfano · 5 clases vacías del scaffold | **2 paquetes** (`workitem/`, `team/`) · **3 puertos** + `TeamScopeFallbackMetrics` · **0 huérfanos** · **0 clases vacías** |
+| `rest-consumer` | `RestConsumer` — **191 líneas, 7 gateways** | `WorkItemQueryAdapter` **115** · `WorkItemCommandAdapter` **80** · `TeamScopeAdapter` **78** · `ApiVersions` **41** |
+| Pruebas del adaptador | `RestConsumerTest` — 11 escenarios contra una sola instancia | `WorkItemQueryAdapterTest` **3** · `WorkItemCommandAdapterTest` **2** · `TeamScopeAdapterTest` **6** |
+
+Los **5 mappers de la Fase 03 se repartieron, no se duplicaron**: `WorkItemMapper` lo comparten los
+dos adaptadores de work items —es el traductor de la **respuesta**, común a lectura y escritura—,
+`WiqlQueryMapper` y `WorkItemBatchMapper` quedan en el de consulta, `JsonPatchMapper` en el de
+mutación y `TeamMapper` en el de equipo. **Cero mappers nuevos, cero lógica de mapeo duplicada.**
+
+### 4.2 Desviaciones
+
+| # | Desviación | Justificación |
+|---|------------|---------------|
+| **1** | **5 clases de prueba heredadas adaptadas** (`RestConsumerTest`, `OutboundPayloadCharacterizationTest`, `UseCasesConfigWiringTest`, `DelegatingUseCasesTest`, `GetTeamIterationsUseCaseTest`) | Inevitable: partir la clase y fundir los puertos las deja **sin compilar**. La alternativa —dejar un `RestConsumer` fachada implementando los 7 gateways— habría incumplido la Definición de Hecho y creado ambigüedad de beans. Conforme a la regla 3 **se preguntó antes**; el propietario autorizó la **adaptación mecánica**. **Ni un escenario, ni una aserción, ni una URL, ni un cuerpo, ni un código de estado ha cambiado**: las 148 pruebas siguen siendo las mismas |
+| **2** | **`RestConsumerTest` se dividió en 3 clases** en lugar de renombrarse | Es el objetivo declarado de la fase llevado a las pruebas: mientras las 11 vivieran en una clase, seguiría sin haber «forma de probar un flujo sin arrastrar los otros seis». Los 11 escenarios se copiaron **literalmente**, uno por uno |
+| **3** | **5 clases vacías del scaffold borradas** (`GetWorkItem`, `CreateWorkItem`, `UpdateWorkItem`, `GetWorkItemsBatch`, `QueryByWiql`) | DP-05 no las cubría. Eran clases con cuerpo `{}` que **nadie referenciaba**. Se preguntó y el propietario autorizó borrarlas, con el mismo criterio que B-06 |
+| **4** | **El §4 «Resultado» de `fase-04.md` estaba sin rellenar** al arrancar esta fase | Hallazgo, no acción de esta fase. Las cifras y las desviaciones de la Fase 04 **sí** constan en §9 del plan maestro, que es la fuente de la regla de continuidad. Se anota para que la Fase 06 no lo tome por un cierre incompleto |
+| **5** | **D-25 sigue viva** | Los seis `issues.json` salen `{"issues":[],"rules":[]}`. Esta vez **coincide con la realidad** (0 violaciones reales, verificado en el log), pero el informe sigue sin ser prueba de nada. Fuera de alcance: **Fase 08** |
 

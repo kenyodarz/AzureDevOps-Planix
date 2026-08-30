@@ -197,6 +197,37 @@ violación real de ArchUnit `Rule_2.2` (D-17): un *request* HTTP dentro de `doma
 violaciones**, verificado en el log del `ArchitectureTest` (por D-25 el `issues.json` no sirve como
 prueba).
 
+### 3.3.1 Reagrupación de puertos y adaptadores (DP-05, Fase 05)
+
+> **El contrato público NO cambió.** Lo que cambió son **nombres de interfaz y de clase Java** y **el
+> paquete en que viven**. Nada de esto viaja por el cable: ni un nombre de tool, ni de parámetro, ni
+> de campo, ni la forma de un resultado.
+
+Los **7 puertos por operación CRUD** se funden en **3 por agregado y responsabilidad**, y los **7
+paquetes** en **2**. **Ninguna firma de método cambió**:
+
+| Antes *(7 puertos, 7 paquetes)* | Ahora *(3 puertos, 2 paquetes)* |
+|---------------------------------|----------------------------------|
+| `model.getworkitem.gateways.GetWorkItemRepository` | `model.workitem.gateways.WorkItemQueryPort` |
+| `model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository` | `model.workitem.gateways.WorkItemQueryPort` |
+| `model.querybywiql.gateways.QueryByWiqlRepository` | `model.workitem.gateways.WorkItemQueryPort` |
+| `model.createworkitem.gateways.CreateWorkItemRepository` | `model.workitem.gateways.WorkItemCommandPort` |
+| `model.updateworkitem.gateways.UpdateWorkItemRepository` | `model.workitem.gateways.WorkItemCommandPort` |
+| `model.team.gateways.GetTeamFieldValuesRepository` | `model.team.gateways.TeamScopePort` |
+| `model.iteration.gateways.GetTeamIterationsRepository` | `model.team.gateways.TeamScopePort` |
+| `model.workitem.gateways.WorkItemRepository` *(huérfano, vacío)* | **borrado** (B-06) |
+| `model.iteration.TeamIteration` | `model.team.TeamIteration` |
+
+Del lado del adaptador, `RestConsumer` —una clase de 191 líneas que implementaba los siete— se parte
+en **`WorkItemQueryAdapter`**, **`WorkItemCommandAdapter`** y **`TeamScopeAdapter`**. **Las 7 URLs,
+los 7 verbos HTTP, los 2 `contentType`, los 4 cuerpos y las 2 versiones por defecto son literalmente
+los mismos**, verificado con diff contra `HEAD` y congelado por
+`OutboundPayloadCharacterizationTest`.
+
+Los `@CircuitBreaker` pasan de 7 nombres por operación a **3 por adaptador** —`workItemQuery`,
+`workItemCommand`, `teamScope`— (B-05). **No es un cambio de comportamiento**: ninguna instancia,
+ni la vieja ni la nueva, está declarada en `application.yaml` (D-06, **Fase 06**).
+
 ### 3.4 Lo que sigue siendo intocable
 
 > **Los nombres de campo son contrato público.** `op`, `path`, `value`, `from`, `ids`, `fields`,

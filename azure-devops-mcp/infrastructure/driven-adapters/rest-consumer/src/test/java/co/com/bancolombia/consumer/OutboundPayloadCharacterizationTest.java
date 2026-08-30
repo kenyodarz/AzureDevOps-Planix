@@ -33,7 +33,9 @@ import tools.jackson.databind.ObjectMapper;
  * emitido sin que nada se ponga rojo: un campo que desaparece, un nulo que deja de incluirse, un
  * orden que cambia. Azure DevOps no avisaría; devolvería un error o, peor, un resultado distinto.
  *
- * <p>{@code RestConsumerTest} —la red de seguridad heredada— verifica URIs y respuestas, pero
+ * <p>{@code RestConsumerTest} —la red de seguridad heredada, hoy repartida en
+ * {@code WorkItemQueryAdapterTest}, {@code WorkItemCommandAdapterTest} y
+ * {@code TeamScopeAdapterTest}— verifica URIs y respuestas, pero
  * <b>nunca ha comparado un cuerpo de petición</b>. Esta clase cubre ese hueco.
  *
  * <p><b>Cómo demuestra la equivalencia.</b> No compara contra una cadena literal escrita a mano
@@ -45,10 +47,18 @@ import tools.jackson.databind.ObjectMapper;
  * <p>Para el lote se serializa {@code WorkItemBatchCriteria}, que es el antiguo
  * {@code WorkItemsBatchRequest} con el <b>mismo</b> conjunto y orden de campos: por DP-03 solo
  * cambió el nombre de la clase, que no viaja por el cable.
+ *
+ * <p><b>Cambio de la Fase 05 (D-10).</b> Los cuatro cuerpos se emitían desde una única clase
+ * {@code RestConsumer} que implementaba siete gateways; ahora salen de {@code WorkItemCommandAdapter}
+ * y {@code WorkItemQueryAdapter}. <b>Los cuatro escenarios y sus cuatro aserciones son literalmente
+ * los mismos</b>: lo único que cambia es sobre qué objeto se invocan. Precisamente por eso esta
+ * clase es la red de seguridad de la fase — si el reparto de mappers hubiera alterado un solo byte,
+ * aquí se vería.
  */
 class OutboundPayloadCharacterizationTest {
 
-    private static RestConsumer restConsumer;
+    private static WorkItemCommandAdapter commandAdapter;
+    private static WorkItemQueryAdapter queryAdapter;
     private static MockWebServer mockBackEnd;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -57,7 +67,8 @@ class OutboundPayloadCharacterizationTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var webClient = WebClient.builder().baseUrl(mockBackEnd.url("/").toString()).build();
-        restConsumer = new RestConsumer(webClient);
+        commandAdapter = new WorkItemCommandAdapter(webClient);
+        queryAdapter = new WorkItemQueryAdapter(webClient);
     }
 
     @AfterAll
@@ -90,7 +101,7 @@ class OutboundPayloadCharacterizationTest {
         enqueueOk("{\"id\": 1}");
 
         // Act (WHEN)
-        StepVerifier.create(restConsumer.createWorkItem("Org", "Proj", "User Story", patch, "7.1"))
+        StepVerifier.create(commandAdapter.createWorkItem("Org", "Proj", "User Story", patch, "7.1"))
                 .expectNextCount(1)
                 .verifyComplete();
 
@@ -108,7 +119,7 @@ class OutboundPayloadCharacterizationTest {
         enqueueOk("{\"id\": 1}");
 
         // Act (WHEN)
-        StepVerifier.create(restConsumer.updateWorkItem("Org", "Proj", 1, patch, "7.1"))
+        StepVerifier.create(commandAdapter.updateWorkItem("Org", "Proj", 1, patch, "7.1"))
                 .expectNextCount(1)
                 .verifyComplete();
 
@@ -130,7 +141,7 @@ class OutboundPayloadCharacterizationTest {
         enqueueOk("{\"queryType\": \"flat\"}");
 
         // Act (WHEN)
-        StepVerifier.create(restConsumer.queryByWiql("Org", "Proj", query, "7.0"))
+        StepVerifier.create(queryAdapter.queryByWiql("Org", "Proj", query, "7.0"))
                 .expectNextCount(1)
                 .verifyComplete();
 
@@ -151,7 +162,7 @@ class OutboundPayloadCharacterizationTest {
         enqueueOk("{\"count\": 0, \"value\": []}");
 
         // Act (WHEN)
-        StepVerifier.create(restConsumer.getWorkItemsBatch("Org", "Proj", criteria, "7.1"))
+        StepVerifier.create(queryAdapter.getWorkItemsBatch("Org", "Proj", criteria, "7.1"))
                 .expectNextCount(1)
                 .verifyComplete();
 

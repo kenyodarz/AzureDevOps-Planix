@@ -1,7 +1,7 @@
 package co.com.bancolombia.usecase.iteration;
 
-import co.com.bancolombia.model.iteration.TeamIteration;
-import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
+import co.com.bancolombia.model.team.TeamIteration;
+import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class GetTeamIterationsUseCase {
 
     private static final String PATH_SEPARATOR = "\\";
 
-    private final GetTeamIterationsRepository repository;
+    private final TeamScopePort repository;
 
     public Mono<List<TeamIteration>> getTeamIterations(String organization, String project,
             String team) {
