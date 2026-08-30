@@ -437,6 +437,12 @@ Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de 
    No-Asunción). Si una fase se bloquea por una decisión, se documenta en su **Resultado**, se deja
    **abierta** y se pasa a la siguiente si no hay dependencia técnica.
 6. Un commit por fase como mínimo, con el formato de `COMMIT_RULES.md` (§10 de este plan).
+7. **Cada fase se ejecuta en una sesión nueva.** Al generar `fase-NN+1.md` se genera también
+   **`docs/fases/PROMPT-FASE-NN+1.md`**: un prompt de arranque **autocontenido** que no dependa del
+   historial de la sesión anterior. Debe incluir, como mínimo: la lectura obligatoria en orden, el
+   estado real medido, **todas las decisiones ya resueltas** —para que la sesión nueva no las
+   replantee ni las contradiga—, las reglas innegociables, lo que queda fuera de alcance y la
+   Definición de Hecho. Es la defensa contra la pérdida de contexto entre sesiones.
 
 ---
 
