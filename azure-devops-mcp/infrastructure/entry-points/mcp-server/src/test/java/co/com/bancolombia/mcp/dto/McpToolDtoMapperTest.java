@@ -65,10 +65,10 @@ class McpToolDtoMapperTest {
 
         // Assert (THEN)
         assertEquals(1, domain.size());
-        assertEquals("add", domain.get(0).getOp());
-        assertEquals("/fields/System.Title", domain.get(0).getPath());
-        assertEquals("Título", domain.get(0).getValue());
-        assertEquals("origen", domain.get(0).getFrom());
+        assertEquals("add", domain.get(0).op());
+        assertEquals("/fields/System.Title", domain.get(0).path());
+        assertEquals("Título", domain.get(0).value());
+        assertEquals("origen", domain.get(0).from());
     }
 
     @Test
@@ -95,10 +95,10 @@ class McpToolDtoMapperTest {
         WorkItemBatchCriteria criteria = McpToolDtoMapper.toDomain(input);
 
         // Assert (THEN)
-        assertEquals(List.of(1, 2), criteria.getIds());
-        assertEquals(List.of("System.Id"), criteria.getFields());
-        assertEquals("None", criteria.getExpand());
-        assertEquals("Omit", criteria.getErrorPolicy());
+        assertEquals(List.of(1, 2), criteria.ids());
+        assertEquals(List.of("System.Id"), criteria.fields());
+        assertEquals("None", criteria.expand());
+        assertEquals("Omit", criteria.errorPolicy());
     }
 
     @Test

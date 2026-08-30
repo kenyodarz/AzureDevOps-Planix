@@ -236,10 +236,66 @@ ni la vieja ni la nueva, está declarada en `application.yaml` (D-06, **Fase 06*
 > contra el que producía el modelo de dominio en `OutboundPayloadCharacterizationTest`.
 > Cambiar el nombre de una **clase** es seguro; cambiar el de un **campo** no lo es nunca.
 
-En el **retorno**, `WorkItem`, `WorkItemRelation`, `WorkItemReference`, `WiqlResult` y
-`TeamFieldValues` **siguen serializándose desde el dominio hacia el cliente MCP**. Esa mitad no
-entraba en el alcance de la Fase 03 —que ataca la frontera con Azure DevOps— y queda anotada para
-cuando el dominio se convierta en Value Objects (D-16, **Fase 07**).
+### 3.5 ✅ Frontera de **salida hacia el cliente MCP** — cerrada en la Fase 07 (DP-07)
+
+> **Actualizado al cierre de la Fase 07 (2026-08-30). Decisión: DP-07 §0.2(a), opción (a1).**
+> **El contrato público NO cambió: ni un nombre de campo, ni el orden, ni la emisión de nulos.**
+
+Hasta la Fase 07, esta sección decía que en el **retorno** `WorkItem`, `WorkItemRelation`,
+`WorkItemReference`, `WiqlResult` y `TeamFieldValues` «siguen serializándose desde el dominio hacia el
+cliente MCP» y que quedaba «anotada para cuando el dominio se convierta en Value Objects (D-16,
+**Fase 07**)». **Ese momento llegó y la frontera está cerrada.**
+
+**Corrección de inventario medida en la Fase 07:** las clases realmente serializadas hacia el cliente
+eran **cuatro**, no cinco. `TeamFieldValues` **nunca** se devolvió a ninguna tool —es interna a
+`ResolveTeamScopeUseCase`—, de modo que la lista original la incluía por error.
+
+| Retorno de | Antes *(modelo de dominio serializado)* | Ahora *(DTO de respuesta)* | Forma en el cable **(sin cambios)** |
+|---|---|---|---|
+| `getWorkItem` · `createWorkItem` · `updateWorkItem` | `model.workitem.WorkItem` | `mcp.dto.WorkItemResponse` | `{ id, rev, fields, relations, url }` |
+| *(anidado en el anterior)* | `model.workitem.WorkItemRelation` | `mcp.dto.WorkItemRelationResponse` | `{ rel, url, attributes }` |
+| `listWorkItemsByTeamAndSprint` · `queryByWiql` | `model.workitem.WiqlResult` | `mcp.dto.WiqlResultResponse` | `{ queryType, queryResultType, asOf, workItems }` |
+| *(anidado en el anterior)* | `model.workitem.WorkItemReference` | `mcp.dto.WorkItemReferenceResponse` | `{ id, url }` |
+| `getWorkItemsBatch` | `List<WorkItem>` | `List<WorkItemResponse>` | array de la forma de arriba |
+
+Traduce `mcp-server/.../mcp/dto/McpResponseMapper.java` (estático, sin Spring, sin lógica de negocio),
+simétrico al `McpToolDtoMapper` de entrada.
+
+**Por qué había que cerrarla antes de tocar el modelo.** Convertir `WiqlResult` en `record` renombra
+sus accesores (`getQueryType()` → `queryType()`) y, mientras el dominio *fuera* el contrato, eso
+habría renombrado **los campos del JSON en silencio** — en el retorno de la tool más usada del
+sistema. Con la frontera en medio, la forma del dominio y la del cable son independientes.
+
+**Cómo se garantizó que no cambió nada.** `McpResponsePayloadCharacterizationTest` se escribió
+**antes de tocar una sola clase**, contra el modelo de dominio de entonces, y compara **cadenas
+literales**, no el dominio consigo mismo. Los literales **no se han modificado**; lo único que cambió
+es qué objeto se serializa. Se congelan cuatro cosas:
+
+1. los **nombres** de los campos;
+2. su **orden** de aparición;
+3. la **emisión de nulos** — un `fields` nulo se sigue serializando como `null` y **no** como `{}`;
+4. el **orden de las claves** dentro del mapa `fields`.
+
+> ⚠️ **Por qué importa el matiz de los nulos.** Normalizar los nulos a colecciones vacías habría sido
+> más limpio, y por eso **DP-07 §0.2(c) tuvo que decidirlo expresamente**: es un cambio observable
+> para el agente y el BFF. Se aplicó el mismo criterio que el javadoc de `TeamScope` fijó para las
+> cadenas en blanco — no se endurece nada que convierta un resultado vacío en otra cosa.
+
+### 3.6 El modelo de dominio ya no es mutable (D-16, Fase 07)
+
+Las **9 clases mutables** de `domain/model` —7 con `@Setter` y **2 con `@Data`**, que además generaba
+`equals`/`hashCode` sobre campos mutables— son ahora **`record` inmutables** (DP-07 §0.2(b)).
+**Nada de esto viaja por el cable**, gracias a §3.5.
+
+> 📌 **Corrección de una cifra del plan.** El plan maestro contabilizaba «21 clases con `@Setter`».
+> La medición de la Fase 07 demostró que **21 era el número de tipos del módulo**, no el de clases
+> mutables: las mutables eran **9**, y **ningún setter se invocaba en todo el repositorio** —los
+> cinco mappers construían ya con `builder()`—.
+
+**Invariantes declaradas (DP-07 §0.2(c)):** copia defensiva e inmodificable de todas las colecciones,
+preservando orden y nulos; `WiqlQuery` exige sentencia no vacía; `JsonPatchOperation` exige `op` y
+`path`. **Nada más se endureció**, y las tolerancias deliberadas están fijadas por prueba en
+`DomainInvariantsTest` para que un refactor futuro no las elimine por parecer más limpio.
 
 
 ---

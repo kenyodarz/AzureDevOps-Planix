@@ -34,10 +34,10 @@ public final class JsonPatchMapper {
             return null;
         }
         return JsonPatchOperationRequestDTO.builder()
-                .op(operation.getOp())
-                .path(operation.getPath())
-                .value(operation.getValue())
-                .from(operation.getFrom())
+                .op(operation.op())
+                .path(operation.path())
+                .value(operation.value())
+                .from(operation.from())
                 .build();
     }
 }

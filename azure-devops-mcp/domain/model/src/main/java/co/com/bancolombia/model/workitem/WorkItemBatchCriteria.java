@@ -1,11 +1,8 @@
 package co.com.bancolombia.model.workitem;
 
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import co.com.bancolombia.model.common.DomainCollections;
 import java.util.List;
+import lombok.Builder;
 
 /**
  * Criterio de consulta en lote de Work Items, expresado en términos del dominio.
@@ -19,16 +16,21 @@ import java.util.List;
  *
  * <p>Los nombres de campo se conservan literalmente porque son los que viajan por el cable en ambos
  * extremos ({@code CONTRATO-MCP.md} §3): renombrar la clase es seguro, renombrar un campo no lo es.
+ *
+ * <p><b>Objeto de valor inmutable desde la Fase 07 (D-16).</b> {@code ids} y {@code fields} se
+ * copian de forma defensiva. <b>Deliberadamente no se exige que {@code ids} traiga elementos:</b> un
+ * lote vacío hoy llega a Azure DevOps y vuelve como una lista vacía, y convertir eso en un error
+ * sería un cambio de comportamiento observable que DP-07 §0.2(c) no autorizó.
  */
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder(toBuilder = true)
-public class WorkItemBatchCriteria {
-    private List<Integer> ids;
-    private List<String> fields;
-    private String expand;
-    private String errorPolicy;
-}
+public record WorkItemBatchCriteria(
+        List<Integer> ids,
+        List<String> fields,
+        String expand,
+        String errorPolicy) {
 
+    public WorkItemBatchCriteria {
+        ids = DomainCollections.immutableCopy(ids);
+        fields = DomainCollections.immutableCopy(fields);
+    }
+}

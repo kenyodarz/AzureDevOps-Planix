@@ -40,7 +40,7 @@ public class GetTeamIterationsUseCase {
                 .flatMapIterable(iterations -> iterations == null ? List.of() : iterations)
                 .filter(iteration -> matches(iteration, wanted))
                 .next()
-                .map(TeamIteration::getPath)
+                .map(TeamIteration::path)
                 .filter(path -> path != null && !path.isBlank())
                 .switchIfEmpty(Mono.error(new NoSuchElementException(
                         "El equipo '" + team + "' no tiene una iteración llamada '" + wanted
@@ -48,8 +48,8 @@ public class GetTeamIterationsUseCase {
     }
 
     private boolean matches(TeamIteration iteration, String wanted) {
-        return iteration != null && iteration.getName() != null
-                && iteration.getName().trim().equalsIgnoreCase(wanted);
+        return iteration != null && iteration.name() != null
+                && iteration.name().trim().equalsIgnoreCase(wanted);
     }
 
     /**

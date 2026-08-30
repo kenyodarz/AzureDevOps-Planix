@@ -95,9 +95,9 @@ class TeamScopeAdapterTest {
 
         // Assert (THEN)
         StepVerifier.create(response)
-                .expectNextMatches(values -> "Proj\\Team".equals(values.getDefaultValue())
-                        && values.getValues().size() == 1
-                        && "Proj\\Team".equals(values.getValues().get(0)))
+                .expectNextMatches(values -> "Proj\\Team".equals(values.defaultValue())
+                        && values.values().size() == 1
+                        && "Proj\\Team".equals(values.values().get(0)))
                 .verifyComplete();
 
         RecordedRequest recorded = mockBackEnd.takeRequest(1, TimeUnit.SECONDS);
@@ -120,7 +120,7 @@ class TeamScopeAdapterTest {
 
         // Assert (THEN)
         StepVerifier.create(response)
-                .expectNextMatches(values -> values.getValues() != null && values.getValues().isEmpty())
+                .expectNextMatches(values -> values.values() != null && values.values().isEmpty())
                 .verifyComplete();
     }
 
@@ -143,9 +143,9 @@ class TeamScopeAdapterTest {
         // calendario. Es la razón de ser de esta consulta.
         StepVerifier.create(response)
                 .expectNextMatches(iterations -> iterations.size() == 2
-                        && "Sprint 247".equals(iterations.get(0).getName())
-                        && "Proj\\2025\\Sprint 247".equals(iterations.get(0).getPath())
-                        && "Proj\\2026\\Sprint 248".equals(iterations.get(1).getPath()))
+                        && "Sprint 247".equals(iterations.get(0).name())
+                        && "Proj\\2025\\Sprint 247".equals(iterations.get(0).path())
+                        && "Proj\\2026\\Sprint 248".equals(iterations.get(1).path()))
                 .verifyComplete();
 
         RecordedRequest recorded = mockBackEnd.takeRequest(1, TimeUnit.SECONDS);

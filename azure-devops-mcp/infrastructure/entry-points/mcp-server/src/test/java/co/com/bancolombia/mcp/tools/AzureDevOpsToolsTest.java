@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import co.com.bancolombia.mcp.dto.McpResponseMapper;
+import co.com.bancolombia.mcp.dto.WiqlResultResponse;
 import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
@@ -82,11 +84,12 @@ class AzureDevOpsToolsTest {
                 .thenReturn(Mono.just(expected));
 
         // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(ORG, PROJECT, TEAM,
+        Mono<WiqlResultResponse> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(ORG, PROJECT, TEAM,
                 SPRINT, null, API_VERSION);
 
         // Assert (THEN)
-        StepVerifier.create(result).expectNext(expected).verifyComplete();
+        StepVerifier.create(result).expectNext(McpResponseMapper.toResponse(expected))
+                .verifyComplete();
     }
 
     /**
@@ -124,7 +127,7 @@ class AzureDevOpsToolsTest {
 
         // Act (WHEN) + Assert (THEN)
         StepVerifier.create(azureDevOpsTools.getWorkItem(ORG, PROJECT, 1, null))
-                .expectNext(expected)
+                .expectNext(McpResponseMapper.toResponse(expected))
                 .verifyComplete();
     }
 
@@ -139,7 +142,7 @@ class AzureDevOpsToolsTest {
         // Act (WHEN) + Assert (THEN)
         StepVerifier.create(
                         azureDevOpsTools.createWorkItem(ORG, PROJECT, "Task", List.of(), null))
-                .expectNext(expected)
+                .expectNext(McpResponseMapper.toResponse(expected))
                 .verifyComplete();
     }
 
@@ -153,7 +156,7 @@ class AzureDevOpsToolsTest {
 
         // Act (WHEN) + Assert (THEN)
         StepVerifier.create(azureDevOpsTools.updateWorkItem(ORG, PROJECT, 1, List.of(), null))
-                .expectNext(expected)
+                .expectNext(McpResponseMapper.toResponse(expected))
                 .verifyComplete();
     }
 
@@ -167,7 +170,7 @@ class AzureDevOpsToolsTest {
 
         // Act (WHEN) + Assert (THEN)
         StepVerifier.create(azureDevOpsTools.queryByWiql(ORG, PROJECT, "SELECT 1", null))
-                .expectNext(expected)
+                .expectNext(McpResponseMapper.toResponse(expected))
                 .verifyComplete();
     }
 

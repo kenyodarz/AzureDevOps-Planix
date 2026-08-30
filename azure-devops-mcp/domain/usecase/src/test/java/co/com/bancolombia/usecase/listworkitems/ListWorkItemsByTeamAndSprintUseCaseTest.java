@@ -125,9 +125,9 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         )).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
             // Verify that double backslashes were successfully replaced with a single backslash
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA"));
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("Vicepresidencia Servicios de Tecnología\\2026\\Sprint 247"));
             return Mono.just(mockResult);
         });
@@ -163,9 +163,9 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         )).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
             // Verify that project prefix was correctly prepended
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA"));
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("Vicepresidencia Servicios de Tecnología\\2026\\Sprint 247"));
             return Mono.just(mockResult);
         });
@@ -204,7 +204,7 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         )).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
             // Verify that the work item types are formatted properly as SQL literals
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("[System.WorkItemType] IN ('Historia de Usuario','Task','Bug')"));
             return Mono.just(mockResult);
         });
@@ -240,7 +240,7 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         )).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
             // Verify that the dynamically resolved AreaPath is used
-            assertTrue(argQuery.getQuery()
+            assertTrue(argQuery.query()
                     .contains("[System.AreaPath] = 'DynamicAreaPath\\SpecialBranch\\Exodia'"));
             return Mono.just(mockResult);
         });
@@ -281,7 +281,7 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         when(queryByWiqlUseCase.queryByWiql(eq(org), eq(proj), any(WiqlQuery.class),
                 eq(apiVersion))).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
-            assertTrue(argQuery.getQuery().contains(
+            assertTrue(argQuery.query().contains(
                     "[System.IterationPath] = 'Vicepresidencia Servicios de Tecnología\\2025\\Sprint 247'"));
             return Mono.just(mockResult);
         });
@@ -321,8 +321,8 @@ class ListWorkItemsByTeamAndSprintUseCaseTest {
         when(queryByWiqlUseCase.queryByWiql(eq(org), eq(proj), any(WiqlQuery.class),
                 eq(apiVersion))).thenAnswer(invocation -> {
             WiqlQuery argQuery = invocation.getArgument(2);
-            assertTrue(argQuery.getQuery().contains(realPath));
-            assertFalse(argQuery.getQuery()
+            assertTrue(argQuery.query().contains(realPath));
+            assertFalse(argQuery.query()
                     .contains("\\" + currentYear + "\\" + sprint));
             return Mono.just(mockResult);
         });

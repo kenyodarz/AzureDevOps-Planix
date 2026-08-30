@@ -65,7 +65,7 @@ public class ResolveTeamScopeUseCase {
     private Mono<String> resolveAreaPath(String organization, String project, TeamName team) {
         return getTeamFieldValuesUseCase
                 .getTeamFieldValues(organization, project, team.shortName())
-                .map(TeamFieldValues::getDefaultValue)
+                .map(TeamFieldValues::defaultValue)
                 .onErrorResume(error -> Mono.just(fallbackAreaPath(project, team, error)));
     }
 

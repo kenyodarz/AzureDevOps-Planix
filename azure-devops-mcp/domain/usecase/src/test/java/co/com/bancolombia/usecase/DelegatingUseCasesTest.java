@@ -70,7 +70,8 @@ class DelegatingUseCasesTest {
     void givenPatch_whenCreateWorkItem_thenItDelegates() {
         // Arrange (GIVEN)
         WorkItem expected = WorkItem.builder().build();
-        List<JsonPatchOperation> patch = List.of(JsonPatchOperation.builder().op("add").build());
+        List<JsonPatchOperation> patch = List.of(
+                JsonPatchOperation.builder().op("add").path("/fields/System.Title").build());
         when(workItemCommandPort.createWorkItem(ORG, PROJECT, "Task", patch, API_VERSION))
                 .thenReturn(Mono.just(expected));
 
@@ -87,7 +88,8 @@ class DelegatingUseCasesTest {
     void givenPatch_whenUpdateWorkItem_thenItDelegates() {
         // Arrange (GIVEN)
         WorkItem expected = WorkItem.builder().build();
-        List<JsonPatchOperation> patch = List.of(JsonPatchOperation.builder().op("replace").build());
+        List<JsonPatchOperation> patch = List.of(
+                JsonPatchOperation.builder().op("replace").path("/fields/System.Title").build());
         when(workItemCommandPort.updateWorkItem(ORG, PROJECT, 42, patch, API_VERSION))
                 .thenReturn(Mono.just(expected));
 

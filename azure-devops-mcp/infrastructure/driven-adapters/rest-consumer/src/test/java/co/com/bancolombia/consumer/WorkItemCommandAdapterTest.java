@@ -57,7 +57,7 @@ class WorkItemCommandAdapterTest {
         var response = adapter.createWorkItem("Org", "Proj", "User Story", patch, "7.1");
 
         StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539458 && "New Story".equals(workItem.getFields().get("System.Title")))
+                .expectNextMatches(workItem -> workItem.id() == 7539458 && "New Story".equals(workItem.fields().get("System.Title")))
                 .verifyComplete();
     }
 
@@ -76,7 +76,7 @@ class WorkItemCommandAdapterTest {
         var response = adapter.updateWorkItem("Org", "Proj", 7539458, patch, "7.1");
 
         StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539458 && "Updated Title".equals(workItem.getFields().get("System.Title")))
+                .expectNextMatches(workItem -> workItem.id() == 7539458 && "Updated Title".equals(workItem.fields().get("System.Title")))
                 .verifyComplete();
     }
 }

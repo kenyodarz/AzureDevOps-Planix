@@ -127,7 +127,7 @@ class WiqlCharacterizationTest {
         ArgumentCaptor<WiqlQuery> captor = ArgumentCaptor.forClass(WiqlQuery.class);
         verify(queryByWiqlUseCase).queryByWiql(eq(ORG), eq(PROJECT), captor.capture(),
                 eq(API_VERSION));
-        return captor.getValue().getQuery();
+        return captor.getValue().query();
     }
 
     private void whenListing(String team, String sprint, String types) {

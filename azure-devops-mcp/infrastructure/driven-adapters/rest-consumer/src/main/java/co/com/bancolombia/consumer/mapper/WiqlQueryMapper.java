@@ -20,7 +20,7 @@ public final class WiqlQueryMapper {
             return null;
         }
         return WiqlQueryRequestDTO.builder()
-                .query(query.getQuery())
+                .query(query.query())
                 .build();
     }
 }

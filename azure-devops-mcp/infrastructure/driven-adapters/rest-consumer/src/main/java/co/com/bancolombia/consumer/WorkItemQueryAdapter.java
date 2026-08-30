@@ -103,7 +103,7 @@ public class WorkItemQueryAdapter implements WorkItemQueryPort {
             WorkItemBatchCriteria criteria, String apiVersion) {
         String version = ApiVersions.orDefault(apiVersion, properties.apiVersion().workItem());
         log.info("Fetching Work Items Batch for ids size: {} | Org: {}, Project: {}, API Version: {}",
-                criteria.getIds() != null ? criteria.getIds().size() : 0, organization, project, version);
+                criteria.ids() != null ? criteria.ids().size() : 0, organization, project, version);
 
         return client.post()
                 .uri("/{organization}/{project}/_apis/wit/workitemsbatch?api-version={version}",
@@ -127,7 +127,7 @@ public class WorkItemQueryAdapter implements WorkItemQueryPort {
         // log: `validateStructure` no admite ninguna dependencia extra en `domain/usecase`, SLF4J
         // incluido. Este es el último punto donde la consulta sigue siendo visible antes de salir
         // por el cable, y es la traza que permitía diagnosticar el tablero vacío.
-        log.info("WIQL Query construida: {}", query.getQuery());
+        log.info("WIQL Query construida: {}", query.query());
 
         return client.post()
                 .uri("/{organization}/{project}/_apis/wit/wiql?api-version={version}",

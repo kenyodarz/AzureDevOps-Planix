@@ -59,7 +59,7 @@ class WorkItemQueryAdapterTest {
         var response = adapter.getWorkItem("Org", "Proj", 7539457, "7.1");
 
         StepVerifier.create(response)
-                .expectNextMatches(workItem -> workItem.getId() == 7539457 && "Test Title".equals(workItem.getFields().get("System.Title")))
+                .expectNextMatches(workItem -> workItem.id() == 7539457 && "Test Title".equals(workItem.fields().get("System.Title")))
                 .verifyComplete();
     }
 
@@ -75,7 +75,7 @@ class WorkItemQueryAdapterTest {
         var response = adapter.queryByWiql("Org", "Proj", query, "7.0");
 
         StepVerifier.create(response)
-                .expectNextMatches(result -> "flat".equals(result.getQueryType()) && result.getWorkItems().size() == 1 && result.getWorkItems().get(0).getId() == 7539457)
+                .expectNextMatches(result -> "flat".equals(result.queryType()) && result.workItems().size() == 1 && result.workItems().get(0).id() == 7539457)
                 .verifyComplete();
     }
 
@@ -95,7 +95,7 @@ class WorkItemQueryAdapterTest {
         var response = adapter.getWorkItemsBatch("Org", "Proj", request, "7.1");
 
         StepVerifier.create(response)
-                .expectNextMatches(list -> list.size() == 1 && list.get(0).getId() == 7539457 && "Batch Story".equals(list.get(0).getFields().get("System.Title")))
+                .expectNextMatches(list -> list.size() == 1 && list.get(0).id() == 7539457 && "Batch Story".equals(list.get(0).fields().get("System.Title")))
                 .verifyComplete();
     }
 }

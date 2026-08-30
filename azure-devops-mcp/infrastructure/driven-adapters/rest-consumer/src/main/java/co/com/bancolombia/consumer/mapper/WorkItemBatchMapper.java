@@ -24,10 +24,10 @@ public final class WorkItemBatchMapper {
             return null;
         }
         return WorkItemsBatchRequestDTO.builder()
-                .ids(criteria.getIds())
-                .fields(criteria.getFields())
-                .expand(criteria.getExpand())
-                .errorPolicy(criteria.getErrorPolicy())
+                .ids(criteria.ids())
+                .fields(criteria.fields())
+                .expand(criteria.expand())
+                .errorPolicy(criteria.errorPolicy())
                 .build();
     }
 

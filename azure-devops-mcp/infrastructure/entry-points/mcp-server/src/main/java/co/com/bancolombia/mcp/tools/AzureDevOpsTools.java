@@ -1,14 +1,15 @@
 package co.com.bancolombia.mcp.tools;
 
 import co.com.bancolombia.mcp.dto.JsonPatchOperationInput;
+import co.com.bancolombia.mcp.dto.McpResponseMapper;
 import co.com.bancolombia.mcp.dto.McpToolDtoMapper;
+import co.com.bancolombia.mcp.dto.WiqlResultResponse;
+import co.com.bancolombia.mcp.dto.WorkItemResponse;
 import co.com.bancolombia.mcp.dto.WorkItemsBatchInput;
 import co.com.bancolombia.mcp.error.McpErrorTranslator;
 import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
-import co.com.bancolombia.model.workitem.WiqlResult;
-import co.com.bancolombia.model.workitem.WorkItem;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
@@ -40,6 +41,14 @@ import reactor.core.publisher.Mono;
  * <p>⚠️ {@code listWorkItemsByTeamAndSprint} no es una excepción a esto, pero sí un caso a tener
  * presente: el repliegue de rutas de <b>DP-04</b> absorbe los fallos de resolución <b>dentro</b> del
  * caso de uso, así que nunca llegan hasta aquí. Es lo que ratificó <b>DP-06 §0.1(d)</b>.
+ *
+ * <p><b>Fase 07 (DP-07 §0.2(a)).</b> Las seis tools ya <b>no devuelven modelos de dominio</b>: cada
+ * una termina en {@link McpResponseMapper}, que traduce al DTO de respuesta correspondiente. Era la
+ * última frontera abierta —la Fase 03 cerró la de entrada y la de salida hacia Azure DevOps, pero el
+ * retorno seguía serializando {@code domain/model} tal cual ({@code CONTRATO-MCP.md} §3.4)—, y es lo
+ * que ha permitido convertir el modelo en objetos de valor inmutables sin tocar el JSON público.
+ * <b>Los nombres de campo emitidos son idénticos</b>, congelados por
+ * {@code McpResponsePayloadCharacterizationTest}.
  */
 @Slf4j
 @Component
@@ -58,13 +67,14 @@ public class AzureDevOpsTools {
             description = "Recupera los detalles de un elemento de trabajo específico (User Story, Task, Issue) en Azure DevOps utilizando su identificador numérico."
     )
     @PreAuthorize(McpRoles.HAS_READ)
-    public Mono<WorkItem> getWorkItem(
+    public Mono<WorkItemResponse> getWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "ID único numérico del Work Item", required = true) int id,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [getWorkItem] ejecutada para ID: {}", id);
         return getWorkItemUseCase.getWorkItem(organization, project, id, apiVersion)
+                .map(McpResponseMapper::toResponse)
                 .onErrorMap(McpErrorTranslator.forTool("getWorkItem"));
     }
 
@@ -73,7 +83,7 @@ public class AzureDevOpsTools {
             description = "Crea un nuevo elemento de trabajo (como User Story, Task, Issue) en Azure DevOps utilizando una lista de operaciones JSON Patch."
     )
     @PreAuthorize(McpRoles.HAS_WRITE)
-    public Mono<WorkItem> createWorkItem(
+    public Mono<WorkItemResponse> createWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "Tipo de Work Item a crear (ej. User Story, Task, Issue)", required = true) String type,
@@ -82,6 +92,7 @@ public class AzureDevOpsTools {
         log.info("MCP Tool [createWorkItem] ejecutada para tipo: {}", type);
         return createWorkItemUseCase.createWorkItem(organization, project, type,
                         McpToolDtoMapper.toDomain(patch), apiVersion)
+                .map(McpResponseMapper::toResponse)
                 .onErrorMap(McpErrorTranslator.forTool("createWorkItem"));
     }
 
@@ -90,7 +101,7 @@ public class AzureDevOpsTools {
             description = "Actualiza los campos o relaciones (vínculos jerárquicos de padre-hijo) de un Work Item existente usando JSON Patch."
     )
     @PreAuthorize(McpRoles.HAS_WRITE)
-    public Mono<WorkItem> updateWorkItem(
+    public Mono<WorkItemResponse> updateWorkItem(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "ID único numérico del Work Item a actualizar", required = true) int id,
@@ -99,6 +110,7 @@ public class AzureDevOpsTools {
         log.info("MCP Tool [updateWorkItem] ejecutada para ID: {}", id);
         return updateWorkItemUseCase.updateWorkItem(organization, project, id,
                         McpToolDtoMapper.toDomain(patch), apiVersion)
+                .map(McpResponseMapper::toResponse)
                 .onErrorMap(McpErrorTranslator.forTool("updateWorkItem"));
     }
 
@@ -115,7 +127,7 @@ public class AzureDevOpsTools {
     //         description = "Realiza una consulta estructurada en lenguaje WIQL (Work Item Query Language) para buscar y listar elementos de trabajo."
     // )
     @PreAuthorize(McpRoles.HAS_READ)
-    public Mono<WiqlResult> queryByWiql(
+    public Mono<WiqlResultResponse> queryByWiql(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "Query estructurado en lenguaje WIQL", required = true) String query,
@@ -123,6 +135,7 @@ public class AzureDevOpsTools {
         log.info("MCP Tool [queryByWiql] ejecutada");
         WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
         return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery, apiVersion)
+                .map(McpResponseMapper::toResponse)
                 .onErrorMap(McpErrorTranslator.forTool("queryByWiql"));
     }
 
@@ -131,7 +144,7 @@ public class AzureDevOpsTools {
             description = "Busca y lista los elementos de trabajo (User Stories y Habilitadores) asignados a una célula/equipo y sprint específicos en Azure DevOps."
     )
     @PreAuthorize(McpRoles.HAS_READ)
-    public Mono<WiqlResult> listWorkItemsByTeamAndSprint(
+    public Mono<WiqlResultResponse> listWorkItemsByTeamAndSprint(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. grupobancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps (ej. Vicepresidencia Servicios de Tecnología)", required = true) String project,
             @McpToolParam(description = "Nombre de la célula o su ruta de área completa (ej. EQU1096 - EXODIA)", required = true) String teamName,
@@ -143,6 +156,7 @@ public class AzureDevOpsTools {
         return listWorkItemsByTeamAndSprintUseCase.execute(
                         ListWorkItemsCommand.of(organization, project, teamName, sprintName,
                                 workItemTypes, apiVersion))
+                .map(McpResponseMapper::toResponse)
                 .onErrorMap(McpErrorTranslator.forTool("listWorkItemsByTeamAndSprint"));
     }
 
@@ -151,7 +165,7 @@ public class AzureDevOpsTools {
             description = "Obtiene de manera masiva los detalles de múltiples elementos de trabajo a partir de sus IDs en una sola llamada."
     )
     @PreAuthorize(McpRoles.HAS_READ)
-    public Mono<List<WorkItem>> getWorkItemsBatch(
+    public Mono<List<WorkItemResponse>> getWorkItemsBatch(
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "Lista de IDs únicos numéricos de Work Items a consultar", required = true) List<Integer> ids,
@@ -168,6 +182,7 @@ public class AzureDevOpsTools {
                 .build();
         return getWorkItemsBatchUseCase.getWorkItemsBatch(organization, project,
                         McpToolDtoMapper.toDomain(input), apiVersion)
+                .map(McpResponseMapper::toResponses)
                 .onErrorMap(McpErrorTranslator.forTool("getWorkItemsBatch"));
     }
 }

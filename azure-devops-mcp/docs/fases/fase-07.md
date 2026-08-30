@@ -1,12 +1,15 @@
 # FASE 07 — Dominio rico y cobertura ≥ 90 %
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🔵 **ACTIVA**
-> **Deudas que ataca:** D-16, D-21 *(residual)* · **Decisión bloqueante:** ⚠️ **DP-07 (a plantear)**
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-16 *(**saldada**)* · D-21 *(enunciado **reescrito**, B-11)*
+> **Decisión bloqueante:** ✅ **DP-07 (RESUELTA)**
 > **Riesgo:** 🟢 Bajo · **Depende de:** Fases 01 a 06 (cerradas) · **Habilita:** Fase 08
 > **Regla de oro de esta fase:** **el `@Setter` no se retira porque quede feo, se retira porque un
 > modelo que cualquiera puede mutar a mitad de un flujo reactivo no tiene invariantes.** Y el
-> retorno de cinco de esas clases **se serializa hacia el cliente MCP**, así que tocarlas sin
-> cuidado **sí cambia el contrato público**.
+> retorno de cuatro de esas clases **se serializaba hacia el cliente MCP**, así que tocarlas sin
+> cuidado **sí cambiaba el contrato público**.
+> ✅ **Y no cambió:** **0 nombres de campo, orden, nulos u orden de claves del JSON alterados**,
+> verificado contra **literales** escritos antes de tocar una sola clase.
 
 ---
 
@@ -179,43 +182,121 @@ Enunciado de D-21 y política de líneas de `AzureDevOpsTools` / `WorkItemQueryA
 
 ## 3. Orden de Ejecución
 
-- [ ] **0.** ⚠️ **Plantear DP-07 (y B-11, B-12) al propietario y esperar respuesta.**
-- [ ] **1.** Releer `CONTRATO-MCP.md` §3.4 y §6: qué se serializa hacia el cliente y qué es estable.
-- [ ] **2.** Inventariar las 21 clases: cuáles se serializan hacia MCP y cuáles no.
-- [ ] **3.** **Escribir la prueba de caracterización del JSON de salida ANTES de tocar nada.**
-- [ ] **4.** Aplicar lo que decida DP-07 §0.2(a) sobre la frontera de salida. **(T-01)**
-- [ ] **5.** Retirar `@Setter` y aplicar invariantes. **(T-02)**
-- [ ] **6.** `.\gradlew.bat build` verde: **ni un nombre de campo del JSON alterado**.
-- [ ] **7.** Medir cobertura y mutaciones. **(T-03)**
-- [ ] **8.** Resolver B-11 y B-12. **(T-04)**
-- [ ] **9.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
-- [ ] **10.** `.\gradlew.bat build` verde, con **≥ 184** pruebas y **0** fallos.
-- [ ] **11.** Actualizar `CONTRATO-MCP.md` y el plan maestro. **(T-05)**
-- [ ] **12.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
-- [ ] **13.** **Generar `fase-08.md` y `PROMPT-FASE-08.md`.**
-- [ ] **14.** Commit: `refactor(domain_model): convertir el modelo en objetos de valor inmutables`
+- [x] **0.** ⚠️ **Plantear DP-07 (y B-11, B-12) al propietario y esperar respuesta.**
+- [x] **1.** Releer `CONTRATO-MCP.md` §3.4 y §6: qué se serializa hacia el cliente y qué es estable.
+- [x] **2.** Inventariar las 21 clases: cuáles se serializan hacia MCP y cuáles no.
+- [x] **3.** **Escribir la prueba de caracterización del JSON de salida ANTES de tocar nada.**
+- [x] **4.** Aplicar lo que decida DP-07 §0.2(a) sobre la frontera de salida. **(T-01)**
+- [x] **5.** Retirar `@Setter` y aplicar invariantes. **(T-02)**
+- [x] **6.** `.\gradlew.bat build` verde: **ni un nombre de campo del JSON alterado**.
+- [x] **7.** Medir cobertura y mutaciones. **(T-03)**
+- [x] **8.** Resolver B-11 y B-12. **(T-04)**
+- [x] **9.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
+- [x] **10.** `.\gradlew.bat build` verde, con **≥ 184** pruebas y **0** fallos.
+- [x] **11.** Actualizar `CONTRATO-MCP.md` y el plan maestro. **(T-05)**
+- [x] **12.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
+- [x] **13.** **Generar `fase-08.md` y `PROMPT-FASE-08.md`.**
+- [x] **14.** Commit: `refactor(domain_model): convertir el modelo en objetos de valor inmutables`
 
 ---
 
 ## 4. Resultado
 
-> Rellenar **al cerrar la fase**, con lo alcanzado de verdad.
+> Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **205 pruebas, 0 fallos**.
 
 | Métrica | Antes | Después |
 |---------|------:|--------:|
-| Clases de `domain/model` con `@Setter` | **21** | — |
-| Value Objects inmutables | **6** | — |
-| Invariantes de negocio declaradas | **las de los 6 VOs** | — |
-| Modelos de dominio serializados hacia el cliente MCP | **5** | — |
-| Nombres de campo del JSON de salida alterados | n/a | — |
-| Pruebas totales | **184** | — |
-| Pruebas heredadas **modificadas** | n/a | — |
-| Cobertura `domain/model` | **95,8 %** | — |
-| Cobertura `domain/usecase` | **97,8 %** | — |
-| Mutaciones eliminadas (Pitest) | **84 %** *(`rest-consumer`)* | — |
+| Clases de `domain/model` con `@Setter` o `@Data` | **9** *(no 21 — ver §4.3)* | ✅ **0** |
+| Value Objects inmutables | **6** | ✅ **15** ▲9 |
+| Invariantes de negocio declaradas | **las de los 6 VOs** | ✅ **≥ 1 por agregado**, todas de DP-07 §0.2(c) |
+| Modelos de dominio serializados hacia el cliente MCP | **4** *(no 5 — ver §4.3)* | ✅ **0** |
+| DTOs de respuesta + mappers en la frontera de salida MCP | **0** | ✅ **4 DTOs + 1 mapper** |
+| Nombres de campo del JSON de salida alterados | n/a | ✅ **0** *(congelados por prueba de literales)* |
+| Orden de campos / emisión de nulos alterados | n/a | ✅ **0** |
+| URLs, cuerpos, parámetros de consulta o cabeceras alterados | n/a | ✅ **0** |
+| Contrato de errores de la Fase 06 alterado | n/a | ✅ **0** *(los 4 códigos intactos)* |
+| Pruebas totales | **184** | ✅ **205** ▲21 |
+| Pruebas heredadas **modificadas** | n/a | 🔸 **7 clases** *(6 por renombrado de accesor + 1 por el cierre de la frontera)* — **autorizadas**, sin alterar ni un escenario |
+| Cobertura `domain/model` | **95,8 %** | ✅ **96,2 %** ▲0,4 |
+| Cobertura `domain/usecase` | **97,8 %** | ✅ **97,8 %** = |
+| Cobertura `mcp-server` | **83,3 %** | ✅ **84,3 %** ▲1,0 |
+| Cobertura `rest-consumer` / `app-service` | **92,3 % / 58,2 %** | **92,3 % / 58,2 %** = |
+| Mutaciones eliminadas (Pitest) | **84 %** *(`rest-consumer`)* | ✅ **40/41 = 98 %** `model` · **38/39 = 97 %** `usecase` |
+| ArchUnit `Rule_2.2` (violaciones reales) | **0** | ✅ **0** *(verificado en el log; D-25 sigue viva)* |
+| Líneas de `AzureDevOpsTools` | **173** | 🔸 **188** *(B-12: aceptado formalmente)* |
 
-**Decisión DP-07:** *(pendiente)*
-**Cambios en el contrato MCP público:** *(pendiente)*
-**Bloqueos encontrados:** *(pendiente)*
-**Fase siguiente generada:** ☐ `docs/fases/fase-08.md` · ☐ `docs/fases/PROMPT-FASE-08.md`
+**Decisión DP-07:** ✅ resuelta el 2026-08-30, en el primer paso, **antes de escribir una línea**.
 
+| Sub-pregunta | Respuesta |
+|--------------|-----------|
+| **§0.2(a) Frontera de salida** | **SÍ se cierra** *(opción a1)*. `WorkItemResponse`, `WorkItemRelationResponse`, `WorkItemReferenceResponse` y `WiqlResultResponse` + `McpResponseMapper`, en `mcp-server/.../mcp/dto/`, simétricos al `McpToolDtoMapper` de entrada |
+| **§0.2(b) Forma** | **`record` para todas.** Solo era seguro *después* de (a) |
+| **§0.2(c) Invariantes** | **Las mínimas que no cambian nada observable:** copia defensiva e inmodificable de todas las colecciones **preservando orden y nulos**; `WiqlQuery` con sentencia no vacía; `JsonPatchOperation` con `op` y `path`. **Rechazadas expresamente** `id` no nulo, `ids` no vacío y la normalización de nulos a colecciones vacías |
+| **§0.2(d) `WorkItem.fields`** | **No se toca.** Sigue siendo `Map<String,Object>` abierto; lo único que gana es que **ya no se puede mutar** |
+| **B-11** | **Enunciado de D-21 reescrito**, no tachado: nombraba `RestConsumerTest`, clase que ya no existe |
+| **B-12** | **Aceptado formalmente.** Lo que importa es «0 reglas de negocio», no el recuento de líneas |
+
+**Cambios en el contrato MCP público:** **ninguno.** Ni un nombre de tool, ni de parámetro, ni de
+campo, ni el orden, ni la emisión de nulos, ni la forma de un resultado. A diferencia de la Fase 06
+—que sí cambió la forma del error, con autorización—, **esta fase no cambia nada observable**, y eso
+es precisamente lo que la prueba de caracterización demuestra.
+
+**Bloqueos encontrados:** ninguno. DP-07 se respondió en el paso 0 y la cuestión colateral de las
+pruebas heredadas se arbitró antes de tocar código.
+
+**Fase siguiente generada:** ☑ `docs/fases/fase-08.md` · ☑ `docs/fases/PROMPT-FASE-08.md`
+
+### 4.1 Qué se construyó
+
+| Capa | Antes | Después |
+|------|-------|---------|
+| `domain/model` | 3 paquetes · **9 clases mutables** · 0 invariantes fuera de los VOs | **4 paquetes** (+`common/`) · **0 clases mutables** · **15 objetos de valor** · invariantes **declaradas y probadas** |
+| `mcp-server` | frontera de entrada cerrada, **salida abierta** | **frontera de salida cerrada**: `mcp/dto/` estrena **4 DTOs de respuesta** y **`McpResponseMapper`** |
+| Pruebas | 184 | **205**: `McpResponsePayloadCharacterizationTest` (5) y `DomainInvariantsTest` (16) |
+
+**La secuencia importó tanto como el resultado.** El paso 3 del checklist —escribir la
+caracterización **antes** de tocar nada— no era burocracia: los cuatro literales JSON se redactaron
+contra el modelo de dominio **todavía mutable**, y siguen intactos. Si el orden hubiera sido el
+inverso, la prueba habría congelado lo que produjera el código nuevo, y habría certificado como
+correcto cualquier cambio silencioso.
+
+### 4.2 Por qué (a) tenía que ir antes que (b)
+
+```
+SI SE HUBIERA HECHO AL REVÉS                 LO QUE SE HIZO
+
+WiqlResult → record                          1. frontera cerrada (DTOs + mapper)
+  getQueryType() → queryType()               2. WiqlResult → record
+  JSON: "queryType" → ¿?                        el JSON lo produce el DTO, no el dominio
+  ↳ el retorno de la tool más usada,          ↳ 0 nombres de campo alterados,
+    roto en silencio                            verificado contra literales
+```
+
+### 4.3 Dos cifras del plan que la medición corrigió
+
+| Cifra heredada | Realidad medida |
+|---|---|
+| «`@Setter` en las **21** clases de `domain/model`» (D-16) | **21 era el número de tipos del módulo**, no el de clases mutables. Las mutables eran **9** —7 con `@Setter` y **2 con `@Data`**, que es peor: genera `equals`/`hashCode` sobre campos mutables—. Además **ningún setter se invocaba en todo el repositorio**: los cinco mappers ya construían con `builder()` |
+| «**5** clases se serializan hacia el cliente MCP» (`CONTRATO-MCP.md` §3.4) | Eran **4**. `TeamFieldValues` **nunca** se devolvió a ninguna tool: es interna a `ResolveTeamScopeUseCase` |
+
+Ninguna de las dos cambia lo que había que hacer, pero las dos cambian **el tamaño declarado del
+problema**, y por eso quedan escritas: un plan que arrastra cifras sin verificar acaba justificando
+decisiones con datos que nadie midió.
+
+### 4.4 Hallazgo: la red de seguridad de la Fase 03 es autorreferencial
+
+`OutboundPayloadCharacterizationTest` compara el cuerpo emitido contra
+`MAPPER.writeValueAsString(modeloDeDominio)`, es decir, **usa el propio dominio como oráculo**. Sirve
+para demostrar que un mapper *reproduce* al dominio, pero **no detecta un cambio que afecte a los dos
+a la vez** — que es exactamente el riesgo de esta fase. Por eso la caracterización nueva compara
+contra **cadenas literales**: un literal no cambia solo. Se anota como observación, **no se tocó esa
+clase**.
+
+### 4.5 Desviaciones
+
+| # | Desviación | Justificación |
+|---|------------|---------------|
+| **1** | **7 clases de prueba heredadas adaptadas** *(`WiqlCharacterizationTest`, `ListWorkItemsByTeamAndSprintUseCaseTest`, `DelegatingUseCasesTest`, `McpToolDtoMapperTest`, `WorkItemQueryAdapterTest`, `WorkItemCommandAdapterTest`, `TeamScopeAdapterTest`, `AzureDevOpsToolsTest`)* | **Se midió primero y se preguntó antes de escribir código**, conforme a la regla innegociable nº 5 y a `spring-rules.md` §6. El propietario autorizó el **renombrado mecánico de accesor**. **Ni una aserción, ni un literal WIQL, ni un escenario alterado.** En `DelegatingUseCasesTest` se añadió además un `path` a dos parches de relleno, exigido por la invariante nueva: la prueba verifica **que el caso de uso delega**, no el contenido del parche |
+| **2** | **`AzureDevOpsTools` pasa de 173 a 188 líneas** | 6 líneas de `.map(McpResponseMapper::...)` más javadoc. **B-12 lo aceptó formalmente**: la clase está por encima de ≤ 120 desde la Fase 04 —deuda heredada y documentada— y lo que exige `spring-rules.md` es **0 reglas de negocio**, que se mantiene. Partirla habría cambiado el wiring de las tools y tocado `McpToolsAuthorizationTest`, con riesgo sobre el contrato MCP a cambio de una cifra |
+| **3** | **`domain/model` estrena un cuarto paquete: `common/`** | `DomainCollections` centraliza la copia defensiva que necesitan **6 de los 9 records**. La alternativa era repetir el mismo par de líneas en cada uno. Es dominio puro y no viola `Rule_2.2` |
+| **4** | **D-25 sigue viva** | Los `issues.json` siguen saliendo `{"issues":[],"rules":[]}`. Coincide con la realidad (**0 violaciones reales, verificado en el log**), pero el informe sigue sin ser prueba de nada. Fuera de alcance: **Fase 08** |
