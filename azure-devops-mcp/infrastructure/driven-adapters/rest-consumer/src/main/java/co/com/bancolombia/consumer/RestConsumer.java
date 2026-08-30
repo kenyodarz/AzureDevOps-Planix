@@ -117,6 +117,11 @@ public class RestConsumer implements
     public Mono<WiqlResult> queryByWiql(String organization, String project, WiqlQuery query, String apiVersion) {
         String version = (apiVersion != null && !apiVersion.isBlank()) ? apiVersion : "7.0";
         log.info("Executing WIQL query | Org: {}, Project: {}, API Version: {}", organization, project, version);
+        // La sentencia completa se registra aquí porque la capa de dominio no puede escribir en el
+        // log: `validateStructure` no admite ninguna dependencia extra en `domain/usecase`, SLF4J
+        // incluido. Este es el último punto donde la consulta sigue siendo visible antes de salir
+        // por el cable, y es la traza que permitía diagnosticar el tablero vacío.
+        log.info("WIQL Query construida: {}", query.getQuery());
 
         return client.post()
                 .uri("/{organization}/{project}/_apis/wit/wiql?api-version={version}",

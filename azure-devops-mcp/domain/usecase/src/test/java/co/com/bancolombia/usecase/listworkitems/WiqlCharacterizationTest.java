@@ -1,4 +1,4 @@
-package co.com.bancolombia.mcp.tools;
+package co.com.bancolombia.usecase.listworkitems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,23 +8,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.model.team.TeamFieldValues;
+import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
-import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
-import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
-import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
+import co.com.bancolombia.model.workitem.gateways.TeamScopeFallbackMetrics;
 import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
 import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
-import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.NoSuchElementException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
@@ -33,19 +32,19 @@ import reactor.test.StepVerifier;
 /**
  * <b>Prueba de caracterización: congela la sentencia WIQL carácter a carácter.</b>
  *
- * <p><b>Esta prueba existe para ser movida, no para ser borrada.</b> Hoy la sentencia se construye
- * con un {@code String.format} dentro de {@link AzureDevOpsTools}, que es un <i>entry-point</i> y
- * por tanto el sitio equivocado (deuda <b>D-07</b> del plan maestro). Cuando la <b>Fase 04</b>
- * traslade esa construcción a {@code ListWorkItemsByTeamAndSprintUseCase}, estas mismas aserciones
- * deben seguir verdes apuntando al nuevo sitio. Si alguna deja de compilar, se reubica; <b>si alguna
- * deja de pasar, el refactor cambió la consulta y hay que detenerlo</b>.
+ * <p><b>Esta prueba se ha movido, no reescrito.</b> Nació en la Fase 01 apuntando a
+ * {@code AzureDevOpsTools}, donde la sentencia se construía con un {@code String.format} dentro de
+ * un <i>entry-point</i> (deuda <b>D-07</b>). Su propio javadoc lo anticipaba: «esta prueba existe
+ * para ser movida, no para ser borrada […] si alguna deja de compilar, se reubica; si alguna deja
+ * de pasar, el refactor cambió la consulta y hay que detenerlo». La Fase 04 ejecutó exactamente
+ * eso, <b>previa autorización expresa del propietario</b>: cambió el cableado —de qué se hacen los
+ * mocks y a quién se invoca— y <b>no se tocó ni una aserción, ni la plantilla, ni ninguno de los
+ * ocho escenarios</b>.
  *
- * <p><b>Por qué carácter a carácter y no {@code contains(...)}.</b> {@code AzureDevOpsToolsTest} ya
- * comprueba fragmentos sueltos, y eso deja pasar cambios en el orden de los predicados, en el
- * {@code ORDER BY} o en los espacios. Una consulta WIQL sintácticamente válida pero semánticamente
- * distinta <b>no falla</b>: devuelve cero elementos, sin error y sin log. Ése es exactamente el
- * fallo que el plan del BFF tardó cinco fases en cerrar, y la razón de que esta prueba compare la
- * cadena completa.
+ * <p><b>Por qué carácter a carácter y no {@code contains(...)}.</b> Comprobar fragmentos sueltos
+ * deja pasar cambios en el orden de los predicados, en el {@code ORDER BY} o en los espacios. Una
+ * consulta WIQL sintácticamente válida pero semánticamente distinta <b>no falla</b>: devuelve cero
+ * elementos, sin error y sin log.
  */
 @ExtendWith(MockitoExtension.class)
 class WiqlCharacterizationTest {
@@ -64,9 +63,9 @@ class WiqlCharacterizationTest {
     private static final String DEFAULT_TYPES = "'Historia de Usuario','Habilitador'";
 
     /**
-     * La plantilla vigente, copiada literalmente de {@code AzureDevOpsTools#listWorkItemsByTeamAndSprint}.
-     * Duplicarla aquí es deliberado: si alguien cambia la del código productivo, esta prueba lo
-     * detecta. Una constante compartida no detectaría nada.
+     * La plantilla vigente, copiada literalmente de {@code WiqlStatement}. Duplicarla aquí es
+     * deliberado: si alguien cambia la del código productivo, esta prueba lo detecta. Una constante
+     * compartida no detectaría nada.
      */
     private static final String WIQL_TEMPLATE =
             "SELECT [System.Id] FROM workitems WHERE [System.TeamProject] = @project"
@@ -76,22 +75,22 @@ class WiqlCharacterizationTest {
                     + " ORDER BY [System.Id]";
 
     @Mock
-    private GetWorkItemUseCase getWorkItemUseCase;
-    @Mock
-    private CreateWorkItemUseCase createWorkItemUseCase;
-    @Mock
-    private UpdateWorkItemUseCase updateWorkItemUseCase;
-    @Mock
     private QueryByWiqlUseCase queryByWiqlUseCase;
-    @Mock
-    private GetWorkItemsBatchUseCase getWorkItemsBatchUseCase;
     @Mock
     private GetTeamFieldValuesUseCase getTeamFieldValuesUseCase;
     @Mock
     private GetTeamIterationsUseCase getTeamIterationsUseCase;
 
-    @InjectMocks
-    private AzureDevOpsTools tools;
+    private ListWorkItemsByTeamAndSprintUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        ResolveTeamScopeUseCase resolveTeamScopeUseCase = new ResolveTeamScopeUseCase(
+                getTeamFieldValuesUseCase, getTeamIterationsUseCase,
+                TeamScopeFallbackMetrics.noOp(), Clock.systemDefaultZone());
+        useCase = new ListWorkItemsByTeamAndSprintUseCase(resolveTeamScopeUseCase,
+                queryByWiqlUseCase);
+    }
 
     private static String expectedWiql(String iterationPath, String areaPath, String types) {
         return String.format(WIQL_TEMPLATE, iterationPath, areaPath, types);
@@ -132,9 +131,8 @@ class WiqlCharacterizationTest {
     }
 
     private void whenListing(String team, String sprint, String types) {
-        StepVerifier.create(
-                        tools.listWorkItemsByTeamAndSprint(ORG, PROJECT, team, sprint, types,
-                                API_VERSION))
+        StepVerifier.create(useCase.execute(
+                        ListWorkItemsCommand.of(ORG, PROJECT, team, sprint, types, API_VERSION)))
                 .expectNextCount(1)
                 .verifyComplete();
     }
@@ -178,9 +176,9 @@ class WiqlCharacterizationTest {
     }
 
     /**
-     * Congela la traducción {@code User Story → Historia de Usuario}, que hoy vive incrustada en el
-     * entry-point (deuda <b>D-08</b>). <b>DP-04</b> debe decidir si es regla de dominio o
-     * configuración; hasta entonces, su comportamiento queda fijado aquí.
+     * Congela la traducción {@code User Story → Historia de Usuario}. <b>DP-04 §0.2 decidió que es
+     * regla de dominio</b>, así que ahora vive en el objeto de valor {@code WorkItemTypes} y no en
+     * el entry-point (deuda <b>D-08</b>).
      */
     @Test
     @DisplayName("GIVEN tipos en ingles WHEN se listan los items THEN User Story se traduce y todo se entrecomilla")
@@ -219,7 +217,8 @@ class WiqlCharacterizationTest {
 
     /**
      * El nombre de la célula puede llegar como ruta y con las barras duplicadas por el cliente MCP.
-     * La herramienta las colapsa y se queda con el último tramo antes de preguntarle a Azure DevOps.
+     * El objeto de valor las colapsa y se queda con el último tramo antes de preguntarle a Azure
+     * DevOps.
      */
     @Test
     @DisplayName("GIVEN una celda con ruta y barras dobles WHEN se listan los items THEN se consulta solo el ultimo tramo")
@@ -260,13 +259,12 @@ class WiqlCharacterizationTest {
     /**
      * ⚠️ <b>Esta prueba fija un comportamiento que el plan considera defectuoso.</b> Cuando Azure
      * DevOps no resuelve la iteración y el sprint tiene la forma {@code "Sprint N"}, el repliegue
-     * intercala <b>el año del calendario</b>. Para un sprint que cruza el cambio de ejercicio la
-     * ruta resultante no existe, la consulta devuelve cero elementos y el tablero sale vacío sin
-     * error y sin log (deuda <b>D-09</b>, heredada como D-37 del plan del BFF).
+     * intercala <b>el año del calendario</b> (deuda <b>D-09</b>).
      *
-     * <p>Está aquí para que su desaparición sea una <b>decisión visible</b> —<b>DP-04</b>— y no un
-     * efecto colateral de un refactor. Si DP-04 opta por eliminar el año, <b>esta prueba debe
-     * borrarse conscientemente</b>, no adaptarse.
+     * <p><b>DP-04 §0.1 decidió conservarlo</b> —opción (a)—, porque eliminarlo cambiaría el
+     * comportamiento observable ante un fallo de Azure DevOps, que {@code CONTRATO-MCP.md} §2.4
+     * declara contrato de facto. Lo que sí cambió es que ahora <b>se cuenta y se avisa</b>: ver
+     * {@code ResolveTeamScopeUseCaseTest}.
      */
     @Test
     @DisplayName("GIVEN la iteracion no se resuelve y el sprint es 'Sprint N' WHEN se listan los items THEN se intercala el anio en curso")

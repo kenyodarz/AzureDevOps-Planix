@@ -1,11 +1,12 @@
 # FASE 04 — Desacople del flujo compuesto
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** ⚪ PENDIENTE
-> **Deudas que ataca:** D-07, D-08, D-09, D-12 · **Decisión bloqueante:** ⛔ **DP-04 (ABIERTA)**
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-07, D-08, D-09, D-12 *(las cuatro **saldadas**)* · **Decisión bloqueante:** ✅ **DP-04 (RESUELTA)**
 > **Riesgo:** 🔴 **Alto** — el más alto del plan · **Depende de:** Fases 01, 02 y 03 (cerradas) ·
 > **Habilita:** Fases 05 a 08
 > **Regla de oro de esta fase:** **la sentencia WIQL que sale por el cable debe ser idéntica,
 > carácter a carácter.** Si cambia un espacio, el tablero sale vacío y nadie se entera.
+> ✅ **Lo fue, en las 8 ramas.**
 
 ---
 

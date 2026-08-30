@@ -1,34 +1,54 @@
 package co.com.bancolombia.mcp.tools;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import co.com.bancolombia.model.team.TeamFieldValues;
+import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
+import co.com.bancolombia.model.workitem.WorkItem;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
-import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
+import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
-import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
-import java.util.NoSuchElementException;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+/**
+ * El entry-point MCP, después de la Fase 04: <b>protocolo y nada más</b>.
+ *
+ * <p>Estas pruebas <b>sustituyen</b> a las siete que había aquí y que comprobaban la sentencia
+ * WIQL, la resolución de rutas y la normalización de tipos. <b>Ninguno de aquellos escenarios se ha
+ * perdido</b>: se reubicaron literalmente a
+ * {@code co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCaseTest}, que es
+ * donde vive ahora el flujo. Seguir comprobando la consulta aquí significaría que el entry-point
+ * todavía sabe cómo se construye, que es exactamente la deuda <b>D-07</b> que esta fase salda.
+ *
+ * <p>Lo que sí se comprueba aquí, y antes no comprobaba nadie, es que la herramienta <b>traduce el
+ * protocolo sin alterarlo</b>: que los seis parámetros MCP llegan al comando de dominio en el orden
+ * y con el contenido correctos.
+ */
 @ExtendWith(MockitoExtension.class)
 class AzureDevOpsToolsTest {
+
+    private static final String ORG = "grupobancolombia";
+    private static final String PROJECT = "Vicepresidencia Servicios de Tecnología";
+    private static final String TEAM = "EQU1096 - EXODIA";
+    private static final String SPRINT = "Sprint 247";
+    private static final String API_VERSION = "7.0";
 
     @Mock
     private GetWorkItemUseCase getWorkItemUseCase;
@@ -41,286 +61,132 @@ class AzureDevOpsToolsTest {
     @Mock
     private GetWorkItemsBatchUseCase getWorkItemsBatchUseCase;
     @Mock
-    private GetTeamFieldValuesUseCase getTeamFieldValuesUseCase;
-    @Mock
-    private GetTeamIterationsUseCase getTeamIterationsUseCase;
+    private ListWorkItemsByTeamAndSprintUseCase listWorkItemsByTeamAndSprintUseCase;
 
     @InjectMocks
     private AzureDevOpsTools azureDevOpsTools;
 
+    private ListWorkItemsCommand capturedCommand() {
+        ArgumentCaptor<ListWorkItemsCommand> captor =
+                ArgumentCaptor.forClass(ListWorkItemsCommand.class);
+        verify(listWorkItemsByTeamAndSprintUseCase).execute(captor.capture());
+        return captor.getValue();
+    }
+
+    @Test
+    @DisplayName("GIVEN los parametros MCP WHEN se invoca la tool THEN delega en el caso de uso y devuelve su resultado")
+    void givenMcpParameters_whenListing_thenItDelegatesAndReturnsTheResult() {
+        // Arrange (GIVEN)
+        WiqlResult expected = WiqlResult.builder().build();
+        when(listWorkItemsByTeamAndSprintUseCase.execute(any()))
+                .thenReturn(Mono.just(expected));
+
+        // Act (WHEN)
+        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(ORG, PROJECT, TEAM,
+                SPRINT, null, API_VERSION);
+
+        // Assert (THEN)
+        StepVerifier.create(result).expectNext(expected).verifyComplete();
+    }
+
     /**
-     * Simula que Azure DevOps no puede resolver la iteración, de modo que la herramienta cae al
-     * repliegue por concatenación. Es lo que hacían <b>siempre</b> estas pruebas antes de que la
-     * resolución dinámica existiera, así que sus aserciones se conservan intactas.
+     * El contrato MCP público no cambió: los seis parámetros se siguen recibiendo sueltos y en el
+     * mismo orden. Esta prueba lo fija.
      */
-    private void givenIterationCannotBeResolved() {
-        when(getTeamIterationsUseCase.resolveIterationPath(anyString(), anyString(), anyString(),
-                anyString()))
-                .thenReturn(Mono.error(new NoSuchElementException("sin iteraciones")));
+    @Test
+    @DisplayName("GIVEN los seis parametros MCP WHEN se invoca la tool THEN se trasladan al comando sin alterarse")
+    void givenSixMcpParameters_whenListing_thenTheyAreMappedIntoTheCommand() {
+        // Arrange (GIVEN)
+        when(listWorkItemsByTeamAndSprintUseCase.execute(any()))
+                .thenReturn(Mono.just(WiqlResult.builder().build()));
+
+        // Act (WHEN)
+        azureDevOpsTools.listWorkItemsByTeamAndSprint(ORG, PROJECT, TEAM, SPRINT, "Bug",
+                API_VERSION).block();
+
+        // Assert (THEN)
+        ListWorkItemsCommand command = capturedCommand();
+        assertEquals(ORG, command.organization());
+        assertEquals(PROJECT, command.project());
+        assertEquals(TEAM, command.team().value());
+        assertEquals(SPRINT, command.sprint().value());
+        assertEquals("'Bug'", command.workItemTypes().toWiqlList());
+        assertEquals(API_VERSION, command.apiVersion());
     }
 
     @Test
-    void givenParams_whenListWorkItemsByTeamAndSprint_thenReturnsQueryResult() {
+    @DisplayName("GIVEN un id WHEN se invoca getWorkItem THEN delega en su caso de uso")
+    void givenId_whenGetWorkItem_thenItDelegates() {
         // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String team = "EQU1096 - EXODIA";
-        String sprint = "Sprint 247";
-        String apiVersion = "7.0";
+        WorkItem expected = WorkItem.builder().build();
+        when(getWorkItemUseCase.getWorkItem(ORG, PROJECT, 1, null))
+                .thenReturn(Mono.just(expected));
 
-        WiqlResult mockResult = WiqlResult.builder().build();
-        givenIterationCannotBeResolved();
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, team))
-                .thenReturn(Mono.just(TeamFieldValues.builder()
-                        .defaultValue("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA")
-                        .build()));
-        when(queryByWiqlUseCase.queryByWiql(eq(org), eq(proj), any(WiqlQuery.class),
-                eq(apiVersion)))
-                .thenReturn(Mono.just(mockResult));
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj, team,
-                sprint, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
+        // Act (WHEN) + Assert (THEN)
+        StepVerifier.create(azureDevOpsTools.getWorkItem(ORG, PROJECT, 1, null))
+                .expectNext(expected)
                 .verifyComplete();
     }
 
     @Test
-    void givenParamsWithDoubleBackslashes_whenListWorkItemsByTeamAndSprint_thenReturnsCorrectQuery() {
+    @DisplayName("GIVEN un parche WHEN se invoca createWorkItem THEN delega traduciendo el DTO a dominio")
+    void givenPatch_whenCreateWorkItem_thenItDelegatesWithDomainTypes() {
         // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String teamWithDoubleBackslashes = "Vicepresidencia Servicios de Tecnología\\\\EQU1096 - EXODIA";
-        String sprintWithDoubleBackslashes = "Vicepresidencia Servicios de Tecnología\\\\2026\\\\Sprint 247";
-        String apiVersion = "7.0";
+        WorkItem expected = WorkItem.builder().build();
+        when(createWorkItemUseCase.createWorkItem(eq(ORG), eq(PROJECT), eq("Task"), any(),
+                eq(null))).thenReturn(Mono.just(expected));
 
-        WiqlResult mockResult = WiqlResult.builder().build();
-        givenIterationCannotBeResolved();
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, "EQU1096 - EXODIA"))
-                .thenReturn(Mono.error(new RuntimeException("API error")));
-        when(queryByWiqlUseCase.queryByWiql(
-                eq(org),
-                eq(proj),
-                any(WiqlQuery.class),
-                eq(apiVersion)
-        )).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            // Verify that double backslashes were successfully replaced with a single backslash
-            assertTrue(argQuery.getQuery()
-                    .contains("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA"));
-            assertTrue(argQuery.getQuery()
-                    .contains("Vicepresidencia Servicios de Tecnología\\2026\\Sprint 247"));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj,
-                teamWithDoubleBackslashes, sprintWithDoubleBackslashes, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
+        // Act (WHEN) + Assert (THEN)
+        StepVerifier.create(
+                        azureDevOpsTools.createWorkItem(ORG, PROJECT, "Task", List.of(), null))
+                .expectNext(expected)
                 .verifyComplete();
     }
 
     @Test
-    void givenParamsWithoutProjectPrefix_whenListWorkItemsByTeamAndSprint_thenPrependsProjectName() {
+    @DisplayName("GIVEN un parche WHEN se invoca updateWorkItem THEN delega traduciendo el DTO a dominio")
+    void givenPatch_whenUpdateWorkItem_thenItDelegatesWithDomainTypes() {
         // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String teamWithoutProject = "EQU1096 - EXODIA";
-        String sprintWithoutProject = "2026\\Sprint 247";
-        String apiVersion = "7.0";
+        WorkItem expected = WorkItem.builder().build();
+        when(updateWorkItemUseCase.updateWorkItem(eq(ORG), eq(PROJECT), eq(1), any(), eq(null)))
+                .thenReturn(Mono.just(expected));
 
-        WiqlResult mockResult = WiqlResult.builder().build();
-        givenIterationCannotBeResolved();
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, teamWithoutProject))
-                .thenReturn(Mono.error(new RuntimeException("API error")));
-        when(queryByWiqlUseCase.queryByWiql(
-                eq(org),
-                eq(proj),
-                any(WiqlQuery.class),
-                eq(apiVersion)
-        )).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            // Verify that project prefix was correctly prepended
-            assertTrue(argQuery.getQuery()
-                    .contains("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA"));
-            assertTrue(argQuery.getQuery()
-                    .contains("Vicepresidencia Servicios de Tecnología\\2026\\Sprint 247"));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj,
-                teamWithoutProject, sprintWithoutProject, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
+        // Act (WHEN) + Assert (THEN)
+        StepVerifier.create(azureDevOpsTools.updateWorkItem(ORG, PROJECT, 1, List.of(), null))
+                .expectNext(expected)
                 .verifyComplete();
     }
 
     @Test
-    void givenCustomWorkItemTypes_whenListWorkItemsByTeamAndSprint_thenFormatsTypesCorrectly() {
+    @DisplayName("GIVEN una sentencia WHEN se invoca queryByWiql THEN delega envolviendola en el modelo de dominio")
+    void givenStatement_whenQueryByWiql_thenItDelegates() {
         // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String team = "EQU1096 - EXODIA";
-        String sprint = "Sprint 247";
-        String customTypes = "User Story, Task, Bug";
-        String apiVersion = "7.0";
+        WiqlResult expected = WiqlResult.builder().build();
+        when(queryByWiqlUseCase.queryByWiql(eq(ORG), eq(PROJECT), any(WiqlQuery.class), eq(null)))
+                .thenReturn(Mono.just(expected));
 
-        WiqlResult mockResult = WiqlResult.builder().build();
-        givenIterationCannotBeResolved();
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, team))
-                .thenReturn(Mono.just(TeamFieldValues.builder()
-                        .defaultValue("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA")
-                        .build()));
-        when(queryByWiqlUseCase.queryByWiql(
-                eq(org),
-                eq(proj),
-                any(WiqlQuery.class),
-                eq(apiVersion)
-        )).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            // Verify that the work item types are formatted properly as SQL literals
-            assertTrue(argQuery.getQuery()
-                    .contains("[System.WorkItemType] IN ('Historia de Usuario','Task','Bug')"));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj, team,
-                sprint, customTypes, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
-                .verifyComplete();
-    }
-
-    @Test
-    void givenDynamicAreaPath_whenListWorkItemsByTeamAndSprint_thenUsesResolvedAreaPath() {
-        // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String team = "EQU1096 - EXODIA";
-        String sprint = "Sprint 247";
-        String apiVersion = "7.0";
-
-        WiqlResult mockResult = WiqlResult.builder().build();
-        givenIterationCannotBeResolved();
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, team))
-                .thenReturn(Mono.just(TeamFieldValues.builder()
-                        .defaultValue("DynamicAreaPath\\SpecialBranch\\Exodia").build()));
-        when(queryByWiqlUseCase.queryByWiql(
-                eq(org),
-                eq(proj),
-                any(WiqlQuery.class),
-                eq(apiVersion)
-        )).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            // Verify that the dynamically resolved AreaPath is used
-            assertTrue(argQuery.getQuery()
-                    .contains("[System.AreaPath] = 'DynamicAreaPath\\SpecialBranch\\Exodia'"));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj, team,
-                sprint, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
-                .verifyComplete();
-    }
-
-    // ---------------------------------------------------------------------------------------
-    // Resolución dinámica del IterationPath.
-    // Es el gemelo de `givenDynamicAreaPath_...`: la simetría que faltaba y que causaba que el
-    // tablero saliera vacío cada enero.
-    // ---------------------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("GIVEN Azure DevOps resuelve la iteración WHEN se listan los ítems THEN usa el IterationPath real")
-    void givenDynamicIterationPath_whenListWorkItemsByTeamAndSprint_thenUsesResolvedIterationPath() {
-        // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String team = "EQU1096 - EXODIA";
-        String sprint = "Sprint 247";
-        String apiVersion = "7.0";
-
-        WiqlResult mockResult = WiqlResult.builder().build();
-        when(getTeamIterationsUseCase.resolveIterationPath(org, proj, team, sprint))
-                .thenReturn(Mono.just(
-                        "Vicepresidencia Servicios de Tecnología\\2025\\Sprint 247"));
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, team))
-                .thenReturn(Mono.just(TeamFieldValues.builder()
-                        .defaultValue("Vicepresidencia Servicios de Tecnología\\EQU1096 - EXODIA")
-                        .build()));
-        when(queryByWiqlUseCase.queryByWiql(eq(org), eq(proj), any(WiqlQuery.class),
-                eq(apiVersion))).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            assertTrue(argQuery.getQuery().contains(
-                    "[System.IterationPath] = 'Vicepresidencia Servicios de Tecnología\\2025\\Sprint 247'"));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj, team,
-                sprint, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
+        // Act (WHEN) + Assert (THEN)
+        StepVerifier.create(azureDevOpsTools.queryByWiql(ORG, PROJECT, "SELECT 1", null))
+                .expectNext(expected)
                 .verifyComplete();
     }
 
     /**
-     * <b>El fallo del año, cerrado.</b> Un sprint que empezó en 2025 y termina en 2026 vive en
-     * {@code ...\2025\Sprint 247}. El cálculo anterior lo buscaba en el año en curso, no lo
-     * encontraba y devolvía cero ítems sin decir nada. Ahora el año lo pone Azure DevOps.
+     * Los valores por defecto {@code None} y {@code Omit} son contrato público
+     * ({@code CONTRATO-MCP.md} §2.5) y los aplica el entry-point, no el dominio: son opcionalidad
+     * del protocolo, no una regla de negocio de Azure DevOps.
      */
     @Test
-    @DisplayName("GIVEN un sprint que cruza el año WHEN se listan los ítems THEN NO se usa el año en curso")
-    void givenSprintCrossingTheYear_whenListWorkItemsByTeamAndSprint_thenCurrentYearIsNotUsed() {
+    @DisplayName("GIVEN expand y errorPolicy en blanco WHEN se invoca getWorkItemsBatch THEN se aplican None y Omit")
+    void givenBlankOptionalParameters_whenBatch_thenDefaultsAreApplied() {
         // Arrange (GIVEN)
-        String org = "grupobancolombia";
-        String proj = "Vicepresidencia Servicios de Tecnología";
-        String team = "EQU1096 - EXODIA";
-        String sprint = "Sprint 247";
-        String apiVersion = "7.0";
-        int currentYear = java.time.LocalDate.now(java.time.ZoneId.systemDefault()).getYear();
-        String realPath = proj + "\\" + (currentYear - 1) + "\\" + sprint;
+        when(getWorkItemsBatchUseCase.getWorkItemsBatch(eq(ORG), eq(PROJECT), any(), eq(null)))
+                .thenReturn(Mono.just(List.of(WorkItem.builder().build())));
 
-        WiqlResult mockResult = WiqlResult.builder().build();
-        when(getTeamIterationsUseCase.resolveIterationPath(org, proj, team, sprint))
-                .thenReturn(Mono.just(realPath));
-        when(getTeamFieldValuesUseCase.getTeamFieldValues(org, proj, team))
-                .thenReturn(Mono.just(TeamFieldValues.builder().defaultValue(proj + "\\" + team)
-                        .build()));
-        when(queryByWiqlUseCase.queryByWiql(eq(org), eq(proj), any(WiqlQuery.class),
-                eq(apiVersion))).thenAnswer(invocation -> {
-            WiqlQuery argQuery = invocation.getArgument(2);
-            assertTrue(argQuery.getQuery().contains(realPath));
-            assertFalse(argQuery.getQuery()
-                    .contains("\\" + currentYear + "\\" + sprint));
-            return Mono.just(mockResult);
-        });
-
-        // Act (WHEN)
-        Mono<WiqlResult> result = azureDevOpsTools.listWorkItemsByTeamAndSprint(org, proj, team,
-                sprint, null, apiVersion);
-
-        // Assert (THEN)
-        StepVerifier.create(result)
-                .expectNext(mockResult)
+        // Act (WHEN) + Assert (THEN)
+        StepVerifier.create(azureDevOpsTools.getWorkItemsBatch(ORG, PROJECT, List.of(1), null, "  ",
+                        "  ", null))
+                .expectNextCount(1)
                 .verifyComplete();
     }
 }

@@ -4,16 +4,15 @@ import co.com.bancolombia.mcp.dto.JsonPatchOperationInput;
 import co.com.bancolombia.mcp.dto.McpToolDtoMapper;
 import co.com.bancolombia.mcp.dto.WorkItemsBatchInput;
 import co.com.bancolombia.mcp.security.McpRoles;
-import co.com.bancolombia.model.team.TeamFieldValues;
+import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
-import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
+import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
-import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +25,11 @@ import reactor.core.publisher.Mono;
 
 /**
  * Herramientas MCP expuestas como beans de Spring AI para interactuar con Azure DevOps (WIT & WIQL).
+ *
+ * <p><b>Cero lógica de negocio</b> ({@code spring-rules.md}, {@code entry-points}). Cada método
+ * traduce protocolo MCP y delega en un caso de uso. Desde la Fase 04, la construcción de la
+ * sentencia WIQL, la resolución de rutas y la normalización de los tipos de elemento de trabajo
+ * viven en {@code domain}, no aquí.
  */
 @Slf4j
 @Component
@@ -37,12 +41,8 @@ public class AzureDevOpsTools {
     private final UpdateWorkItemUseCase updateWorkItemUseCase;
     private final QueryByWiqlUseCase queryByWiqlUseCase;
     private final GetWorkItemsBatchUseCase getWorkItemsBatchUseCase;
-    private final GetTeamFieldValuesUseCase getTeamFieldValuesUseCase;
-    private final GetTeamIterationsUseCase getTeamIterationsUseCase;
+    private final ListWorkItemsByTeamAndSprintUseCase listWorkItemsByTeamAndSprintUseCase;
 
-    /**
-     * Obtener un Work Item por ID.
-     */
     @McpTool(
             name = "getWorkItem",
             description = "Recupera los detalles de un elemento de trabajo específico (User Story, Task, Issue) en Azure DevOps utilizando su identificador numérico."
@@ -57,9 +57,6 @@ public class AzureDevOpsTools {
         return getWorkItemUseCase.getWorkItem(organization, project, id, apiVersion);
     }
 
-    /**
-     * Crear un nuevo Work Item.
-     */
     @McpTool(
             name = "createWorkItem",
             description = "Crea un nuevo elemento de trabajo (como User Story, Task, Issue) en Azure DevOps utilizando una lista de operaciones JSON Patch."
@@ -76,9 +73,6 @@ public class AzureDevOpsTools {
                 McpToolDtoMapper.toDomain(patch), apiVersion);
     }
 
-    /**
-     * Actualizar un Work Item.
-     */
     @McpTool(
             name = "updateWorkItem",
             description = "Actualiza los campos o relaciones (vínculos jerárquicos de padre-hijo) de un Work Item existente usando JSON Patch."
@@ -118,10 +112,6 @@ public class AzureDevOpsTools {
         return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery, apiVersion);
     }
 
-    /**
-     * Busca y lista los elementos de trabajo (User Stories y Habilitadores) asignados a una
-     * célula/equipo y sprint específicos en Azure DevOps.
-     */
     @McpTool(
             name = "listWorkItemsByTeamAndSprint",
             description = "Busca y lista los elementos de trabajo (User Stories y Habilitadores) asignados a una célula/equipo y sprint específicos en Azure DevOps."
@@ -136,121 +126,11 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.0)", required = false) String apiVersion
     ) {
         log.info("MCP Tool [listWorkItemsByTeamAndSprint] ejecutada");
-        String cleanTeam = teamName.replace("\\\\", "\\");
-        String cleanSprint = sprintName.replace("\\\\", "\\");
-
-        final String teamNameParam = cleanTeam.contains("\\")
-                ? cleanTeam.substring(cleanTeam.lastIndexOf("\\") + 1).trim()
-                : cleanTeam;
-
-        return getTeamFieldValuesUseCase.getTeamFieldValues(organization, project, teamNameParam)
-                .map(TeamFieldValues::getDefaultValue)
-                .onErrorResume(e -> {
-                    log.warn(
-                            "No se pudo obtener el AreaPath dinámico para la célula: {}. Se usará la normalización por defecto.",
-                            cleanTeam, e);
-                    return Mono.just(resolveAreaPath(project, cleanTeam));
-                })
-                .flatMap(finalAreaPath -> resolveIteration(organization, project, teamNameParam,
-                        cleanSprint)
-                        .flatMap(finalIterationPath -> {
-                            log.info("Resolución de AreaPath final para célula {}: {}", cleanTeam,
-                                    finalAreaPath);
-                            log.info("Resolución de IterationPath final para sprint {}: {}",
-                                    cleanSprint, finalIterationPath);
-                            String typesStr = parseWorkItemTypes(workItemTypes);
-
-                            String query = String.format(
-                                    "SELECT [System.Id] FROM workitems WHERE [System.TeamProject] = @project AND [System.IterationPath] = '%s' AND [System.AreaPath] = '%s' AND [System.WorkItemType] IN (%s) ORDER BY [System.Id]",
-                                    finalIterationPath, finalAreaPath, typesStr
-                            );
-                            log.info("WIQL Query construida: {}", query);
-
-                            WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
-                            return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery,
-                                    apiVersion);
-                        }));
+        return listWorkItemsByTeamAndSprintUseCase.execute(
+                ListWorkItemsCommand.of(organization, project, teamName, sprintName, workItemTypes,
+                        apiVersion));
     }
 
-    /**
-     * Pregunta a Azure DevOps por el {@code IterationPath} del sprint y solo concatena si esa
-     * consulta falla.
-     *
-     * <p>Este método es el arreglo del fallo más caro del sistema. Antes se llamaba directamente a
-     * {@link #resolveIterationPath(String, String)}, que para un sprint con formato
-     * {@code "Sprint N"} intercalaba {@code LocalDate.now().getYear()}. Pero un sprint que va de
-     * diciembre a enero pertenece al año en que <b>empezó</b>: consultado en enero, la ruta
-     * apuntaba a una iteración que no existe, la consulta WIQL devolvía cero ítems y el tablero
-     * salía vacío <b>sin error, sin aviso y sin log</b>. Nadie podía distinguir «este sprint no
-     * tiene historias» de «preguntamos por un sprint inexistente».
-     *
-     * <p>La concatenación se conserva como repliegue para no introducir ninguna regresión si Azure
-     * DevOps no responde, pero ahora deja rastro en el log en lugar de fallar en silencio.
-     */
-    private Mono<String> resolveIteration(String organization, String project, String team,
-            String cleanSprint) {
-        return getTeamIterationsUseCase.resolveIterationPath(organization, project, team,
-                        cleanSprint)
-                .onErrorResume(e -> {
-                    log.warn(
-                            "No se pudo obtener el IterationPath dinámico para el sprint: {}. Se usará la normalización por defecto.",
-                            cleanSprint, e);
-                    return Mono.just(resolveIterationPath(project, cleanSprint));
-                });
-    }
-
-    private String resolveAreaPath(String project, String cleanTeam) {
-        if (!cleanTeam.startsWith(project)) {
-            return project + '\\' + cleanTeam;
-        }
-        return cleanTeam;
-    }
-
-    /**
-     * Repliegue histórico: fabrica la ruta por concatenación cuando Azure DevOps no puede
-     * responder. El año calculado aquí es incorrecto para los sprints que cruzan el cambio de
-     * ejercicio, y por eso este método <b>dejó de ser el camino principal</b>: hoy solo se usa
-     * desde el {@code onErrorResume} de {@link #resolveIteration(String, String, String, String)}.
-     * Se conserva para no cambiar el comportamiento cuando la consulta falla.
-     */
-    private String resolveIterationPath(String project, String cleanSprint) {
-        if (!cleanSprint.startsWith(project)) {
-            if (cleanSprint.matches("Sprint \\d+")) {
-                int currentYear = java.time.LocalDate.now(java.time.ZoneId.systemDefault())
-                        .getYear();
-                return project + '\\' + currentYear + '\\' + cleanSprint;
-            } else {
-                return project + '\\' + cleanSprint;
-            }
-        }
-        return cleanSprint;
-    }
-
-    private String parseWorkItemTypes(String workItemTypes) {
-        if (workItemTypes == null || workItemTypes.isBlank()) {
-            return "'Historia de Usuario','Habilitador'";
-        }
-        return java.util.Arrays.stream(workItemTypes.split(","))
-                .map(String::trim)
-                .map(this::normalizeWorkItemType)
-                .map(this::quoteWorkItemType)
-                .collect(java.util.stream.Collectors.joining(","));
-    }
-
-    private String normalizeWorkItemType(String type) {
-        return "User Story".equalsIgnoreCase(type) ? "Historia de Usuario" : type;
-    }
-
-    private String quoteWorkItemType(String type) {
-        if (type.startsWith("'") && type.endsWith("'")) {
-            return type;
-        }
-        return "'" + type + "'";
-    }
-
-    /**
-     * Obtener Work Items en lote.
-     */
     @McpTool(
             name = "getWorkItemsBatch",
             description = "Obtiene de manera masiva los detalles de múltiples elementos de trabajo a partir de sus IDs en una sola llamada."

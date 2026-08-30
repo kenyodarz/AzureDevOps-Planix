@@ -11,10 +11,13 @@ import co.com.bancolombia.model.iteration.gateways.GetTeamIterationsRepository;
 import co.com.bancolombia.model.querybywiql.gateways.QueryByWiqlRepository;
 import co.com.bancolombia.model.team.gateways.GetTeamFieldValuesRepository;
 import co.com.bancolombia.model.updateworkitem.gateways.UpdateWorkItemRepository;
+import co.com.bancolombia.model.workitem.gateways.TeamScopeFallbackMetrics;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
 import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
+import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
+import co.com.bancolombia.usecase.listworkitems.ResolveTeamScopeUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
 import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
@@ -52,7 +55,7 @@ import org.springframework.context.annotation.Import;
  */
 class UseCasesConfigWiringTest {
 
-    /** Los siete tipos de caso de uso que {@link UseCasesConfig} declara. */
+    /** Los tipos de caso de uso que {@link UseCasesConfig} declara. */
     private static final List<Class<?>> USE_CASE_TYPES = List.of(
             GetTeamFieldValuesUseCase.class,
             GetTeamIterationsUseCase.class,
@@ -60,7 +63,11 @@ class UseCasesConfigWiringTest {
             CreateWorkItemUseCase.class,
             UpdateWorkItemUseCase.class,
             QueryByWiqlUseCase.class,
-            GetWorkItemsBatchUseCase.class);
+            GetWorkItemsBatchUseCase.class,
+            // Añadidos por la Fase 04: el flujo compuesto y la resolución de rutas. La aserción
+            // que se les aplica es exactamente la misma que a los otros siete.
+            ResolveTeamScopeUseCase.class,
+            ListWorkItemsByTeamAndSprintUseCase.class);
 
     @Test
     @DisplayName("GIVEN los gateways disponibles WHEN se carga UseCasesConfig THEN el contexto arranca y cada caso de uso resuelve a UN solo bean")
@@ -122,6 +129,15 @@ class UseCasesConfigWiringTest {
         @Bean
         GetWorkItemsBatchRepository getWorkItemsBatchRepository() {
             return mock(GetWorkItemsBatchRepository.class);
+        }
+
+        /**
+         * Puerto de observabilidad del repliegue, introducido por la Fase 04 (D-09). El doble
+         * inerte basta: aquí solo se comprueba el wiring, no la métrica.
+         */
+        @Bean
+        TeamScopeFallbackMetrics teamScopeFallbackMetrics() {
+            return TeamScopeFallbackMetrics.noOp();
         }
     }
 }

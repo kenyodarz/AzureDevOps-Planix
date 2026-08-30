@@ -86,7 +86,8 @@
 **Autorización:** ✅ `hasRole('MCP.AZURE_DEVOPS.READ')` *(escrita en la Fase 02; antes no existía ni comentada)*
 
 **Es la tool más usada y la única con lógica compuesta.** Su sentencia WIQL está congelada carácter
-a carácter en `WiqlCharacterizationTest` (Fase 01, T-02). Contrato interno observable:
+a carácter en `WiqlCharacterizationTest` (Fase 01, T-02; **reubicada a `domain/usecase` en la Fase
+04**, con las ocho ramas y sus aserciones intactas). Contrato interno observable:
 
 ```
 SELECT [System.Id] FROM workitems
@@ -97,16 +98,31 @@ WHERE [System.TeamProject] = @project
 ORDER BY [System.Id]
 ```
 
+> ✅ **Actualizado al cierre de la Fase 04 (2026-08-30). Decisión: DP-04.**
+> **Ninguno de los seis comportamientos tolerantes ha cambiado.** Todos siguen produciendo
+> exactamente el mismo resultado observable; lo que cambió es **dónde vive cada regla** y, en los
+> dos repliegues, que **ahora se miden**. La sentencia emitida es idéntica carácter a carácter en
+> las ocho ramas.
+
 **Comportamientos tolerantes que los clientes pueden estar explotando** (y que por tanto son
 contrato de facto, aunque no estén documentados en la descripción de la tool):
 
-1. `teamName` y `sprintName` admiten **barras dobles** (`\\`), que se colapsan a una.
-2. `teamName` admite ruta completa: se toma **el último tramo**.
-3. `workItemTypes` traduce `User Story` → `Historia de Usuario`.
-4. `workItemTypes` admite valores **ya entrecomillados** sin duplicar comillas.
-5. Si Azure DevOps no resuelve el `AreaPath`, se **fabrica por concatenación** sin avisar al cliente.
-6. Si Azure DevOps no resuelve el `IterationPath` y el sprint es `Sprint N`, se intercala **el año
-   del calendario** — origen del fallo del tablero vacío (D-09).
+| # | Comportamiento | Estado tras la Fase 04 | Dónde vive ahora |
+|---|----------------|------------------------|------------------|
+| 1 | `teamName` y `sprintName` admiten **barras dobles** (`\\`), que se colapsan a una | ✅ **Sin cambios** | `TeamName.of(...)` y `SprintName.of(...)` *(dominio)* |
+| 2 | `teamName` admite ruta completa: se toma **el último tramo** para consultar a Azure DevOps, pero la ruta entera alimenta el repliegue | ✅ **Sin cambios** | `TeamName.shortName()` vs `TeamName.value()` *(dominio)* |
+| 3 | `workItemTypes` traduce `User Story` → `Historia de Usuario` | ✅ **Sin cambios.** **DP-04 §0.2 lo declaró regla de dominio**, no configuración | `WorkItemTypes.parse(...)` *(dominio)* |
+| 4 | `workItemTypes` admite valores **ya entrecomillados** sin duplicar comillas | ✅ **Sin cambios** | `WorkItemTypes.parse(...)` *(dominio)* |
+| 5 | Si Azure DevOps no resuelve el `AreaPath`, se **fabrica por concatenación** sin avisar al cliente | 🔸 **Se conserva** (DP-04 §0.1, opción **a**). Sigue **sin avisar al cliente** —el contrato no cambia—, pero ya **no es invisible para el operador**: incrementa el contador `azuredevops.teamscope.fallback{path=area}` y emite un `WARN` con la causa | `TeamPathFallback.areaPath(...)` *(dominio)* · métrica en `app-service` |
+| 6 | Si Azure DevOps no resuelve el `IterationPath` y el sprint es `Sprint N`, se intercala **el año del calendario** — origen del fallo del tablero vacío (D-09) | 🔸 **Se conserva, año incluido** (DP-04 §0.1, opción **a**). Ahora incrementa `azuredevops.teamscope.fallback{path=iteration,calendarYearInterleaved=true}` —**etiqueta propia, separada del repliegue inocuo**— y emite un `WARN` que dice explícitamente que la consulta puede devolver cero elementos. Además el año **ya no lo calcula el dominio**: se inyecta un `Clock`, lo que hace el repliegue determinista y comprobable | `TeamPathFallback.iterationPath(...)` *(dominio)* · métrica en `app-service` |
+
+> **Por qué 5 y 6 se conservaron.** Eliminarlos —opciones (b) y (c) de DP-04 §0.1— habría cambiado
+> el comportamiento observable ante un fallo de Azure DevOps: donde hoy sale un tablero vacío,
+> saldría un error. Al ser contrato de facto, ese cambio le corresponde al propietario y no a un
+> refactor. Lo que la Fase 04 sí resolvió es el motivo por el que la decisión llevaba años
+> aplazada: **hasta ahora nadie sabía cuántas veces se disparaban**. Con la métrica, la retirada
+> podrá decidirse con cifras.
+
 
 ### 2.5 `getWorkItemsBatch`
 

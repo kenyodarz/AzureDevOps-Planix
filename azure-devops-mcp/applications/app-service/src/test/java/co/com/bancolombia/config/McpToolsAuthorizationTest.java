@@ -9,16 +9,14 @@ import static org.mockito.Mockito.when;
 import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.mcp.tools.AzureDevOpsTools;
 import co.com.bancolombia.mcp.tools.HealthTool;
-import co.com.bancolombia.model.team.TeamFieldValues;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
-import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
+import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
-import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
@@ -178,12 +176,8 @@ class McpToolsAuthorizationTest {
         when(context.getBean(GetWorkItemsBatchUseCase.class)
                 .getWorkItemsBatch(anyString(), anyString(), any(), any()))
                 .thenReturn(Mono.just(List.of(WorkItem.builder().build())));
-        when(context.getBean(GetTeamFieldValuesUseCase.class)
-                .getTeamFieldValues(anyString(), anyString(), anyString()))
-                .thenReturn(Mono.just(TeamFieldValues.builder().defaultValue("area").build()));
-        when(context.getBean(GetTeamIterationsUseCase.class)
-                .resolveIterationPath(anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(Mono.just("iteracion"));
+        when(context.getBean(ListWorkItemsByTeamAndSprintUseCase.class).execute(any()))
+                .thenReturn(Mono.just(WiqlResult.builder().build()));
         when(context.getBean(QueryByWiqlUseCase.class)
                 .queryByWiql(anyString(), anyString(), any(WiqlQuery.class), any()))
                 .thenReturn(Mono.just(WiqlResult.builder().build()));
@@ -232,13 +226,8 @@ class McpToolsAuthorizationTest {
         }
 
         @Bean
-        GetTeamFieldValuesUseCase getTeamFieldValuesUseCase() {
-            return mock(GetTeamFieldValuesUseCase.class);
-        }
-
-        @Bean
-        GetTeamIterationsUseCase getTeamIterationsUseCase() {
-            return mock(GetTeamIterationsUseCase.class);
+        ListWorkItemsByTeamAndSprintUseCase listWorkItemsByTeamAndSprintUseCase() {
+            return mock(ListWorkItemsByTeamAndSprintUseCase.class);
         }
 
         @Bean
@@ -247,11 +236,10 @@ class McpToolsAuthorizationTest {
                 UpdateWorkItemUseCase updateWorkItemUseCase,
                 QueryByWiqlUseCase queryByWiqlUseCase,
                 GetWorkItemsBatchUseCase getWorkItemsBatchUseCase,
-                GetTeamFieldValuesUseCase getTeamFieldValuesUseCase,
-                GetTeamIterationsUseCase getTeamIterationsUseCase) {
+                ListWorkItemsByTeamAndSprintUseCase listWorkItemsByTeamAndSprintUseCase) {
             return new AzureDevOpsTools(getWorkItemUseCase, createWorkItemUseCase,
                     updateWorkItemUseCase, queryByWiqlUseCase, getWorkItemsBatchUseCase,
-                    getTeamFieldValuesUseCase, getTeamIterationsUseCase);
+                    listWorkItemsByTeamAndSprintUseCase);
         }
 
         @Bean
