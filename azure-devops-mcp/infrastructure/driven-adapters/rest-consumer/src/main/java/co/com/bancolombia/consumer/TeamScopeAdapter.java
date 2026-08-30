@@ -1,5 +1,6 @@
 package co.com.bancolombia.consumer;
 
+import co.com.bancolombia.consumer.config.AzureDevOpsAdapterProperties;
 import co.com.bancolombia.consumer.dto.TeamFieldValuesDTO;
 import co.com.bancolombia.consumer.dto.TeamIterationsDTO;
 import co.com.bancolombia.consumer.mapper.TeamMapper;
@@ -8,8 +9,8 @@ import co.com.bancolombia.model.team.TeamIteration;
 import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -26,21 +27,51 @@ import reactor.core.publisher.Mono;
  * que permite probarlas sin arrastrar ningún flujo de work items.
  *
  * <p><b>Las dos URLs llevan {@code api-version=7.0} escrito literalmente en la ruta</b>, sin
- * parámetro que lo sobreescriba, exactamente igual que antes: esta fase no cambia ni una llamada
- * HTTP. Por eso no usan {@link ApiVersions}. Tipar y configurar las versiones es <b>D-18</b>,
- * material de la <b>Fase 06</b>.
+ * parámetro que lo sobreescriba, exactamente igual que antes. Por eso no usan {@link ApiVersions} ni
+ * las versiones configurables de {@link AzureDevOpsAdapterProperties}: <b>B-10 decidió NO
+ * parametrizarlas</b>, porque hacerlo habría cambiado dos llamadas HTTP y la regla innegociable de
+ * esta fase es que no cambia ninguna.
  *
- * <p>El cortacircuito pasa a llamarse {@code teamScope} (decisión <b>B-05</b>); como ninguna
- * instancia estaba declarada en {@code application.yaml} (D-06), el comportamiento no cambia.
+ * <h2>Fase 06: estas dos consultas son el caso especial de la traducción de errores</h2>
+ *
+ * <p>Los dos métodos traducen sus fallos con {@link AzureDevOpsErrorTranslator}, el <b>mismo</b>
+ * traductor que los otros dos adaptadores. Pero aquí la excepción de dominio <b>casi nunca llega al
+ * cliente</b>: {@code ResolveTeamScopeUseCase} la captura con {@code onErrorResume} y cae al
+ * repliegue por concatenación que <b>DP-04</b> conservó, con su {@code WARN} y su contador
+ * {@code azuredevops.teamscope.fallback}. <b>DP-06 §0.1(d)</b> ratificó ese reparto: la tool falla
+ * ante un error, <b>pero el repliegue de rutas se respeta intacto</b>, porque convertir un tablero
+ * vacío en un error es contrato de facto y lo decide el propietario, no un refactor.
+ *
+ * <p>Traducir aquí sigue mereciendo la pena por dos motivos: cuando estas consultas se invocan
+ * fuera del flujo compuesto —a través de sus casos de uso— el error sí viaja, y en todos los casos
+ * el cuerpo original de Azure DevOps queda registrado en {@code ERROR}, que es lo que permite saber
+ * <b>por qué</b> se disparó el repliegue y no solo <b>cuántas veces</b>.
+ *
+ * <p>Su timeout por operación es <b>el más corto de los cuatro</b> (D-24) precisamente porque su
+ * fallo no rompe nada: esperar más solo retrasaría el repliegue.
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TeamScopeAdapter implements TeamScopePort {
 
     private static final String CIRCUIT_BREAKER = "teamScope";
 
     private final WebClient client;
+    private final AzureDevOpsAdapterProperties properties;
+
+    @Autowired
+    public TeamScopeAdapter(WebClient client, AzureDevOpsAdapterProperties properties) {
+        this.client = client;
+        this.properties = properties;
+    }
+
+    /**
+     * Constructor de conveniencia con los valores por defecto, para que las pruebas heredadas de la
+     * Fase 05 sigan compilando sin arrastrar el contexto de Spring.
+     */
+    public TeamScopeAdapter(WebClient client) {
+        this(client, AzureDevOpsAdapterProperties.defaults());
+    }
 
     @Override
     @CircuitBreaker(name = CIRCUIT_BREAKER)
@@ -53,7 +84,9 @@ public class TeamScopeAdapter implements TeamScopePort {
                         organization, project, team)
                 .retrieve()
                 .bodyToMono(TeamFieldValuesDTO.class)
-                .map(TeamMapper::toDomain);
+                .map(TeamMapper::toDomain)
+                .timeout(properties.operationTimeout().teamScope())
+                .onErrorMap(AzureDevOpsErrorTranslator.forOperation("getTeamFieldValues"));
     }
 
     /**
@@ -72,7 +105,8 @@ public class TeamScopeAdapter implements TeamScopePort {
                         organization, project, team)
                 .retrieve()
                 .bodyToMono(TeamIterationsDTO.class)
-                .map(TeamMapper::toDomain);
+                .map(TeamMapper::toDomain)
+                .timeout(properties.operationTimeout().teamScope())
+                .onErrorMap(AzureDevOpsErrorTranslator.forOperation("getTeamIterations"));
     }
 }
-

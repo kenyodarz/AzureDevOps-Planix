@@ -3,6 +3,7 @@ package co.com.bancolombia.mcp.tools;
 import co.com.bancolombia.mcp.dto.JsonPatchOperationInput;
 import co.com.bancolombia.mcp.dto.McpToolDtoMapper;
 import co.com.bancolombia.mcp.dto.WorkItemsBatchInput;
+import co.com.bancolombia.mcp.error.McpErrorTranslator;
 import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.model.workitem.ListWorkItemsCommand;
 import co.com.bancolombia.model.workitem.WiqlQuery;
@@ -30,6 +31,15 @@ import reactor.core.publisher.Mono;
  * traduce protocolo MCP y delega en un caso de uso. Desde la Fase 04, la construcción de la
  * sentencia WIQL, la resolución de rutas y la normalización de los tipos de elemento de trabajo
  * viven en {@code domain}, no aquí.
+ *
+ * <p><b>Fase 06.</b> Cada operación termina en {@link McpErrorTranslator}, que da al error la forma
+ * {@code CODIGO: mensaje neutro} que fijó DP-06 §0.1(a). <b>No es lógica de negocio</b>: es
+ * traducción de protocolo, exactamente igual que el {@code McpToolDtoMapper} de la Fase 03. La
+ * decisión de <b>qué</b> fallo es cada cosa se tomó una capa más abajo, en el adaptador.
+ *
+ * <p>⚠️ {@code listWorkItemsByTeamAndSprint} no es una excepción a esto, pero sí un caso a tener
+ * presente: el repliegue de rutas de <b>DP-04</b> absorbe los fallos de resolución <b>dentro</b> del
+ * caso de uso, así que nunca llegan hasta aquí. Es lo que ratificó <b>DP-06 §0.1(d)</b>.
  */
 @Slf4j
 @Component
@@ -54,7 +64,8 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "ID único numérico del Work Item", required = true) int id,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [getWorkItem] ejecutada para ID: {}", id);
-        return getWorkItemUseCase.getWorkItem(organization, project, id, apiVersion);
+        return getWorkItemUseCase.getWorkItem(organization, project, id, apiVersion)
+                .onErrorMap(McpErrorTranslator.forTool("getWorkItem"));
     }
 
     @McpTool(
@@ -70,7 +81,8 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [createWorkItem] ejecutada para tipo: {}", type);
         return createWorkItemUseCase.createWorkItem(organization, project, type,
-                McpToolDtoMapper.toDomain(patch), apiVersion);
+                        McpToolDtoMapper.toDomain(patch), apiVersion)
+                .onErrorMap(McpErrorTranslator.forTool("createWorkItem"));
     }
 
     @McpTool(
@@ -86,7 +98,8 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [updateWorkItem] ejecutada para ID: {}", id);
         return updateWorkItemUseCase.updateWorkItem(organization, project, id,
-                McpToolDtoMapper.toDomain(patch), apiVersion);
+                        McpToolDtoMapper.toDomain(patch), apiVersion)
+                .onErrorMap(McpErrorTranslator.forTool("updateWorkItem"));
     }
 
     /**
@@ -109,7 +122,8 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.0)", required = false) String apiVersion) {
         log.info("MCP Tool [queryByWiql] ejecutada");
         WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
-        return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery, apiVersion);
+        return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery, apiVersion)
+                .onErrorMap(McpErrorTranslator.forTool("queryByWiql"));
     }
 
     @McpTool(
@@ -127,8 +141,9 @@ public class AzureDevOpsTools {
     ) {
         log.info("MCP Tool [listWorkItemsByTeamAndSprint] ejecutada");
         return listWorkItemsByTeamAndSprintUseCase.execute(
-                ListWorkItemsCommand.of(organization, project, teamName, sprintName, workItemTypes,
-                        apiVersion));
+                        ListWorkItemsCommand.of(organization, project, teamName, sprintName,
+                                workItemTypes, apiVersion))
+                .onErrorMap(McpErrorTranslator.forTool("listWorkItemsByTeamAndSprint"));
     }
 
     @McpTool(
@@ -152,6 +167,7 @@ public class AzureDevOpsTools {
                 .errorPolicy(errorPolicy != null && !errorPolicy.isBlank() ? errorPolicy : "Omit")
                 .build();
         return getWorkItemsBatchUseCase.getWorkItemsBatch(organization, project,
-                McpToolDtoMapper.toDomain(input), apiVersion);
+                        McpToolDtoMapper.toDomain(input), apiVersion)
+                .onErrorMap(McpErrorTranslator.forTool("getWorkItemsBatch"));
     }
 }

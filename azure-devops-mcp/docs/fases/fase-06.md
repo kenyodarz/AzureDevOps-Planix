@@ -1,11 +1,14 @@
 # FASE 06 — Errores, resiliencia y contrato de fallos
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** ⚪ PENDIENTE
-> **Deudas que ataca:** D-06, D-13, D-18, D-24 · **Decisión bloqueante:** ⛔ **DP-06 (ABIERTA)**
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-06, D-13, D-18, D-24 *(D-06, D-13 y D-24 **saldadas**; D-18 **saldada en su parte configurable**)*
+> **Decisión bloqueante:** ✅ **DP-06 (RESUELTA)**
 > **Riesgo:** 🟠 Medio · **Depende de:** Fases 01 a 05 (cerradas) · **Habilita:** Fases 07 y 08
 > **Regla de oro de esta fase:** **esta fase SÍ cambia comportamiento observable, y por eso lo
 > decide el propietario antes de escribirlo.** Es la primera del plan que no puede prometer «cero
 > cambios»: traducir un error **es** cambiar lo que ve el cliente.
+> ✅ **Y el cambio fue exactamente el autorizado:** solo la forma del error. **0 URLs, cuerpos,
+> parámetros de consulta o cabeceras alterados**, verificado con diff literal contra `HEAD`.
 
 ---
 
@@ -203,41 +206,102 @@ Según **B-09** y **B-10**. Punto de partida: `consumer/ApiVersions`, ya central
 
 ## 3. Orden de Ejecución
 
-- [ ] **0.** ⛔ **Plantear DP-06 (y B-08, B-09, B-10) al propietario y esperar respuesta.**
-- [ ] **1.** Releer `CONTRATO-MCP.md` §2 y §3: qué es contrato público y qué no.
-- [ ] **2.** Inventariar cada punto donde hoy escapa un error técnico, y las 2 pruebas que lo congelan.
-- [ ] **3.** Crear las excepciones de dominio. **(T-01)**
-- [ ] **4.** Crear el traductor único y enchufarlo en los **3** adaptadores. **(T-02)**
-- [ ] **5.** `.\gradlew.bat build` verde: **ni una URL ni un cuerpo alterados**. **(T-02)**
-- [ ] **6.** Declarar los **3** cortacircuitos y los timeouts por operación. **(T-03)**
-- [ ] **7.** Aplicar B-09 y B-10 sobre las versiones de API. **(T-04)**
-- [ ] **8.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
-- [ ] **9.** `.\gradlew.bat build` verde, con **≥ 148** pruebas y **0** fallos.
-- [ ] **10.** Actualizar `CONTRATO-MCP.md` y el plan maestro (§3, §6, §7, §9, cabecera). **(T-05)**
-- [ ] **11.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
-- [ ] **12.** **Generar `fase-07.md` y `PROMPT-FASE-07.md`.**
-- [ ] **13.** Commit: `refactor(error_handling): traducir los fallos de azure devops a excepciones de dominio`
+- [x] **0.** ⛔ **Plantear DP-06 (y B-08, B-09, B-10) al propietario y esperar respuesta.**
+- [x] **1.** Releer `CONTRATO-MCP.md` §2 y §3: qué es contrato público y qué no.
+- [x] **2.** Inventariar cada punto donde hoy escapa un error técnico, y las 2 pruebas que lo congelan.
+- [x] **3.** Crear las excepciones de dominio. **(T-01)**
+- [x] **4.** Crear el traductor único y enchufarlo en los **3** adaptadores. **(T-02)**
+- [x] **5.** `.\gradlew.bat build` verde: **ni una URL ni un cuerpo alterados**. **(T-02)**
+- [x] **6.** Declarar los **3** cortacircuitos y los timeouts por operación. **(T-03)**
+- [x] **7.** Aplicar B-09 y B-10 sobre las versiones de API. **(T-04)**
+- [x] **8.** Comprobar en el **log** del `ArchitectureTest` que sigue a **0** violaciones.
+- [x] **9.** `.\gradlew.bat build` verde, con **≥ 148** pruebas y **0** fallos.
+- [x] **10.** Actualizar `CONTRATO-MCP.md` y el plan maestro (§3, §6, §7, §9, cabecera). **(T-05)**
+- [x] **11.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
+- [x] **12.** **Generar `fase-07.md` y `PROMPT-FASE-07.md`.**
+- [x] **13.** Commit: `refactor(error_handling): traducir los fallos de azure devops a excepciones de dominio`
 
 ---
 
 ## 4. Resultado
 
-> Rellenar **al cerrar la fase**, con lo alcanzado de verdad.
+> Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **184 pruebas, 0 fallos**.
 
 | Métrica | Antes | Después |
 |---------|------:|--------:|
-| Excepciones de dominio | **0** | — |
-| Errores técnicos que llegan crudos al cliente MCP | **todos** | — |
-| Cortacircuitos declarados **sin** configuración | **3** | — |
-| Timeouts por operación | **0** *(1 de Netty compartido)* | — |
-| Versiones de API hardcodeadas | **7** *(en 1 sitio)* | — |
-| URLs o cuerpos HTTP alterados | n/a | — |
-| Pruebas totales | **148** | — |
-| Pruebas heredadas **modificadas** | n/a | — |
-| Cobertura `rest-consumer` | **88,4 %** | — |
+| Excepciones de dominio | **0** | ✅ **3** *(+1 base abstracta)*, en `domain/model/.../model/exception/` |
+| Errores técnicos que llegan crudos al cliente MCP | **todos** | ✅ **0** *(7 de 7 puntos traducidos)* |
+| Traductores de errores en el adaptador | **0** | ✅ **1**, compartido por los 3 · **0 duplicados** |
+| Cortacircuitos declarados **sin** configuración | **3** | ✅ **0** *(3 de 3 con umbrales elegidos)* |
+| Cortacircuitos declarados en el YAML **que no usa nadie** | **2** *(`testGet`, `testPost`)* | ✅ **0** |
+| Timeouts por operación | **0** *(1 de Netty compartido)* | ✅ **4** *(10 s · **30 s lote** · 10 s · 5 s)* |
+| Versiones de API hardcodeadas | **7** *(en 1 sitio)* | 🔸 **2** *(las de B-10, en la ruta)* · **2 en `@ConfigurationProperties`** |
+| URLs, cuerpos, parámetros de consulta o cabeceras alterados | n/a | ✅ **0** *(diff literal contra `HEAD`)* |
+| Pruebas totales | **148** | ✅ **184** ▲36 |
+| Pruebas heredadas **modificadas** | n/a | **1 clase, 2 aserciones** *(las de D-13, cambio anunciado y autorizado)* |
+| Cobertura `rest-consumer` | **88,4 %** | ✅ **92,3 %** ▲3,9 |
+| Cobertura `mcp-server` | **80,7 %** | ✅ **83,3 %** ▲2,6 |
+| Cobertura `domain/model` | **94,7 %** | ✅ **95,8 %** ▲1,1 |
+| Cobertura `domain/usecase` | **97,8 %** | **97,8 %** = |
+| Cobertura `app-service` | **58,2 %** | **58,2 %** = |
+| ArchUnit `Rule_2.2` (violaciones reales) | **0** | ✅ **0** *(verificado en el log; D-25 sigue viva)* |
 
-**Decisión DP-06:** *(pendiente)*
-**Cambios en el contrato MCP público:** *(pendiente — solo la forma del error, si DP-06 lo dice)*
-**Bloqueos encontrados:** *(pendiente)*
-**Fase siguiente generada:** ☐ `docs/fases/fase-07.md` · ☐ `docs/fases/PROMPT-FASE-07.md`
+**Decisión DP-06:** ✅ resuelta el 2026-08-30, en el primer paso.
+
+| Sub-pregunta | Respuesta |
+|--------------|-----------|
+| **§0.1(a) Forma** | **Código estable + mensaje neutro**: `CODIGO: mensaje en español`. El código existe para que el cliente ramifique sin hacer `catch` por texto |
+| **§0.1(b) Cuerpo original** | **Se oculta al cliente y se registra íntegro en `ERROR`** en el log del MCP. Cumple §1 del plan maestro sin dejar sin diagnóstico a quien opera |
+| **§0.1(c) Granularidad** | **4 excepciones**: `AzureDevOpsException` (base) + `WorkItemNotFoundException` (404) + `AzureDevOpsUnauthorizedException` (401/403) + `AzureDevOpsUnavailableException` (5xx, otros 4xx, timeout, circuito abierto, red) |
+| **§0.1(d) Romper o vaciar** | **La tool falla con excepción de dominio, PERO el repliegue de rutas se respeta intacto.** No contradice DP-04: donde hoy sale un tablero vacío, sigue saliendo un tablero vacío |
+| **§0.2 Cortacircuitos** | **Los mismos valores del scaffold aplicados a las tres instancias reales**: `failureRateThreshold: 50`, `slidingWindowSize: 10`, `waitDurationInOpenState: 10s`. No introduce criterio nuevo: lo que cambia es que por fin se aplica a los cortacircuitos que existen |
+| **§0.2 Timeouts (D-24)** | consulta **10 s** · **lote 30 s** · comando **10 s** · ámbito de equipo **5 s** |
+| **§0.2 `testGet`/`testPost`** | **Retirados.** Ningún `@CircuitBreaker` los nombraba |
+
+**Sub-decisiones:**
+
+| ID | Respuesta |
+|----|-----------|
+| **B-08** | **En ambas capas, con responsabilidades distintas.** `AzureDevOpsErrorTranslator` (rest-consumer) sabe qué es un 404, un timeout y un cortacircuito abierto, y traduce **técnico → dominio**. `McpErrorTranslator` (mcp-server) sabe qué forma tiene un error en MCP, y traduce **dominio → mensaje con código estable**. Concentrarlo todo en el adaptador le habría exigido conocer el protocolo MCP —dependencia que la arquitectura prohíbe—; concentrarlo todo en el entry-point habría dejado al adaptador incumpliendo `spring-rules.md`. **Ninguna duplica a la otra** |
+| **B-09** | **`@ConfigurationProperties`**, no objeto de valor de dominio. DP-04 declaró dominio las *reglas* de Azure DevOps, pero una versión de API no es una regla de negocio: es un detalle del proveedor que cambia por motivos ajenos al negocio y que un operador debe poder mover sin recompilar. Vive en `AzureDevOpsAdapterProperties`, **con los mismos dos literales por defecto**: un YAML que no los mencione produce las llamadas de siempre |
+| **B-10** | **NO se parametrizan.** Las dos consultas de ámbito de equipo conservan `api-version=7.0` **literal en la ruta**, porque cambiarlas habría alterado dos llamadas HTTP y la regla innegociable nº 2 de esta fase es que no cambia ninguna |
+
+**Cambios en el contrato MCP público:** **solo la forma del error**, tal y como DP-06 autorizó
+expresamente. Documentado en `CONTRATO-MCP.md` **§6** *(sección nueva)*. **Ni un nombre de tool, ni
+de parámetro, ni de campo, ni la forma de un resultado de éxito ha cambiado.**
+
+**Bloqueos encontrados:** ninguno. DP-06 se respondió en el paso 0.
+
+**Fase siguiente generada:** ☑ `docs/fases/fase-07.md` · ☑ `docs/fases/PROMPT-FASE-07.md`
+
+### 4.1 Qué se construyó
+
+| Capa | Antes | Después |
+|------|-------|---------|
+| `domain/model` | 2 paquetes, **0 excepciones** | **3 paquetes** (`workitem/`, `team/`, **`exception/`**) · **4 tipos de excepción**, sin Spring, sin HTTP, sin Jackson |
+| `rest-consumer` | 3 adaptadores · **0 traductores** · versiones en el código | **`AzureDevOpsErrorTranslator`** (144 líneas, **uno solo**) · **`AzureDevOpsAdapterProperties`** (versiones + timeouts) · `ApiVersions` reducido a la condición |
+| `mcp-server` | **0 tratamiento de errores** | **`McpErrorTranslator`** (78) + **`McpToolExecutionException`** en `mcp/error/` |
+| `application.yaml` | 2 cortacircuitos fantasma · 1 timeout compartido | **3 cortacircuitos reales configurados** · **4 timeouts por operación** · **2 versiones configurables** |
+
+Los siete puntos por los que escapaba un error crudo —3 en `WorkItemQueryAdapter`, 2 en
+`WorkItemCommandAdapter`, 2 en `TeamScopeAdapter`— se cierran con **una sola línea cada uno**
+(`.onErrorMap(AzureDevOpsErrorTranslator.forOperation(...))`), apuntando **todos al mismo
+traductor**. Es el mismo criterio con el que la Fase 05 repartió los cinco mappers: **cero lógica
+duplicada**.
+
+De paso desaparece el `doOnError` suelto de `queryByWiql` —el **único** tratamiento de errores que
+existía en el repositorio, que **registraba el cuerpo y no traducía nada**, y solo en uno de los
+siete puntos—. Ahora los siete registran el cuerpo de forma uniforme.
+
+### 4.2 Desviaciones
+
+| # | Desviación | Justificación |
+|---|------------|---------------|
+| **1** | **2 aserciones de `TeamScopeAdapterTest` cambiadas de tipo esperado** | **Es el único cambio de aserción que la fase se ha permitido, y estaba anunciado por escrito desde la Fase 01** dentro del propio javadoc de la clase: «*la FASE 06 introducirá excepciones de dominio y estas aserciones deberán cambiar de tipo esperado; cuando eso ocurra será un cambio DELIBERADO y visible, que es justo lo que estas pruebas existen para garantizar*». DP-06 lo autorizó. Se añadió además un tercer escenario (404) que demuestra que la traducción **distingue** los tres casos en vez de fundirlos |
+| **2** | **Los 3 adaptadores estrenan un segundo constructor de conveniencia** | Enchufar los timeouts y las versiones configurables cambia la firma del constructor, lo que habría dejado **3 clases de prueba heredadas sin compilar**. En vez de pedir otra autorización para tocarlas, se añadió un constructor con los valores por defecto: **las 3 clases de prueba de la Fase 05 no se han tocado ni una línea**. El constructor de Spring está marcado con `@Autowired`, así que no hay ambigüedad de beans |
+| **3** | **`AzureDevOpsTools` pasa de 157 a 173 líneas** | Son 6 líneas de `.onErrorMap(...)` más javadoc. La clase ya estaba por encima del objetivo de ≤ 120 desde la Fase 04 —**desviación heredada y documentada**—, y bajar de ahí exige partirla en dos beans de herramientas, decisión que sigue sin tomarse por cuenta propia. **0 reglas de negocio**, que es lo que sí exige `spring-rules.md` |
+| **4** | **`WorkItemQueryAdapter` pasa de 115 a 143 líneas** *(el mayor de los tres)* | Excede el objetivo de ≤ 120 de la Fase 05, pero **28 de las 28 líneas nuevas son javadoc y 6 son `.timeout(...)` / `.onErrorMap(...)`**: el cuerpo ejecutable no crece en complejidad. Se anota; partirlo más sería deshacer el reparto de DP-05 |
+| **5** | **D-25 sigue viva** | Los seis `issues.json` siguen saliendo `{"issues":[],"rules":[]}`. Coincide con la realidad (0 violaciones reales, **verificado en el log**), pero el informe sigue sin ser prueba de nada. Fuera de alcance: **Fase 08** |
+| **6** | **El build falló una vez por un artefacto de Gradle**, no por el código | `:app-service:test` reventó con `NoSuchFileException: ...in-progress-results-generic.bin`, un resto corrupto de una ejecución anterior combinado con la caché de configuración. Se resolvió borrando `build/test-results` y ejecutando con `--no-configuration-cache`. **Ni un solo fallo de prueba ni de compilación** en ninguna de las ejecuciones |
+
 

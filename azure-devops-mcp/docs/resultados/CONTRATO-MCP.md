@@ -284,3 +284,97 @@ Los nombres de rol **se conservaron literalmente** (B-03) y se centralizaron en
 > la exigencia ya no requiere recompilar, sino exportar `MCP_SECURITY_MODE=ENFORCED`
 > (ver [`ACTIVACION-SEGURIDAD.md`](ACTIVACION-SEGURIDAD.md)). Las ocho expresiones se ejecutan en los
 > dos modos y están cubiertas por `McpToolsAuthorizationTest`.
+
+---
+
+## 6. 🆕 Contrato de errores — **nuevo en la Fase 06 (DP-06)**
+
+> **Esta es la primera sección de este documento que describe un cambio de comportamiento
+> observable.** Las Fases 01 a 05 no cambiaron nada de lo que ve un cliente. La Fase 06 sí, y por eso
+> **lo decidió el propietario (DP-06) antes de escribirse una sola línea**.
+>
+> **Nada de §2 a §5 ha cambiado:** ni un nombre de tool, ni de parámetro, ni de campo, ni la forma de
+> un resultado **de éxito**. Lo único nuevo es **qué se ve cuando la cosa falla**.
+
+### 6.1 Qué se veía antes y qué se ve ahora
+
+Hasta la Fase 06 el repositorio tenía **cero excepciones de dominio** (D-13). Un `401`, un `404` o un
+`TF401232` de Azure DevOps viajaba **crudo** hasta el cliente MCP como `WebClientResponseException`
+—una excepción de **Spring**—, arrastrando consigo la nomenclatura y los códigos internos del
+proveedor, justo lo que §1 del plan maestro prohíbe filtrar aguas arriba.
+
+```
+ANTES                                          AHORA
+WebClientResponseException: 401 Unauthorized   AZDO_UNAUTHORIZED: La credencial configurada no
+  from GET https://dev.azure.com/... ,           permite ejecutar la operacion solicitada
+  body: {"message":"TF400813: ..."}              (getWorkItem). Verifique el token de servicio.
+```
+
+### 6.2 Forma del error — **DP-06 §0.1(a)**
+
+El mensaje que recibe el cliente tiene **siempre** esta forma, sin excepciones:
+
+```
+CODIGO_ESTABLE: mensaje neutro en español
+```
+
+- El **código** existe para que un cliente pueda ramificar **sin hacer `catch` por texto**, que es lo
+  frágil. **Es contrato público: no cambia.**
+- El **mensaje** es legible, no cita nomenclatura de Azure DevOps y nombra la operación afectada
+  —que es el nombre de la tool, ya público, así que no filtra nada nuevo—.
+
+### 6.3 Los cuatro códigos — **DP-06 §0.1(c)**
+
+| Código | Cuándo | Excepción de dominio | Qué significa para quien lo recibe |
+|--------|--------|----------------------|------------------------------------|
+| `AZDO_NOT_FOUND` | Azure DevOps responde **404** | `WorkItemNotFoundException` | El recurso **no existe o no es accesible**. Casi siempre es un error del llamante. ⚠️ Azure DevOps devuelve el mismo 404 para «no existe» y para «existe pero está fuera del alcance del PAT», por eso el mensaje no afirma que no exista |
+| `AZDO_UNAUTHORIZED` | **401** o **403** | `AzureDevOpsUnauthorizedException` | La credencial **de este servidor** no vale o no alcanza. No es culpa del llamante ni del proveedor: hay que **rotar o revisar el token** |
+| `AZDO_UNAVAILABLE` | **5xx**, cualquier otro **4xx**, **timeout por operación**, fallo de red o **cortacircuito abierto** | `AzureDevOpsUnavailableException` | «Ahora no puedo, reintenta». Todo esto comparte código a propósito: desde el punto de vista del cliente **hay una sola decisión que tomar** |
+| `MCP_INTERNAL_ERROR` | Cualquier fallo que **no** sea de dominio (un defecto del propio servidor) | — *(no llega a haber excepción de dominio)* | Red de seguridad: nada escapa crudo, ni siquiera lo que nadie previó |
+
+Las tres excepciones extienden de **`AzureDevOpsException`** (`domain/model/.../model/exception/`),
+así que un cliente que **no** quiera distinguir puede capturar una sola cosa. Son **dominio puro**:
+sin Spring, sin HTTP, sin Jackson — no conocen siquiera el concepto de «código de estado».
+
+### 6.4 El cuerpo original **no se propaga** — DP-06 §0.1(b)
+
+El cuerpo de respuesta de Azure DevOps —con sus `TFxxxxxx`— se registra **íntegro en `ERROR` en el
+log del MCP**, que es donde le sirve a quien opera, y **se oculta al cliente**, que es donde
+filtraría nomenclatura ajena. Hay pruebas que lo verifican explícitamente
+(`AzureDevOpsErrorTranslatorTest`, `TeamScopeAdapterTest`).
+
+### 6.5 ⚠️ Lo que **NO** cambió: el repliegue de rutas sigue absorbiendo sus fallos
+
+**DP-06 §0.1(d) ratificó DP-04 y no lo contradijo.** Los comportamientos **5** y **6** de §2.4
+—fabricar el `AreaPath` y el `IterationPath` por concatenación cuando Azure DevOps no los resuelve—
+**siguen exactamente igual**: `ResolveTeamScopeUseCase` captura el error *ya traducido* y cae al
+repliegue, con su `WARN` y su contador `azuredevops.teamscope.fallback`.
+
+> **Donde hoy sale un tablero vacío, sigue saliendo un tablero vacío.** Convertirlo en un error es
+> una decisión de producto que el propietario aún no ha tomado; esta fase **no la ha tomado por él**.
+> Lo único que gana es que ahora el log dice **por qué** se disparó el repliegue, y no solo cuántas
+> veces. Fijado por prueba en `ResolveTeamScopeUseCaseTest`.
+
+### 6.6 Dónde se traduce — **B-08**
+
+Dos piezas, dos responsabilidades, **cero duplicación**:
+
+| Capa | Sabe | De | A |
+|------|------|----|---|
+| `rest-consumer/.../consumer/AzureDevOpsErrorTranslator` | qué es un 404, un timeout, un cortacircuito abierto | excepción **técnica** | excepción de **dominio** |
+| `mcp-server/.../mcp/error/McpErrorTranslator` | qué forma tiene un error en el protocolo MCP | excepción de **dominio** | mensaje con **código estable** |
+
+Hay **tres** adaptadores y **siete** puntos de salida, pero **un solo traductor**, compartido — el
+mismo criterio con el que la Fase 05 repartió los cinco mappers de la Fase 03.
+
+### 6.7 Parámetros operativos que dejaron de ser fantasmas
+
+| Qué | Antes | Ahora |
+|-----|-------|-------|
+| Cortacircuitos declarados en `application.yaml` | `testGet` y `testPost`, **que no usaba nadie** | `workItemQuery`, `workItemCommand`, `teamScope` — **los tres reales**, con umbrales elegidos (50 % / 10 / 10 s) |
+| Timeout | **1** de Netty, **5 s compartidos** por las 7 llamadas | Netty intacto **+ 4 timeouts reactivos por operación**: consulta 10 s · **lote 30 s** · comando 10 s · ámbito de equipo 5 s |
+| Versiones de API | 2 literales dentro del código | `adapter.restconsumer.api-version.*` — **mismos valores**, ahora configurables (B-09) |
+
+> **B-10:** las dos consultas de ámbito de equipo conservan `api-version=7.0` **escrito literalmente
+> en la ruta**. Se decidió **no** parametrizarlas porque habría cambiado dos llamadas HTTP.
+

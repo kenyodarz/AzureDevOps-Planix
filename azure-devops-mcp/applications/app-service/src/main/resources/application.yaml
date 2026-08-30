@@ -44,6 +44,10 @@ mcp:
     mode: "${MCP_SECURITY_MODE:PERMISSIVE}"
 adapter:
   restconsumer:
+    # Timeout de Netty (conexion, lectura y escritura), en milisegundos. NO se toca: sigue
+    # protegiendo la conexion. Lo que la Fase 06 anade encima es un techo REACTIVO por operacion
+    # (ver operation-timeout), que es lo que pedia D-24: hasta ahora estos 5 s eran el unico limite
+    # y los compartian las siete llamadas, la de lote incluida.
     timeout: 5000
     url: "https://dev.azure.com"
     # Credencial de Azure DevOps. Formato esperado: Base64(":" + PAT) -- usuario VACIO, dos puntos
@@ -53,14 +57,46 @@ adapter:
     # Sin valor por defecto a proposito (D-04): la credencial viene de variable de entorno o
     # secreto (DP-02) y jamas se versiona en este repositorio.
     token: "${AZURE_DEVOPS_TOKEN:}"
+    # Versiones por defecto de la API de Azure DevOps (D-18, decision B-09: configuracion, NO un
+    # objeto de valor de dominio -- una version de API es un detalle del proveedor, no una regla de
+    # negocio). Los DOS literales son exactamente los que estaban hardcodeados desde el origen del
+    # proyecto: si se borra este bloque, las llamadas HTTP son identicas.
+    # NOTA (B-10): las dos consultas de ambito de equipo llevan api-version=7.0 escrito LITERALMENTE
+    # en la ruta y NO se parametrizan. Hacerlo habria cambiado dos llamadas HTTP.
+    api-version:
+      work-item: "7.1"   # leer, crear, actualizar y consultar en lote
+      wiql: "7.0"        # consulta WIQL; es distinta desde antes de este plan
+    # Techo de tiempo REACTIVO por operacion (D-24, valores elegidos en DP-06 §0.2). Al vencer,
+    # AzureDevOpsErrorTranslator lo convierte en AZDO_UNAVAILABLE, no en un TimeoutException crudo.
+    operation-timeout:
+      query: "10s"       # consulta de un work item y consulta WIQL
+      batch: "30s"       # EL CASO CRITICO: es la llamada que mas tarda y hasta ahora compartia 5 s
+      command: "10s"     # creacion y actualizacion
+      team-scope: "5s"   # el mas corto a proposito: su fallo cae al repliegue de DP-04, no rompe nada
 management:
   health:
     circuitbreakers:
       enabled: true
+# Cortacircuitos (D-06, cerrada en la FASE 06).
+#
+# Que habia aqui hasta ahora: `testGet` y `testPost`, dos nombres del scaffold que NO USABA NADIE,
+# mientras los cortacircuitos reales del adaptador corrian con la configuracion POR DEFECTO de
+# Resilience4j sin que nadie la hubiera elegido. No era un fallo visible: era un parametro operativo
+# fantasma. DP-06 §0.2 autorizo retirarlos.
+#
+# Los TRES nombres de instancia son los que fijo B-05 en la Fase 05 y son DEFINITIVOS. Cada uno
+# corresponde a un adaptador, no a una operacion:
+#   workItemQuery   -> WorkItemQueryAdapter   (getWorkItem, getWorkItemsBatch, queryByWiql)
+#   workItemCommand -> WorkItemCommandAdapter (createWorkItem, updateWorkItem)
+#   teamScope       -> TeamScopeAdapter       (getTeamFieldValues, getTeamIterations)
+#
+# Los valores son los que ya vivian en este fichero para testGet/testPost: DP-06 §0.2 eligio
+# conservarlos para las tres instancias, de modo que la fase no introduce criterio nuevo -- solo
+# hace que por fin se aplique a los cortacircuitos que existen de verdad.
 resilience4j:
   circuitbreaker:
     instances:
-      testGet:
+      workItemQuery:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50
@@ -69,7 +105,16 @@ resilience4j:
         slidingWindowSize: 10
         minimumNumberOfCalls: 10
         waitDurationInOpenState: "10s"
-      testPost:
+      workItemCommand:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      teamScope:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50

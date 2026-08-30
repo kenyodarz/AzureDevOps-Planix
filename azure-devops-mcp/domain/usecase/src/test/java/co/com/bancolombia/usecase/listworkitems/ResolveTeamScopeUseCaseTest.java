@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import co.com.bancolombia.model.exception.AzureDevOpsUnavailableException;
+import co.com.bancolombia.model.exception.WorkItemNotFoundException;
 import co.com.bancolombia.model.team.TeamFieldValues;
 import co.com.bancolombia.model.workitem.SprintName;
 import co.com.bancolombia.model.workitem.TeamName;
@@ -208,6 +210,43 @@ class ResolveTeamScopeUseCaseTest {
         // Assert (THEN)
         assertEquals("area", scope.areaPath());
         assertEquals("iteracion", scope.iterationPath());
+    }
+
+    /**
+     * <b>La garantía de DP-06 §0.1(d), escrita como prueba.</b>
+     *
+     * <p>La Fase 06 traduce los fallos técnicos a excepciones de dominio, y la duda legítima era si
+     * eso rompería el repliegue que <b>DP-04 §0.1 decidió conservar</b>: si la excepción hubiera
+     * cambiado de naturaleza y dejado de ser capturada, donde hoy sale un tablero vacío saldría un
+     * error, que es <b>exactamente</b> el cambio de comportamiento observable que DP-04 descartó y
+     * que DP-06 §0.1(d) ratificó no tocar.
+     *
+     * <p>No ocurre, y esta prueba lo fija: el {@code onErrorResume} captura <b>cualquier</b> error
+     * del puerto, así que un {@code AZDO_UNAVAILABLE} recién traducido cae al repliegue igual que
+     * caía un {@code WebClientResponseException} crudo. Se cuenta, se avisa, y <b>no llega al
+     * cliente</b>.
+     */
+    @Test
+    @DisplayName("GIVEN una excepcion de DOMINIO al resolver rutas WHEN se resuelve el ambito THEN sigue cayendo al repliegue y NO se propaga (DP-06 §0.1(d))")
+    void givenDomainException_whenResolving_thenFallbackStillAbsorbsIt() {
+        // Arrange (GIVEN) — esto es lo que devuelve el adaptador DESDE la Fase 06, no un
+        // WebClientResponseException.
+        var translated = new AzureDevOpsUnavailableException(
+                "Azure DevOps no pudo atender la operacion solicitada (getTeamFieldValues).");
+        when(getTeamFieldValuesUseCase.getTeamFieldValues(ORG, PROJECT, TEAM))
+                .thenReturn(Mono.error(translated));
+        when(getTeamIterationsUseCase.resolveIterationPath(ORG, PROJECT, TEAM, SPRINT))
+                .thenReturn(Mono.error(new WorkItemNotFoundException("no existe la iteracion")));
+
+        // Act (WHEN) + Assert (THEN) — completa con valores replegados; NO emite error.
+        StepVerifier.create(resolve(TEAM, SPRINT))
+                .expectNext(new TeamScope(PROJECT + "\\" + TEAM, PROJECT + "\\2025\\" + SPRINT))
+                .verifyComplete();
+
+        // Y la causa que se registra es la excepcion de dominio, no una envoltura opaca.
+        verify(fallbackMetrics).areaPathFallbackUsed(TEAM, translated);
+        verify(fallbackMetrics).iterationPathFallbackUsed(eq(SPRINT), eq(true),
+                any(WorkItemNotFoundException.class));
     }
 }
 
