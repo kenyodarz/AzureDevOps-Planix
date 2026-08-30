@@ -1,0 +1,506 @@
+# PLAN MAESTRO — Refactorización `azure-devops-mcp`
+
+> **Versión:** 1.0 · **Fecha:** 2026-08-30 · **Estado:** 🟡 ABIERTO
+> **Reglas:** [`rules/spring-rules.md`](../../../rules/spring-rules.md) ·
+> [`.github/copilot-instructions.md`](../../../.github/copilot-instructions.md) ·
+> [`COMMIT_RULES.md`](../../COMMIT_RULES.md)
+> **Precedentes:** `azure-devops-agent/docs/resultados/CIERRE-DEL-PLAN.md` ·
+> `azure-devops-backend/docs/resultados/CIERRE-DEL-PLAN.md`
+> **Fases:** 8 (01 → 08) · **Fase activa:** [`docs/fases/fase-02.md`](../fases/fase-02.md) ·
+> **Completadas:** **01**
+
+---
+
+## 1. Misión del proyecto
+
+`azure-devops-mcp` es el **servidor MCP (Model Context Protocol)** del sistema. Es el **último
+eslabón** de la cadena y el **único que habla con Azure DevOps**:
+
+```
+Front (4200) ── /api/** ──► BFF (8081) ── JSON-RPC 2.0 ──► Agente (8082) ── MCP ──► MCP (8080) ──► Azure DevOps REST API
+```
+
+Su misión, derivada de esa posición:
+
+1. **Exponer capacidades de Azure DevOps como herramientas MCP** con contrato estable y descrito.
+2. **Ser el dueño del «cómo»**: cómo se consulta Azure DevOps, cómo se construye una sentencia WIQL,
+   cómo se resuelven `AreaPath` e `IterationPath`. Quien define la herramienta define cómo se usa.
+3. **Aislar al resto del sistema de la API de Azure DevOps**: versiones, formatos, códigos de error y
+   nomenclatura de tipos de work item **no deben filtrarse** aguas arriba.
+4. **Aplicar la autorización** por rol sobre cada operación, lectura incluida.
+
+> El **cerebro** (prompts, intenciones, estimación) vive en el **agente**. El MCP **no razona**:
+> ejecuta y devuelve datos. Esta frontera es la que ordena todo el plan.
+
+### 1.1 Consecuencia directa
+
+El punto 2 es la razón de ser de la deuda **D-35** del plan del BFF: *«las reglas WIQL van al MCP»*.
+Este plan la ejecuta desde su destino. El MCP ya recibe **nombre de célula** y **nombre de sprint**
+—no rutas fabricadas por el BFF— y debe convertirlos en una consulta correcta **dentro de su
+dominio**, no dentro de su entry-point.
+
+---
+
+## 2. Diagnóstico
+
+### 2.1 Estado medido (baseline declarado, a confirmar en la Fase 01)
+
+| Artefacto                                                  | Líneas | Diagnóstico                                                                     |
+|------------------------------------------------------------|-------:|---------------------------------------------------------------------------------|
+| `entry-points/mcp-server/.../tools/AzureDevOpsTools.java`   |  **267** | 6 tools + el **único flujo compuesto**, con WIQL, rutas y normalización dentro   |
+| `driven-adapters/rest-consumer/.../RestConsumer.java`       |  **237** | **7 gateways** en una clase + 8 mappers privados                                |
+| `applications/app-service/.../config/McpSecurityConfig.java`|  **~180** | Termina en `.anyExchange().permitAll()`                                          |
+| `domain/usecase/**` (7 clases)                              |  **~175** | 6 de 7 son delegantes de 17–18 líneas; **la capa está vacía**                    |
+| `domain/model/**` (21 tipos)                                |      — | Anémico, mutable y **usado como contrato de cable** en los dos extremos          |
+
+**Stack confirmado:** Java toolchain **25** · Spring Boot **4.1.0** · Spring AI **2.0.0-RC1**
+(`spring-ai-starter-mcp-server-webflux`, protocolo `STATELESS`, tipo `ASYNC`) · Reactor ·
+Resilience4j 2.4.0 · Lombok 1.18.46 · JaCoCo 0.8.15 · Pitest 1.19.0 · ArchUnit 1.4.2.
+
+**Módulos Gradle:** `:app-service`, `:model`, `:usecase`, `:mcp-server`, `:rest-consumer`.
+
+### 2.2 El hallazgo central: la pirámide está invertida
+
+Todo el valor del sistema —la única lógica que no es una llamada HTTP— vive **fuera de donde debe
+vivir**:
+
+```
+HOY                                          OBJETIVO
+
+entry-point  ████████████ 267 líneas         entry-point  ███ (protocolo MCP y nada más)
+             (WIQL + rutas + normalización)
+usecase      █ (7 delegantes vacíos)         usecase      ███████ (el flujo compuesto)
+model        █ (anémico, mutable)            model        █████ (VOs con invariantes)
+adapter      ████████ (7 gateways juntos)    adapter      ██ ██ ██ (uno por agregado)
+```
+
+`listWorkItemsByTeamAndSprint` (44 líneas, `AzureDevOpsTools.java:120-163`) **es** el sistema: limpia
+cadenas, pregunta el `AreaPath`, pregunta el `IterationPath`, normaliza los tipos de work item,
+**redacta la sentencia WIQL con `String.format`** y encadena la consulta. Las otras cinco tools son
+pasamanos. Y `spring-rules.md` es explícito para `entry-points`: **«Cero lógica de negocio»**.
+
+### 2.3 El dominio es el contrato de cable, en los dos extremos
+
+No hay frontera. El mismo tipo de `domain/model` lo **deserializa Jackson** en la entrada MCP y lo
+**serializa el `WebClient`** en la salida HTTP:
+
+```java
+// ENTRADA — entry-point: Jackson construye un modelo de dominio desde el payload MCP
+@McpToolParam(...) List<JsonPatchOperation> patch          // AzureDevOpsTools.java:70, :88
+
+// SALIDA — adaptador: el WebClient serializa el modelo de dominio tal cual
+.bodyValue(query)     // RestConsumer.java:99  → WiqlQuery
+.bodyValue(patch)     // RestConsumer.java:67  → List<JsonPatchOperation>
+.bodyValue(request)   // RestConsumer.java:122 → WorkItemsBatchRequest
+```
+
+Consecuencias: cualquier cambio en el JSON de Azure DevOps **rompe el dominio**; el nombre
+`WorkItemsBatchRequest` delata su origen y **rompe ArchUnit `Rule_2.2`**; y no existe ningún mapper
+de salida, cuando `spring-rules.md` los declara **obligatorios**.
+
+### 2.4 La seguridad está construida, pero desactivada **con comentarios**
+
+> **Contexto ratificado por el propietario el 2026-08-30 (DP-01).** El sistema es una **POC**. Toda
+> la seguridad está construida a propósito y desactivada a propósito: **todavía no existe el Service
+> Principal**, y el objetivo es enviar a pre y producción una **copia 1 a 1** del binario, sin
+> reconstruir nada. El flujo objetivo es: el front obtiene del IDP (Entra ID) un token **de usuario**
+> válido **solo para el BFF**; el BFF llama al agente; y el agente obtiene un **segundo token M2M**,
+> distinto del de usuario, para hablar con el MCP.
+>
+> **La decisión de estar laxo es correcta. El mecanismo para estarlo, no.**
+
+```java
+.authorizeExchange(exchanges -> exchanges
+        .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+        .pathMatchers("/h2-console/**").permitAll()
+        .anyExchange().permitAll())          // ← McpSecurityConfig, última línea
+```
+
+El `oauth2ResourceServer` valida el token **si llega**, pero nadie lo exige. Y en las tools, los
+`@PreAuthorize` de lectura están **comentados**:
+
+| Tool                          | Autorización                                              |
+|-------------------------------|-----------------------------------------------------------|
+| `createWorkItem`              | ✅ `hasRole('MCP.AZURE_DEVOPS.WRITE')`                    |
+| `updateWorkItem`              | ✅ `hasRole('MCP.AZURE_DEVOPS.WRITE')`                    |
+| `getWorkItem`                 | 🟠 `@PreAuthorize` **comentado**                          |
+| `getWorkItemsBatch`           | 🟠 `@PreAuthorize` **comentado**                          |
+| `queryByWiql`                 | 🟠 comentada la tool **y** la autorización                |
+| `listWorkItemsByTeamAndSprint`| 🔴 **nunca la tuvo**                                      |
+| `checkHealth`, `getServerInfo`| 🟠 sin autorización                                       |
+
+El problema no es que hoy esté abierto: es que **el interruptor es el compilador**. Desactivar la
+seguridad comentando anotaciones y escribiendo `permitAll` tiene tres consecuencias que van
+justamente en contra del objetivo declarado de «copia 1 a 1»:
+
+1. **Encender la seguridad exige recompilar**, y por tanto el binario de producción **no será** el
+   probado en la POC. Es lo contrario de lo que se buscaba.
+2. **Nada de lo comentado se compila ni se prueba.** El día del Service Principal, seis
+   `@PreAuthorize` se activarán por primera vez en la vida, en producción, sin una sola prueba que
+   los haya ejecutado nunca. `listWorkItemsByTeamAndSprint` —el flujo más usado— **ni siquiera tiene
+   la línea que descomentar**: hay que acordarse de escribirla.
+3. **La laxitud es indistinguible de un olvido.** Nada en el repositorio dice «esto está abierto
+   porque falta el SP». Un `permitAll` sin explicación se lee igual que un descuido, y sobrevive a
+   las revisiones por esa misma razón.
+
+A esto se suma `/h2-console/**` abierto con `permitAll` y `spring.h2.console.enabled: true`, en un
+proyecto **sin dependencia H2 ni datasource**: eso no es una decisión, es un residuo del scaffold.
+
+**Por eso la Fase 02 no «cierra la seguridad»: la convierte en configuración.** Mismo binario, dos
+modos declarados (`permissive` para la POC, `enforced` para pre y producción), todas las anotaciones
+activas y probadas en ambos, y el salto a producción reducido a un cambio de variable de entorno.
+
+### 2.5 Los cortacircuitos no son los que están configurados
+
+`RestConsumer` declara siete instancias por nombre —`getWorkItem`, `createWorkItem`,
+`updateWorkItem`, `queryByWiql`, `getWorkItemsBatch`, `getTeamFieldValues`, `getTeamIterations`— y
+`application.yaml` declara **otras dos**: `testGet` y `testPost`, nombres del scaffold que **no usa
+nadie**. Los siete cortacircuitos reales corren con la configuración **por defecto** de Resilience4j
+sin que nadie la haya elegido. No es un fallo visible: es peor, es un parámetro operativo fantasma.
+
+### 2.6 Ningún error se traduce
+
+No hay una sola excepción de dominio en el repositorio. Un `401`, un `404` o un `TF401232` de Azure
+DevOps viaja **crudo** hasta el cliente MCP como `WebClientResponseException`. El único tratamiento
+es un `doOnError` en `queryByWiql` que **registra y no traduce** (`RestConsumer.java:102-107`).
+
+### 2.7 Deudas heredadas del plan del BFF
+
+El plan de `azure-devops-backend` cerró con cuatro deudas cuyo **dueño es este repositorio**. Se
+incorporan aquí con su identificador original entre paréntesis:
+
+| Origen | Deuda                                                                         | Aquí     |
+|--------|-------------------------------------------------------------------------------|----------|
+| D-35   | Las reglas WIQL deben vivir en el MCP; el BFF debe enviar **intenciones**      | **D-08** |
+| D-36   | `RestConsumerTest` no cubre `getTeamFieldValues` **ni** `getTeamIterations`    | **D-21** |
+| D-37   | El repliegue por concatenación **sigue calculando el año** y nadie lo mide     | **D-09** |
+| D-39   | Violación **preexistente** de ArchUnit `Rule_2.2` (1 vez)                      | **D-17** |
+
+---
+
+## 3. Deudas técnicas
+
+### 🔴 Bloqueantes — seguridad y wiring
+
+> **Reencuadre tras DP-01 y DP-02 (2026-08-30).** D-01 a D-04 **no dicen «el sistema está
+> abierto»**: el sistema está abierto **a propósito**, porque todavía no existe el Service Principal.
+> Dicen *«el interruptor para cerrarlo es el compilador, y eso rompe el objetivo declarado de copia
+> 1 a 1»*. La Fase 02 **no cambia la postura de seguridad de la POC**: cambia el **mecanismo** con el
+> que se elige esa postura. D-03 es la excepción: no es una decisión de la POC, es un residuo.
+
+| ID       | Deuda                                                                                                                                                                                                                | Regla violada        |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
+| **D-01** | La postura de acceso está **cableada en código** (`.anyExchange().permitAll()`), no configurada. Pasar a `enforced` exige **recompilar**, así que el binario de producción **no será** el probado en la POC — lo contrario del objetivo de DP-01 | Configuración, DP-01 |
+| **D-02** | Los `@PreAuthorize` de lectura están **comentados** y `listWorkItemsByTeamAndSprint` **nunca tuvo ninguno**. Código comentado **no compila ni se prueba**: el día del SP se activarían por primera vez en producción, y en la tool más usada hay que **acordarse de escribirlo** | Código muerto, riesgo latente |
+| **D-03** | `spring.h2.console.enabled: true` **y** `/h2-console/**` con `permitAll`, en un proyecto **sin dependencia H2 ni datasource**: esto **no es** una decisión de la POC, es un residuo del scaffold                       | Seguridad            |
+| **D-04** | `adapter.restconsumer.token` con valor por defecto `your-token-here`: la aplicación **arranca sin credencial** y falla después con un 401 opaco. Además `RestConsumerConfig` **asume que la propiedad ya viene en Base64** y solo antepone `Basic ` — si alguien pone el PAT crudo, el fallo es el mismo 401 mudo | S2068, arranque silencioso |
+| **D-05** | 🔽 **DEGRADADA a 🟡 en la Fase 01.** `UseCasesConfig` combina `@ComponentScan(..., includeFilters REGEX "^.+UseCase$")` con siete `@Bean` manuales del mismo tipo, pero **se midió y el escaneo es inerte**: cada caso de uso resuelve a **exactamente un bean**. No es un riesgo de arranque, es **código muerto que induce a error**. *Fase 08* | SRP, claridad        |
+| **D-06** | Los siete `@CircuitBreaker` nombran instancias que **no existen** en `application.yaml`, que solo declara `testGet` y `testPost`: corren con la configuración por defecto sin que nadie la haya elegido                | Operación            |
+
+### 🟠 Altas — separación y desacoplamiento de flujos
+
+| ID       | Deuda                                                                                                                                                                                                                     | Regla violada         |
+|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|
+| **D-07** | `listWorkItemsByTeamAndSprint` (44 líneas) es el **único flujo compuesto** y vive **entero en el entry-point**: limpieza de cadenas, resolución de rutas, normalización de tipos y **redacción del WIQL con `String.format`** | «Cero lógica de negocio» |
+| **D-08** | Las reglas de Azure DevOps están **hardcodeadas en el entry-point**: `'Historia de Usuario','Habilitador'` por defecto, el mapeo `User Story → Historia de Usuario`, el entrecomillado y la plantilla WIQL *(← D-35)*      | SRP, DRY              |
+| **D-09** | `resolveAreaPath` y `resolveIterationPath` **fabrican rutas por concatenación** en el entry-point; la segunda intercala `LocalDate.now().getYear()` y **nadie mide** cuántas veces se dispara *(← D-37)*                   | S109, observabilidad  |
+| **D-10** | `RestConsumer` implementa **siete gateways** y contiene **ocho mappers privados**: no hay forma de probar un flujo sin arrastrar los otros seis                                                                            | SOLID-I, SOLID-S      |
+| **D-11** | **El dominio es el contrato de cable en los dos extremos**: Jackson lo deserializa como `@McpToolParam` y el `WebClient` lo serializa con `bodyValue(...)`. **No hay mapper de salida**                                    | «Mappers obligatorios» |
+| **D-12** | Seis de los siete casos de uso son **delegantes de 17–18 líneas**: la capa de aplicación está vacía porque la lógica se quedó arriba (D-07)                                                                                | Pirámide invertida    |
+| **D-13** | **Ningún error se traduce**: no existe una sola excepción de dominio; un 401 o un 404 de Azure DevOps llega crudo al cliente MCP                                                                                           | Manejo de excepciones |
+
+### 🟡 Medias
+
+| ID       | Deuda                                                                                                                                                          | Regla violada       |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
+| **D-14** | Gateways partidos **por operación CRUD**, no por agregado: 7 interfaces en 7 paquetes (`getworkitem`, `createworkitem`, `updateworkitem`, …) para **un** agregado | SOLID-I, DDD        |
+| **D-15** | `workitem/gateways/WorkItemRepository` existe y **no lo implementa ni lo usa nadie**: puerto huérfano                                                            | Código muerto       |
+| **D-16** | Modelo **anémico y mutable**: `@Setter` en las 21 clases de `domain/model`, sin una sola invariante                                                              | «Prohibido el modelo anémico» |
+| **D-17** | **ArchUnit `Rule_2.2` en rojo (1 violación)**: `WorkItemsBatchRequest` termina en `Request` dentro de `domain/model`, y el test solo la registra como *warning* *(← D-39)* | Rule_2.2            |
+| **D-18** | Versiones de API **repetidas y hardcodeadas** siete veces (`"7.1"`, `"7.0"`) con el mismo ternario copiado                                                       | DRY, configuración  |
+| **D-19** | La tool `queryByWiql` tiene su `@McpTool` **comentado**: el método es público, el caso de uso y el gateway existen, pero **no se expone**. Camino muerto sin documentar | Claridad            |
+| **D-20** | `HealthTool` **duplica el actuator** y devuelve la versión hardcodeada con un placeholder sin rellenar: `"Server:  v1.0.0"`                                       | DRY                 |
+| **D-21** | `RestConsumerTest` (127 líneas) **no cubre** `getTeamFieldValues` ni `getTeamIterations`: las dos consultas que sostienen la resolución de rutas *(← D-36)*      | Cobertura           |
+| **D-22** | Residuos del scaffold en `application.yaml`: `spring.devtools`, `spring.h2.console`, `profiles.include: null`                                                    | Limpieza            |
+| **D-23** | `McpAuditAspect` llama a `joinPoint.proceed()` **antes** de resolver el contexto de seguridad y **no audita** la rama no reactiva (solo un `warn`)               | Auditoría           |
+| **D-24** | Sin `timeout` reactivo por operación: solo hay timeouts de Netty de 5 s **compartidos** por todas las llamadas, incluida la de lote                              | Resiliencia         |
+| **D-25** | 🟠 **El informe de ArchUnit para Sonar sale vacío pese a existir una violación real.** `checkWithWarning` descarta en silencio toda incidencia cuyo fichero no resuelva: los **seis** `issues.json` son `{"issues":[],"rules":[]}` mientras el log grita `Rule_2.2 ... violated (1 times)`. **SonarQube nunca ha visto una sola violación de arquitectura de este repositorio** *(hallazgo de la Fase 01)* | Observabilidad      |
+| **D-26** | 🟠 **`domain/model` no tiene carpeta `src/test`**: 21 clases de dominio con **cero** pruebas. No es cobertura baja, es que el módulo **no participa en la medición** *(hallazgo de la Fase 01)* | Cobertura           |
+| **D-27** | 🟠 **`UseCasesConfigTest` miente por partida doble** *(hallazgo de la Fase 01)*: registra su propio bean `myUseCase`, que satisface por sí solo la única aserción («existe algún bean acabado en `UseCase`»), **y** envuelve todo en un `catch (UnsatisfiedDependencyException)` con `assertTrue(true)`. Como no registra ningún gateway, el contexto **no puede** arrancar y **el camino que toma siempre es el `catch`**: la aserción probablemente no se ha ejecutado nunca. Mismo antipatrón que la D-17 del plan del BFF | Prueba falsa        |
+
+---
+
+## 4. Arquitectura objetivo
+
+```mermaid
+flowchart TD
+    subgraph ep["infrastructure/entry-points/mcp-server"]
+        tools["AzureDevOpsTools<br/>(≤120 líneas: protocolo MCP y nada más)"]
+        dto["dto/ · McpToolDtoMapper<br/>(frontera de entrada)"]
+        err["McpErrorTranslator"]
+    end
+
+    tools --> dto
+    tools --> uc
+
+    subgraph uc["domain/usecase"]
+        list["ListWorkItemsByTeamAndSprintUseCase<br/>(el flujo compuesto)"]
+        crud["GetWorkItemUseCase · CreateWorkItemUseCase<br/>UpdateWorkItemUseCase · GetWorkItemsBatchUseCase"]
+        res["ResolveTeamScopeUseCase<br/>(AreaPath + IterationPath)"]
+        list --> res
+    end
+
+    uc --> model
+
+    subgraph model["domain/model (puro, inmutable)"]
+        vo["workitem/ TeamName · SprintName · WorkItemTypes<br/>WiqlStatement · ApiVersion · TeamScope"]
+        ent["WorkItem · WorkItemReference · WorkItemRelation<br/>WorkItemQueryResult · TeamAreaScope · TeamIteration"]
+        ports["workitem/gateways/ WorkItemQueryPort · WorkItemCommandPort<br/>team/gateways/ TeamScopePort"]
+        exc["exception/ AzureDevOpsUnavailableException<br/>WorkItemNotFoundException · IterationNotFoundException"]
+    end
+
+    subgraph adapters["infrastructure/driven-adapters/rest-consumer"]
+        qa["WorkItemQueryAdapter"]
+        ca["WorkItemCommandAdapter"]
+        ta["TeamScopeAdapter"]
+        map["mapper/ WorkItemMapper · TeamMapper · JsonPatchMapper"]
+        tr["AzureDevOpsErrorTranslator"]
+    end
+
+    adapters -.implementa.-> ports
+    qa --> map
+    ca --> map
+    ta --> map
+
+    app["applications/app-service<br/>UseCasesConfig (wiring) · AzureDevOpsProperties"] --> uc
+    app --> adapters
+```
+
+### 4.1 Contratos nuevos clave
+
+```java
+// domain/model/.../model/workitem/ — dominio puro, sin Spring, sin Jackson, inmutable
+public record TeamName(String value) { /* autovalida: no nulo, no en blanco, sin ruta */ }
+public record SprintName(String value) { /* autovalida y se queda con el último tramo */ }
+public record WorkItemTypes(List<String> values) {
+    public static WorkItemTypes defaults();        // 'Historia de Usuario','Habilitador'
+    public static WorkItemTypes parse(String csv); // normaliza y deduplica
+}
+public record TeamScope(String areaPath, String iterationPath) { }
+public record WiqlStatement(String value) { }     // se construye, no se concatena a mano
+public record ApiVersion(String value) { public static ApiVersion defaultForQuery(); }
+
+// domain/model/.../model/workitem/gateways/ — puertos segregados por responsabilidad (CQS)
+public interface WorkItemQueryPort {
+    Mono<WorkItem> findById(AzureDevOpsTarget target, int id, ApiVersion version);
+    Mono<List<WorkItem>> findBatch(AzureDevOpsTarget target, WorkItemBatchCriteria c, ApiVersion v);
+    Mono<WorkItemQueryResult> query(AzureDevOpsTarget target, WiqlStatement wiql, ApiVersion v);
+}
+public interface WorkItemCommandPort {
+    Mono<WorkItem> create(AzureDevOpsTarget target, String type, List<FieldPatch> patch, ApiVersion v);
+    Mono<WorkItem> update(AzureDevOpsTarget target, int id, List<FieldPatch> patch, ApiVersion v);
+}
+public interface TeamScopePort {
+    Mono<TeamAreaScope> findAreaScope(AzureDevOpsTarget target, TeamName team);
+    Mono<List<TeamIteration>> findIterations(AzureDevOpsTarget target, TeamName team);
+}
+
+// domain/usecase/.../listworkitems/ — el flujo compuesto, fuera del entry-point
+public class ListWorkItemsByTeamAndSprintUseCase {
+    public Mono<WorkItemQueryResult> execute(ListWorkItemsCommand command) { ... }
+}
+```
+
+### 4.2 Principio de corte
+
+Cada fase deja el repositorio **compilando, con `./gradlew build` verde y desplegable**. No hay
+big-bang. Si una fase no puede cerrarse verde, **se revierte completa** y el bloqueo se documenta en
+su propio `fase-NN.md`, sección **Resultado**.
+
+---
+
+## 5. Desglose secuencial de fases
+
+| #      | Fase                                          | Objetivo                                                                                                                                                                     | Deudas                       | Decisión           | Riesgo |
+|--------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|--------------------|--------|
+| **01** | **Baseline, caracterización y wiring**        | Medir el estado real y **congelar el comportamiento actual** con pruebas de caracterización. Verificar el doble wiring (D-05) y los nombres de cortacircuito (D-06). **Cero cambios en `src/main`.** | D-05, D-06, D-21             | —                  | Nulo   |
+| **02** | **Seguridad conmutable y saneamiento**        | **Mismo binario, dos modos declarados** (`permissive` / `enforced`): la postura pasa de código a configuración, **todas** las anotaciones se activan y se prueban en ambos modos, se retira la consola H2 y el token falla al arranque si falta. | D-01…D-04, D-22              | ✅ **DP-01**, **DP-02** | Medio  |
+| **03** | **Frontera de contrato: DTOs y mappers**      | El dominio **deja de ser el contrato de cable**: DTOs propios en el entry-point y en el adaptador, con mappers en ambas fronteras. `Rule_2.2` a **cero**.                     | D-11, D-17                   | **DP-03**          | Medio  |
+| **04** | **Desacople del flujo compuesto**             | El WIQL, las rutas y la normalización **salen del entry-point** a `ListWorkItemsByTeamAndSprintUseCase` + Value Objects. El entry-point vuelve a ser protocolo.               | D-07, D-08, D-09, D-12       | **DP-04**          | Alto   |
+| **05** | **Segregación de puertos y adaptadores**      | `RestConsumer` se parte por agregado y responsabilidad (CQS); los gateways se reagrupan por agregado; se retira el puerto huérfano.                                            | D-10, D-14, D-15             | **DP-05**          | Medio  |
+| **06** | **Errores, resiliencia y contrato de fallos** | Excepciones de dominio, traducción única en el adaptador, cortacircuitos con nombres reales, timeouts por operación, versiones de API tipadas.                                 | D-06, D-13, D-18, D-24       | **DP-06**          | Medio  |
+| **07** | **Dominio rico y cobertura ≥ 90 %**           | Value Objects inmutables con invariantes, fin del `@Setter` indiscriminado, cobertura de `domain/model` y `domain/usecase` ≥ 90 %.                                             | D-16, D-21                   | —                  | Bajo   |
+| **08** | **Configuración tipada, ArchUnit y cierre**   | `@ConfigurationProperties` tipadas, ArchUnit **a error en vez de warning**, resolución de D-19/D-20/D-23, informe de cierre.                                                    | D-19, D-20, D-23, D-05, D-06 | —                  | Bajo   |
+
+> **Sobre el orden.** La Fase 02 va antes que el desacople **a propósito**, pero tras **DP-01** su
+> urgencia cambia de naturaleza: el sistema no está abierto por descuido, sino porque falta el
+> Service Principal. Lo que no puede esperar es que **el interruptor sea el compilador**: cuanto más
+> código se escriba sobre unas anotaciones comentadas, más caro sale activarlas. La Fase 02 las pone
+> a compilar y a probarse **sin cambiar la postura actual**, que es lo que permite que las Fases 03 a
+> 08 se construyan encima sin deuda nueva.
+
+---
+
+## 6. Criterios de aceptación
+
+| Métrica                                                        |        Baseline |   Objetivo |
+|----------------------------------------------------------------|----------------:|-----------:|
+| Modos de seguridad declarados y probados                       |           **0** | **2** *(`permissive` + `enforced`)* |
+| Recompilaciones necesarias para pasar a `enforced`             |           **1** |      **0** |
+| Tools MCP con autorización declarada **y compilada**           |           **2** |  **8 de 8** |
+| Anotaciones de seguridad comentadas                            |           **3** |      **0** |
+| Rutas abiertas a componentes inexistentes (`/h2-console/**`)   |           **1** |      **0** |
+| Secretos con valor por defecto en YAML                         |           **1** |      **0** |
+| Arranques posibles sin credencial en modo `enforced`           |         **sí** |     **no** |
+| Mecanismos de wiring por bean                                  |           **2** |      **1** |
+| Cortacircuitos declarados **sin** configuración correspondiente|           **7** |      **0** |
+| Líneas de `AzureDevOpsTools`                                   |         **267** |    **≤ 120** |
+| Líneas de `RestConsumer` (clase única)                         |         **237** | **≤ 120 por adaptador resultante** |
+| Clases productivas > 200 líneas                                |           **2** |      **0** |
+| Reglas de negocio en `entry-points`                            |       **4** *(WIQL, rutas, tipos, defaults)* | **0** |
+| Sentencias WIQL construidas con `String.format`                |           **1** |      **0** |
+| Cálculos del año por calendario                                |           **1** | **1, medido y en un solo punto del dominio** |
+| Modelos de dominio serializados por Jackson/`WebClient`        |           **3** |      **0** |
+| Modelos de dominio deserializados como `@McpToolParam`         |           **2** |      **0** |
+| Mappers en la frontera de salida                               |           **0** |  **≥ 3**   |
+| Excepciones de dominio                                         |           **0** |  **≥ 3**   |
+| Errores técnicos que llegan crudos al cliente MCP              |         **todos** |    **0** |
+| Puertos por agregado (hoy por operación CRUD)                  |       **7 / 1** | **≤ 3 puertos, agrupados por agregado** |
+| Puertos huérfanos                                              |           **1** |      **0** |
+| Versiones de API hardcodeadas                                  |           **7** |      **0** |
+| Clases de `domain/model` con `@Setter`                         |          **21** |      **0** |
+| ArchUnit `Rule_2.2` (violaciones reales)                       |           **1** |      **0** |
+| ArchUnit — violaciones **exportadas a Sonar**                  | **0 de 1** *(informe roto, D-25)* | **= reales** |
+| ArchUnit ejecutado como                                        |     **warning** | **error**  |
+| Módulos sin carpeta de pruebas                                 |           **1** *(`domain/model`)* | **0** |
+| Tests totales                                                  |          **33** |  **≥ 120** |
+| Tests fallando                                                 |           **0** |      **0** |
+| Cobertura `domain/model`                                       | **0 %** *(sin pruebas)* |  **≥ 90 %** |
+| Cobertura `domain/usecase`                                     |      **68,2 %** |   **≥ 90 %** |
+| Cobertura `mcp-server` / `rest-consumer` / `app-service`       | **70,5 % / 51,1 % / 17,0 %** | **≥ 80 / 80 / 60 %** |
+| Mutaciones eliminadas (Pitest)                                 |      **5 / 44** |   **≥ 60 %** |
+| Cobertura de `getTeamFieldValues` y `getTeamIterations`        |           **0 %** | **cubiertas** |
+| Complejidad cognitiva máx. por método                          | *por medir (Fase 04)* |     **≤ 15** |
+
+**Criterio transversal:** al cerrar cada fase, `./gradlew build` termina en verde y **el contrato MCP
+público no cambia** —nombres de tool, nombres de parámetro y forma del resultado— salvo donde una
+`DP-nn` diga expresamente lo contrario. El agente y el BFF son clientes reales: romperles el contrato
+sin aviso es un fallo de la fase, no un efecto colateral.
+
+---
+
+## 7. Decisiones
+
+### Resueltas
+
+| ID        | Decisión                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Fuente  | Fecha      |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|------------|
+| **DP-01** | **La seguridad se queda laxa, pero deja de ser código y pasa a ser configuración.** El sistema es una **POC** y **no existe todavía el Service Principal**, así que ni el agente ni el BFF envían token. El objetivo declarado es enviar a pre y producción una **copia 1 a 1** del binario, sin reconstruir. · **Flujo objetivo:** el front pide al IDP (Entra ID) un token **de usuario** válido **solo para el BFF**; el BFF llama al agente; el agente obtiene un **segundo token M2M**, distinto del de usuario, para hablar con el MCP. · **Por tanto: no se elimina nada de la seguridad existente.** Se introduce `mcp.security.mode` con dos valores —`permissive` (por defecto, comportamiento **idéntico** al de hoy) y `enforced` (`.anyExchange().authenticated()`)—, se **descomentan y uniforman los `@PreAuthorize`** en las seis tools que hoy no los tienen, y en `permissive` se concede una identidad anónima con los roles de lectura y escritura para que **el comportamiento observable no cambie**. Resultado: mismo binario, dos modos, ambos probados. | Usuario | 2026-08-30 |
+| **DP-02** | **El PAT vive fuera del repositorio y su ausencia debe romper el arranque, no una llamada.** Se usa un **usuario de servicio** para Azure DevOps que **todavía no existe**; en local cada desarrollador usa su PAT personal, y en los entornos el valor vendrá de una **variable de entorno o un secreto**. · **Por tanto:** se elimina el valor por defecto `your-token-here`; en modo `enforced` la ausencia de token **falla al arranque** con un mensaje explícito; en `permissive` arranca con un `WARN` inequívoco. · **Corrección técnica registrada:** el PAT de Azure DevOps **no es la fusión de dos claves**. El encabezado es `Basic Base64(":" + PAT)` — usuario **vacío**, dos puntos y el PAT; el usuario se ignora, por eso «cualquier cosa`:`PAT» también funciona. El código actual **asume que la propiedad ya llega en Base64** y solo le antepone `Basic `, de modo que un PAT crudo produce un **401 mudo**. Se resuelve en la Fase 02 con **B-01**. | Usuario | 2026-08-30 |
+
+### Sub-decisiones abiertas dentro de la Fase 02
+
+| ID       | Cuestión                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Recomendación                                                                                                                                                                                                            |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **B-01** | ✅ **RESUELTA (2026-08-30) — el formato NO cambia: la propiedad sigue recibiendo el Base64 ya calculado.** Se evaluó migrar al PAT crudo y **se descartó**: los entornos ya están configurados con el valor codificado, así que el cambio haría fallar **cada entorno existente** con el mismo 401 mudo que se pretendía evitar — un riesgo real y garantizado a cambio de uno hipotético. Además, mantener el secreto **opaco** en la bóveda es preferible: la aplicación transporta la credencial, no la transforma. · **Lo que sí es deuda y la Fase 02 corrige:** que **nada valide ni documente** el formato. Se retira el default `your-token-here`, se **valida al arranque** que el valor sea Base64 decodificable y contenga `:`, y el formato esperado se documenta en la propiedad. | Usuario | 2026-08-30 |
+| **B-02** | **¿`mcp.security.mode` o un perfil de Spring (`poc` / `prod`)?** Una propiedad es más explícita y se ve en el log de arranque; un perfil arrastra además el resto de configuración del entorno.                                                                                                                                                                                                                                                              | **Propiedad**, porque el objetivo de DP-01 es que el modo sea **una variable de entorno visible**, no un efecto lateral de qué perfil esté activo.                                                                        |
+| **B-03** | **¿Los nombres de rol se quedan como están?** Hoy conviven `MCP.AZURE_DEVOPS.WRITE` (usado) y `MCP.AZURE_DEVOPS.READ` (solo en comentarios). Al no haber SP, **nadie los ha validado contra Entra ID**.                                                                                                                                                                                                                                                       | **Conservarlos literalmente** y centralizarlos en constantes. Cambiarlos sin App Registration real sería asumir un contrato inexistente (`spring-rules.md` §6).                                                           |
+
+### Pendientes
+
+| ID        | Fase | Decisión requerida                                                                                                                                                                                                                                                                                              |
+|-----------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **DP-03** | 03   | **¿Se permite renombrar tipos de `domain/model`?** Sacar `WorkItemsBatchRequest` del dominio cierra D-17, pero es un tipo que **Jackson deserializa desde el payload MCP**: cambiarlo mal rompe a los clientes en silencio. Decidir si el DTO conserva el nombre actual en el cable.                            |
+| **DP-04** | 04   | **¿El repliegue por concatenación se conserva?** (a) sí, con métrica y log de aviso; (b) sí, pero con el año **eliminado**, devolviendo error si Azure DevOps no responde; (c) se retira. Y: **¿el mapeo `User Story → Historia de Usuario` y los tipos por defecto son configurables o son regla de dominio?** |
+| **DP-05** | 05   | **¿Se autoriza reagrupar los paquetes de `domain/model`** (`getworkitem`, `createworkitem`, … → `workitem`)? Cambia rutas de importación en tres módulos y en el `ArchitectureTest`, que lleva un aviso de «no modificar».                                                                                       |
+| **DP-06** | 06   | **¿Qué debe ver el cliente MCP ante un fallo de Azure DevOps?** Forma exacta del error (mensaje, código, si se propaga el cuerpo original) y **valores de resiliencia**: umbrales de cada cortacircuito y timeout por operación, incluido el de lote.                                                            |
+
+
+---
+
+## 8. Protocolo de continuidad
+
+Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de contexto.
+
+1. Cada fase vive en **`docs/fases/fase-NN.md`** con exactamente tres secciones: **Contexto**,
+   **Instrucciones** y **Orden de Ejecución** (checklist).
+2. **Regla de continuidad:** al concluir la implementación de una fase se debe, en este orden:
+   1. marcar su checklist completo;
+   2. rellenar su bloque **Resultado** con lo realmente alcanzado (no con lo planeado);
+   3. actualizar §9 (Bitácora) y la cabecera de este documento (**Fase activa** / **Completadas**);
+   4. **generar `docs/fases/fase-NN+1.md`** con el estado real alcanzado como Contexto.
+3. **Punto de reanudación ante reinicio:** leer §9 de este documento, abrir el último `fase-NN.md`
+   sin cerrar y continuar por el **primer paso sin marcar** de su Orden de Ejecución.
+4. Ninguna fase arranca con el build en rojo heredado. La 01 es la única excepción declarada, y solo
+   si el baseline lo encuentra así.
+5. Ninguna `DP-nn` se resuelve por cuenta propia (`rules/spring-rules.md` §6, Política de
+   No-Asunción). Si una fase se bloquea por una decisión, se documenta en su **Resultado**, se deja
+   **abierta** y se pasa a la siguiente si no hay dependencia técnica.
+6. Un commit por fase como mínimo, con el formato de `COMMIT_RULES.md` (§10 de este plan).
+
+---
+
+## 9. Bitácora
+
+| Fase | Estado             | Fecha      |        Tests | Resultado |
+|------|--------------------|------------|-------------:|-----------|
+| 01   | 🟢 **COMPLETADA**  | 2026-08-30 | **48** (0 ❌) | [`fase-01.md`](../fases/fase-01.md) · [`BASELINE.md`](../resultados/BASELINE.md) · [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) · **+15 pruebas** · **D-21 saldada** · **sentencia WIQL congelada carácter a carácter (8 ramas)** · `rest-consumer` 51,1 % → **71,5 %** · **D-06 y D-17 confirmadas** · **D-05 degradada a 🟡** (el `@ComponentScan` es inerte) · **D-25, D-26 y D-27 detectadas** · **0 ficheros de `src/main` tocados** |
+| 02   | ⚪ Pendiente       | —          |            — | [`fase-02.md`](../fases/fase-02.md) · generada · DP-01, DP-02 y B-01 resueltas |
+| 03   | ⚪ Pendiente    | —     | —     | — |
+| 04   | ⚪ Pendiente    | —     | —     | — |
+| 05   | ⚪ Pendiente    | —     | —     | — |
+| 06   | ⚪ Pendiente    | —     | —     | — |
+| 07   | ⚪ Pendiente    | —     | —     | — |
+| 08   | ⚪ Pendiente    | —     | —     | — |
+
+---
+
+## 10. Convención de commits del plan
+
+Formato obligatorio de `COMMIT_RULES.md`: `tipo(scope_snake_case): descripción en español`.
+
+| Fase | Commit sugerido                                                                    |
+|------|------------------------------------------------------------------------------------|
+| 01   | `test(mcp_baseline): agregar pruebas de caracterizacion de las herramientas mcp`   |
+| 02   | `security(mcp_server): exigir autenticacion y retirar rutas abiertas del scaffold` |
+| 03   | `refactor(mcp_contract): separar los dto de cable de los modelos de dominio`       |
+| 04   | `refactor(work_item_query): mover la construccion del wiql al caso de uso`         |
+| 05   | `refactor(rest_consumer): segregar los adaptadores de azure devops por agregado`   |
+| 06   | `refactor(error_handling): traducir los fallos de azure devops a excepciones de dominio` |
+| 07   | `refactor(domain_model): convertir el modelo en objetos de valor inmutables`       |
+| 08   | `chore(mcp_config): tipar la configuracion y activar las reglas de arquitectura`   |
+
+---
+
+## 11. Riesgos y mitigación
+
+| Riesgo                                                                    | Impacto | Mitigación                                                                                                     |
+|---------------------------------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------|
+| Cerrar la seguridad deja **sin servicio** al agente y al BFF, que hoy no envían token | **Alto** | **Resuelto por DP-01:** no se cierra. `permissive` es el valor por defecto y reproduce el comportamiento actual; `enforced` existe, se prueba y **no se activa** hasta que haya Service Principal |
+| El día del Service Principal, seis `@PreAuthorize` se estrenan en producción sin haberse ejecutado nunca | **Alto** | La Fase 02 los **descomenta y los prueba en los dos modos**: en `enforced` con roles concedidos y denegados. Es el motivo principal de que la fase exista |
+| Configurar mal el PAT produce un **401 mudo** imposible de diagnosticar | Medio | **B-01**: la propiedad pasa a recibir el PAT crudo y el adaptador codifica; validación y `WARN` explícito al arranque si el valor parece ya codificado |
+| Renombrar un tipo que Jackson deserializa rompe el contrato MCP en silencio | **Alto** | **DP-03**; la Fase 01 congela el contrato con pruebas de caracterización que comparan nombres y forma del payload |
+| Mover el WIQL de sitio cambia la consulta y el tablero sale vacío           | **Alto** | La Fase 01 fija la sentencia WIQL **byte a byte**; la Fase 04 debe reproducirla idéntica antes de tocarla        |
+| Partir `RestConsumer` altera el comportamiento de los cortacircuitos        | Medio   | La Fase 06 fija primero los nombres y umbrales reales (D-06); la 05 solo mueve código                            |
+| Pérdida de contexto o desconexión a mitad del trabajo                      | Medio   | Protocolo de continuidad de §8: un MD por fase con Contexto, Instrucciones y checklist                           |
+| El `ArchitectureTest` lleva un aviso de «no modificar» y rutas absolutas    | Bajo    | **DP-05**; el precedente del BFF (DP-05a) autorizó tocarlo con justificación explícita                           |
+
+---
+
+## 12. Fuera de alcance
+
+- Modificar `azure-devops-agent`, `azure-devops-backend` o `azure-devops-frontend`.
+  > **Consecuencia de DP-01:** la Fase 02 deja `enforced` **construido y probado, pero apagado**. El
+  > día que exista el Service Principal habrá que (a) registrar la App en Entra ID y conceder los
+  > roles `MCP.AZURE_DEVOPS.READ` / `.WRITE`, (b) dar al **agente** la capacidad de obtener su token
+  > **M2M** hacia el MCP —distinto del token de usuario que el front obtiene para el BFF— y (c)
+  > exportar `MCP_SECURITY_MODE=enforced`. Los pasos (a) y (b) **no son de este plan**: requieren
+  > plan propio y coordinación entre los tres repositorios. Este plan solo garantiza que (c) sea
+  > suficiente por parte del MCP.
+- **Crear o gestionar el Service Principal y el usuario de servicio de Azure DevOps.** No existen
+  todavía (DP-01, DP-02); el plan se limita a dejar el MCP preparado para consumirlos.
+- Cambiar el **protocolo MCP**, el modo `STATELESS`/`ASYNC` o la versión de Spring AI.
+- Añadir tools nuevas o capacidades MCP (`resource`, `prompt`) que hoy no existen.
+- Migrar el proveedor de identidad (Entra ID) o el esquema de roles.
+- Tocar `skills/`, `overlays/` y el resto de `docs/`: son documentación de producto, no código.
+
