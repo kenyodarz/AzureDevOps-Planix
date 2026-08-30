@@ -52,7 +52,7 @@
 | `organization`| `String`                   | ✅          |                                |
 | `project`     | `String`                   | ✅          |                                |
 | `type`        | `String`                   | ✅          | Ej. `User Story`, `Task`       |
-| `patch`       | **`List<JsonPatchOperation>`** | ✅      | ⚠️ **modelo de dominio** (§3)  |
+| `patch`       | **`List<JsonPatchOperation­Input>`** | ✅ | DTO del entry-point; cable `{ op, path, value, from }` (§3) |
 | `apiVersion`  | `String`                   | ❌          | Por defecto `7.1`              |
 
 **Retorna:** `Mono<WorkItem>`
@@ -65,7 +65,7 @@
 | `organization`| `String`                   | ✅          |                                |
 | `project`     | `String`                   | ✅          |                                |
 | `id`          | `int`                      | ✅          |                                |
-| `patch`       | **`List<JsonPatchOperation>`** | ✅      | ⚠️ **modelo de dominio** (§3)  |
+| `patch`       | **`List<JsonPatchOperation­Input>`** | ✅ | DTO del entry-point; cable `{ op, path, value, from }` (§3) |
 | `apiVersion`  | `String`                   | ❌          | Por defecto `7.1`              |
 
 **Retorna:** `Mono<WorkItem>`
@@ -123,8 +123,10 @@ contrato de facto, aunque no estén documentados en la descripción de la tool):
 **Retorna:** `Mono<List<WorkItem>>`
 **Autorización:** ✅ `hasRole('MCP.AZURE_DEVOPS.READ')` *(activa desde la Fase 02)*
 
-> El entry-point construye internamente un **`WorkItemsBatchRequest`**, que es un modelo de dominio
-> (§3) y la clase que provoca la violación de ArchUnit `Rule_2.2` (D-17).
+> El entry-point construye internamente un **`WorkItemsBatchInput`** (DTO del entry-point, §3) que el
+> `McpToolDtoMapper` traduce a `WorkItemBatchCriteria`. Hasta la Fase 03 construía directamente el
+> modelo de dominio `WorkItemsBatchRequest`, que era la clase responsable de la violación de ArchUnit
+> `Rule_2.2` (D-17, **saldada**). **Los siete parámetros de la tool no cambiaron.**
 
 ### 2.6 `checkHealth` / `getServerInfo` (`HealthTool`)
 
@@ -139,24 +141,59 @@ lo que ya ofrece el actuator (D-20).
 
 ---
 
-## 3. ⚠️ Parámetros cuyo tipo es un **modelo de dominio**
+## 3. ✅ Parámetros cuyo tipo era un **modelo de dominio** — resuelto en la Fase 03
 
-Éste es el punto que la **Fase 03** debe resolver y sobre el que **DP-03** debe decidir. Los
-siguientes tipos de `domain/model` **son el contrato de cable**: Jackson los deserializa
-directamente desde el payload MCP.
+> **Actualizado al cierre de la Fase 03 (2026-08-30). Decisión: DP-03.**
+> **El contrato público NO cambió: ni un nombre de tool, ni un nombre de parámetro, ni un nombre de
+> campo, ni la forma del resultado.** Lo único que cambió son **nombres de clase Java**, que no
+> viajan por el cable.
 
-| Tool                            | Parámetro | Tipo de dominio expuesto  | Forma en el cable                       |
-|---------------------------------|-----------|---------------------------|-----------------------------------------|
-| `createWorkItem`                | `patch`   | `JsonPatchOperation`      | `{ op, path, value, from }`             |
-| `updateWorkItem`                | `patch`   | `JsonPatchOperation`      | `{ op, path, value, from }`             |
-| `getWorkItemsBatch` *(interno)* | —         | `WorkItemsBatchRequest`   | `{ ids, fields, expand, errorPolicy }`  |
+Hasta la Fase 03 los tipos de `domain/model` **eran el contrato de cable**: Jackson los deserializaba
+directamente desde el payload MCP y el `WebClient` los serializaba tal cual hacia Azure DevOps (D-11).
+Ahora cada frontera tiene sus propios DTOs y su mapper.
 
-Y en el **retorno**, la misma fuga en sentido contrario: `WorkItem`, `WorkItemRelation`,
-`WorkItemReference`, `WiqlResult` y `TeamFieldValues` se serializan tal cual, sin DTO ni mapper.
+### 3.1 Frontera de entrada (payload MCP → dominio)
 
-> **Restricción para la Fase 03:** el DTO que sustituya a `JsonPatchOperation` **debe conservar
-> exactamente los nombres de campo `op`, `path`, `value` y `from`**, y `WorkItemsBatchRequest` los
-> suyos. Cambiar el nombre de la **clase** es seguro; cambiar el de un **campo** no lo es.
+| Tool                            | Parámetro | Antes *(modelo de dominio)* | Ahora *(DTO del entry-point)* | Forma en el cable **(sin cambios)** |
+|---------------------------------|-----------|-----------------------------|-------------------------------|-------------------------------------|
+| `createWorkItem`                | `patch`   | `model.workitem.JsonPatchOperation` | `mcp.dto.JsonPatchOperationInput` | `{ op, path, value, from }` |
+| `updateWorkItem`                | `patch`   | `model.workitem.JsonPatchOperation` | `mcp.dto.JsonPatchOperationInput` | `{ op, path, value, from }` |
+| `getWorkItemsBatch` *(interno)* | —         | `model.workitem.WorkItemsBatchRequest` | `mcp.dto.WorkItemsBatchInput` | `{ ids, fields, expand, errorPolicy }` |
+
+Traduce `mcp-server/.../mcp/dto/McpToolDtoMapper.java` (estático, sin Spring, sin lógica de negocio).
+
+### 3.2 Frontera de salida (dominio → Azure DevOps)
+
+| Cuerpo enviado | Antes *(modelo de dominio serializado por el `WebClient`)* | Ahora *(DTO del adaptador)* | Mapper |
+|----------------|------------------------------------------------------------|-----------------------------|--------|
+| JSON Patch     | `.bodyValue(patch)` → `JsonPatchOperation`      | `consumer.dto.JsonPatchOperationRequestDTO`  | `JsonPatchMapper`      |
+| Consulta WIQL  | `.bodyValue(query)` → `WiqlQuery`               | `consumer.dto.WiqlQueryRequestDTO`           | `WiqlQueryMapper`      |
+| Lote           | `.bodyValue(request)` → `WorkItemsBatchRequest` | `consumer.dto.WorkItemsBatchRequestDTO`      | `WorkItemBatchMapper`  |
+
+Las respuestas ya tenían DTOs propios, pero se mapeaban con métodos privados dentro de
+`RestConsumer`; ahora viven en `consumer/mapper/` (`WorkItemMapper`, `TeamMapper`).
+
+### 3.3 Renombrado de dominio (DP-03)
+
+`model.workitem.WorkItemsBatchRequest` → **`model.workitem.WorkItemBatchCriteria`**. Era la única
+violación real de ArchUnit `Rule_2.2` (D-17): un *request* HTTP dentro de `domain/model`. El sufijo
+`Request` vive ahora donde le corresponde, en el DTO del adaptador. **`Rule_2.2` queda a 0
+violaciones**, verificado en el log del `ArchitectureTest` (por D-25 el `issues.json` no sirve como
+prueba).
+
+### 3.4 Lo que sigue siendo intocable
+
+> **Los nombres de campo son contrato público.** `op`, `path`, `value`, `from`, `ids`, `fields`,
+> `expand` y `errorPolicy` se conservan **literalmente**, y ahora hay una prueba que lo verifica por
+> reflexión (`McpToolDtoMapperTest`). El cuerpo HTTP emitido se compara **carácter a carácter**
+> contra el que producía el modelo de dominio en `OutboundPayloadCharacterizationTest`.
+> Cambiar el nombre de una **clase** es seguro; cambiar el de un **campo** no lo es nunca.
+
+En el **retorno**, `WorkItem`, `WorkItemRelation`, `WorkItemReference`, `WiqlResult` y
+`TeamFieldValues` **siguen serializándose desde el dominio hacia el cliente MCP**. Esa mitad no
+entraba en el alcance de la Fase 03 —que ataca la frontera con Azure DevOps— y queda anotada para
+cuando el dominio se convierta en Value Objects (D-16, **Fase 07**).
+
 
 ---
 

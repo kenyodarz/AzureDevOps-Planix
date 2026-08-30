@@ -1,5 +1,15 @@
 package co.com.bancolombia.consumer;
 
+import co.com.bancolombia.consumer.dto.TeamFieldValuesDTO;
+import co.com.bancolombia.consumer.dto.TeamIterationsDTO;
+import co.com.bancolombia.consumer.dto.WiqlResultDTO;
+import co.com.bancolombia.consumer.dto.WorkItemDTO;
+import co.com.bancolombia.consumer.dto.WorkItemsBatchResponseDTO;
+import co.com.bancolombia.consumer.mapper.JsonPatchMapper;
+import co.com.bancolombia.consumer.mapper.TeamMapper;
+import co.com.bancolombia.consumer.mapper.WiqlQueryMapper;
+import co.com.bancolombia.consumer.mapper.WorkItemBatchMapper;
+import co.com.bancolombia.consumer.mapper.WorkItemMapper;
 import co.com.bancolombia.model.createworkitem.gateways.CreateWorkItemRepository;
 import co.com.bancolombia.model.getworkitem.gateways.GetWorkItemRepository;
 import co.com.bancolombia.model.getworkitemsbatch.gateways.GetWorkItemsBatchRepository;
@@ -13,9 +23,7 @@ import co.com.bancolombia.model.workitem.JsonPatchOperation;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
-import co.com.bancolombia.model.workitem.WorkItemReference;
-import co.com.bancolombia.model.workitem.WorkItemRelation;
-import co.com.bancolombia.model.workitem.WorkItemsBatchRequest;
+import co.com.bancolombia.model.workitem.WorkItemBatchCriteria;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +33,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Adaptador REST hacia Azure DevOps.
+ *
+ * <p><b>Cambio de la Fase 03 (D-11).</b> Hasta ahora el {@code WebClient} serializaba <b>modelos de
+ * dominio</b> directamente hacia el cable: {@code .bodyValue(patch)}, {@code .bodyValue(query)} y
+ * {@code .bodyValue(request)}. No existía ni un solo mapper en la frontera de salida, pese a que
+ * {@code spring-rules.md} los declara obligatorios en {@code driven-adapters}. Ahora cada cuerpo
+ * enviado tiene su DTO en {@code consumer.dto} y su mapper en {@code consumer.mapper}, y los
+ * {@code toDomain} privados que antes vivían aquí se movieron a {@code WorkItemMapper} y
+ * {@code TeamMapper} <b>sin cambiar una sola línea de su lógica</b>.
+ *
+ * <p><b>Lo que NO cambió:</b> ninguna URL, ningún parámetro de consulta, ningún {@code contentType},
+ * ninguna versión de API por defecto y <b>ni un byte del JSON emitido</b>. {@code RestConsumerTest}
+ * es la red de seguridad: compara las peticiones reales contra {@code MockWebServer}.
+ *
+ * <p>Partir esta clase por agregado es D-10, material de la <b>Fase 05</b>; traducir los errores
+ * técnicos a excepciones de dominio es D-13, material de la <b>Fase 06</b>.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -50,7 +76,7 @@ public class RestConsumer implements
                         organization, project, id, version)
                 .retrieve()
                 .bodyToMono(WorkItemDTO.class)
-                .map(this::toDomain);
+                .map(WorkItemMapper::toDomain);
     }
 
     @Override
@@ -64,10 +90,10 @@ public class RestConsumer implements
                 .uri("/{organization}/{project}/_apis/wit/workitems/{type}?api-version={version}",
                         organization, project, typeParam, version)
                 .contentType(MediaType.valueOf("application/json-patch+json"))
-                .bodyValue(patch)
+                .bodyValue(JsonPatchMapper.toRequest(patch))
                 .retrieve()
                 .bodyToMono(WorkItemDTO.class)
-                .map(this::toDomain);
+                .map(WorkItemMapper::toDomain);
     }
 
     @Override
@@ -80,10 +106,10 @@ public class RestConsumer implements
                 .uri("/{organization}/{project}/_apis/wit/workitems/{id}?api-version={version}",
                         organization, project, id, version)
                 .contentType(MediaType.valueOf("application/json-patch+json"))
-                .bodyValue(patch)
+                .bodyValue(JsonPatchMapper.toRequest(patch))
                 .retrieve()
                 .bodyToMono(WorkItemDTO.class)
-                .map(this::toDomain);
+                .map(WorkItemMapper::toDomain);
     }
 
     @Override
@@ -96,7 +122,7 @@ public class RestConsumer implements
                 .uri("/{organization}/{project}/_apis/wit/wiql?api-version={version}",
                         organization, project, version)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(query)
+                .bodyValue(WiqlQueryMapper.toRequest(query))
                 .retrieve()
                 .bodyToMono(WiqlResultDTO.class)
                 .doOnError(
@@ -105,26 +131,24 @@ public class RestConsumer implements
                                 log.error("❌ Detalle del error de Azure DevOps: {}",
                                         ex.getResponseBodyAsString())
                 )
-                .map(this::toDomain);
+                .map(WorkItemMapper::toDomain);
     }
 
     @Override
     @CircuitBreaker(name = "getWorkItemsBatch")
-    public Mono<List<WorkItem>> getWorkItemsBatch(String organization, String project, WorkItemsBatchRequest request, String apiVersion) {
+    public Mono<List<WorkItem>> getWorkItemsBatch(String organization, String project, WorkItemBatchCriteria criteria, String apiVersion) {
         String version = (apiVersion != null && !apiVersion.isBlank()) ? apiVersion : "7.1";
-        log.info("Fetching Work Items Batch for ids size: {} | Org: {}, Project: {}, API Version: {}", 
-                request.getIds() != null ? request.getIds().size() : 0, organization, project, version);
+        log.info("Fetching Work Items Batch for ids size: {} | Org: {}, Project: {}, API Version: {}",
+                criteria.getIds() != null ? criteria.getIds().size() : 0, organization, project, version);
 
         return client.post()
                 .uri("/{organization}/{project}/_apis/wit/workitemsbatch?api-version={version}",
                         organization, project, version)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
+                .bodyValue(WorkItemBatchMapper.toRequest(criteria))
                 .retrieve()
                 .bodyToMono(WorkItemsBatchResponseDTO.class)
-                .map(response -> response.getValue() != null 
-                        ? response.getValue().stream().map(this::toDomain).toList()
-                        : List.of());
+                .map(WorkItemBatchMapper::toDomain);
     }
 
     @Override
@@ -138,7 +162,7 @@ public class RestConsumer implements
                         organization, project, team)
                 .retrieve()
                 .bodyToMono(TeamFieldValuesDTO.class)
-                .map(this::toDomain);
+                .map(TeamMapper::toDomain);
     }
 
     /**
@@ -157,80 +181,6 @@ public class RestConsumer implements
                         organization, project, team)
                 .retrieve()
                 .bodyToMono(TeamIterationsDTO.class)
-                .map(this::toDomain);
-    }
-
-    // --- MAPPING METHODS ---
-
-    private List<TeamIteration> toDomain(TeamIterationsDTO dto) {
-        if (dto == null || dto.getValue() == null) {
-            return List.of();
-        }
-        return dto.getValue().stream().map(this::toDomain).toList();
-    }
-
-    private TeamIteration toDomain(TeamIterationDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-        return TeamIteration.builder()
-                .id(dto.getId())
-                .name(dto.getName())
-                .path(dto.getPath())
-                .build();
-    }
-
-    private TeamFieldValues toDomain(TeamFieldValuesDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-        return TeamFieldValues.builder()
-                .defaultValue(dto.getDefaultValue())
-                .values(dto.getValues() != null
-                        ? dto.getValues().stream().map(TeamFieldValueDTO::getValue).toList()
-                        : List.of())
-                .build();
-    }
-
-    private WorkItem toDomain(WorkItemDTO dto) {
-        if (dto == null) return null;
-        return WorkItem.builder()
-                .id(dto.getId())
-                .rev(dto.getRev())
-                .fields(dto.getFields())
-                .relations(dto.getRelations() != null 
-                        ? dto.getRelations().stream().map(this::toDomain).toList()
-                        : List.of())
-                .url(dto.getUrl())
-                .build();
-    }
-
-    private WorkItemRelation toDomain(WorkItemRelationDTO dto) {
-        if (dto == null) return null;
-        return WorkItemRelation.builder()
-                .rel(dto.getRel())
-                .url(dto.getUrl())
-                .attributes(dto.getAttributes())
-                .build();
-    }
-
-    private WiqlResult toDomain(WiqlResultDTO dto) {
-        if (dto == null) return null;
-        return WiqlResult.builder()
-                .queryType(dto.getQueryType())
-                .queryResultType(dto.getQueryResultType())
-                .asOf(dto.getAsOf())
-                .workItems(dto.getWorkItems() != null 
-                        ? dto.getWorkItems().stream().map(this::toDomain).toList()
-                        : List.of())
-                .build();
-    }
-
-    private WorkItemReference toDomain(WorkItemReferenceDTO dto) {
-        if (dto == null) return null;
-        return WorkItemReference.builder()
-                .id(dto.getId())
-                .url(dto.getUrl())
-                .build();
+                .map(TeamMapper::toDomain);
     }
 }

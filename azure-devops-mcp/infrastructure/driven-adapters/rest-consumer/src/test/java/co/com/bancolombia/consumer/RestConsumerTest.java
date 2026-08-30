@@ -2,7 +2,7 @@ package co.com.bancolombia.consumer;
 
 import co.com.bancolombia.model.workitem.JsonPatchOperation;
 import co.com.bancolombia.model.workitem.WiqlQuery;
-import co.com.bancolombia.model.workitem.WorkItemsBatchRequest;
+import co.com.bancolombia.model.workitem.WorkItemBatchCriteria;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -119,7 +119,7 @@ class RestConsumerTest {
                 .setResponseCode(HttpStatus.OK.value())
                 .setBody("{\"count\": 1, \"value\": [{\"id\": 7539457, \"fields\": {\"System.Title\": \"Batch Story\"}}]}"));
 
-        WorkItemsBatchRequest request = WorkItemsBatchRequest.builder()
+        WorkItemBatchCriteria request = WorkItemBatchCriteria.builder()
                 .ids(List.of(7539457))
                 .fields(List.of("System.Id", "System.Title"))
                 .build();

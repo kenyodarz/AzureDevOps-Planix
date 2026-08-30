@@ -6,8 +6,8 @@
 > [`COMMIT_RULES.md`](../../COMMIT_RULES.md)
 > **Precedentes:** `azure-devops-agent/docs/resultados/CIERRE-DEL-PLAN.md` ·
 > `azure-devops-backend/docs/resultados/CIERRE-DEL-PLAN.md`
-> **Fases:** 8 (01 → 08) · **Fase activa:** [`docs/fases/fase-03.md`](../fases/fase-03.md) ·
-> **Completadas:** **01, 02**
+> **Fases:** 8 (01 → 08) · **Fase activa:** [`docs/fases/fase-04.md`](../fases/fase-04.md) ·
+> **Completadas:** **01, 02, 03**
 
 ---
 
@@ -205,7 +205,7 @@ incorporan aquí con su identificador original entre paréntesis:
 | **D-08** | Las reglas de Azure DevOps están **hardcodeadas en el entry-point**: `'Historia de Usuario','Habilitador'` por defecto, el mapeo `User Story → Historia de Usuario`, el entrecomillado y la plantilla WIQL *(← D-35)*      | SRP, DRY              |
 | **D-09** | `resolveAreaPath` y `resolveIterationPath` **fabrican rutas por concatenación** en el entry-point; la segunda intercala `LocalDate.now().getYear()` y **nadie mide** cuántas veces se dispara *(← D-37)*                   | S109, observabilidad  |
 | **D-10** | `RestConsumer` implementa **siete gateways** y contiene **ocho mappers privados**: no hay forma de probar un flujo sin arrastrar los otros seis                                                                            | SOLID-I, SOLID-S      |
-| **D-11** | **El dominio es el contrato de cable en los dos extremos**: Jackson lo deserializa como `@McpToolParam` y el `WebClient` lo serializa con `bodyValue(...)`. **No hay mapper de salida**                                    | «Mappers obligatorios» |
+| ~~**D-11**~~ | ✅ **SALDADA (Fase 03).** El dominio **dejó de ser el contrato de cable en los dos extremos**. Entrada: `JsonPatchOperationInput` y `WorkItemsBatchInput` en `mcp-server/.../mcp/dto/`, traducidos por `McpToolDtoMapper`. Salida: `JsonPatchOperationRequestDTO`, `WiqlQueryRequestDTO` y `WorkItemsBatchRequestDTO` en `rest-consumer/.../consumer/dto/`, con **5 mappers** en `consumer/mapper/`. **0 modelos de dominio deserializados como `@McpToolParam`**, **0 serializados por el `WebClient`**, y el cuerpo emitido verificado **carácter a carácter** (`OutboundPayloadCharacterizationTest`) | «Mappers obligatorios» |
 | **D-12** | Seis de los siete casos de uso son **delegantes de 17–18 líneas**: la capa de aplicación está vacía porque la lógica se quedó arriba (D-07)                                                                                | Pirámide invertida    |
 | **D-13** | **Ningún error se traduce**: no existe una sola excepción de dominio; un 401 o un 404 de Azure DevOps llega crudo al cliente MCP                                                                                           | Manejo de excepciones |
 
@@ -216,7 +216,7 @@ incorporan aquí con su identificador original entre paréntesis:
 | **D-14** | Gateways partidos **por operación CRUD**, no por agregado: 7 interfaces en 7 paquetes (`getworkitem`, `createworkitem`, `updateworkitem`, …) para **un** agregado | SOLID-I, DDD        |
 | **D-15** | `workitem/gateways/WorkItemRepository` existe y **no lo implementa ni lo usa nadie**: puerto huérfano                                                            | Código muerto       |
 | **D-16** | Modelo **anémico y mutable**: `@Setter` en las 21 clases de `domain/model`, sin una sola invariante                                                              | «Prohibido el modelo anémico» |
-| **D-17** | **ArchUnit `Rule_2.2` en rojo (1 violación)**: `WorkItemsBatchRequest` termina en `Request` dentro de `domain/model`, y el test solo la registra como *warning* *(← D-39)* | Rule_2.2            |
+| ~~**D-17**~~ | ✅ **SALDADA (Fase 03).** `WorkItemsBatchRequest` → **`WorkItemBatchCriteria`** (DP-03). El sufijo `Request` vive ahora donde le corresponde: en el DTO del adaptador. **`Rule_2.2` a 0 violaciones reales**, verificado **en el log** del `ArchitectureTest` — por D-25 el `issues.json` no sirve como prueba *(← D-39)* | Rule_2.2            |
 | **D-18** | Versiones de API **repetidas y hardcodeadas** siete veces (`"7.1"`, `"7.0"`) con el mismo ternario copiado                                                       | DRY, configuración  |
 | **D-19** | La tool `queryByWiql` tiene su `@McpTool` **comentado**: el método es público, el caso de uso y el gateway existen, pero **no se expone**. Camino muerto sin documentar | Claridad            |
 | **D-20** | `HealthTool` **duplica el actuator** y devuelve la versión hardcodeada con un placeholder sin rellenar: `"Server:  v1.0.0"`                                       | DRY                 |
@@ -344,45 +344,47 @@ su propio `fase-NN.md`, sección **Resultado**.
 ## 6. Criterios de aceptación
 
 > Columna **Fase 02** añadida al cierre de la Fase 02 (2026-08-30) con cifras **medidas**.
+> Columna **Fase 03** añadida al cierre de la Fase 03 (2026-08-30), también con cifras **medidas**.
 
-| Métrica                                                        |        Baseline | Fase 02 |   Objetivo |
-|----------------------------------------------------------------|----------------:|--------:|-----------:|
-| Modos de seguridad declarados y probados                       |           **0** | ✅ **2** | **2** *(`permissive` + `enforced`)* |
-| Recompilaciones necesarias para pasar a `enforced`             |           **1** | ✅ **0** |      **0** |
-| Tools MCP con autorización declarada **y compilada**           |           **2** | ✅ **8** |  **8 de 8** |
-| Anotaciones de seguridad comentadas                            |           **3** | ✅ **0** |      **0** |
-| Rutas abiertas a componentes inexistentes (`/h2-console/**`)   |           **1** | ✅ **0** |      **0** |
-| Secretos con valor por defecto en YAML                         |           **1** | ✅ **0** |      **0** |
-| Arranques posibles sin credencial en modo `enforced`           |         **sí** | ✅ **no** |     **no** |
-| Mecanismos de wiring por bean                                  |           **2** |   **2** |      **1** |
-| Cortacircuitos declarados **sin** configuración correspondiente|           **7** |   **7** |      **0** |
-| Líneas de `AzureDevOpsTools`                                   |         **267** | **275** |    **≤ 120** |
-| Líneas de `RestConsumer` (clase única)                         |         **237** | **237** | **≤ 120 por adaptador resultante** |
-| Clases productivas > 200 líneas                                |           **2** |   **2** |      **0** |
-| Reglas de negocio en `entry-points`                            |       **4** *(WIQL, rutas, tipos, defaults)* | **4** | **0** |
-| Sentencias WIQL construidas con `String.format`                |           **1** |   **1** |      **0** |
-| Cálculos del año por calendario                                |           **1** |   **1** | **1, medido y en un solo punto del dominio** |
-| Modelos de dominio serializados por Jackson/`WebClient`        |           **3** |   **3** |      **0** |
-| Modelos de dominio deserializados como `@McpToolParam`         |           **2** |   **2** |      **0** |
-| Mappers en la frontera de salida                               |           **0** |   **0** |  **≥ 3**   |
-| Excepciones de dominio                                         |           **0** |   **0** |  **≥ 3**   |
-| Errores técnicos que llegan crudos al cliente MCP              |         **todos** | **todos** |    **0** |
-| Puertos por agregado (hoy por operación CRUD)                  |       **7 / 1** | **7 / 1** | **≤ 3 puertos, agrupados por agregado** |
-| Puertos huérfanos                                              |           **1** |   **1** |      **0** |
-| Versiones de API hardcodeadas                                  |           **7** |   **7** |      **0** |
-| Clases de `domain/model` con `@Setter`                         |          **21** |  **21** |      **0** |
-| ArchUnit `Rule_2.2` (violaciones reales)                       |           **1** |   **1** |      **0** |
-| ArchUnit — violaciones **exportadas a Sonar**                  | **0 de 1** *(informe roto, D-25)* | **0 de 1** | **= reales** |
-| ArchUnit ejecutado como                                        |     **warning** | **warning** | **error**  |
-| Módulos sin carpeta de pruebas                                 |           **1** *(`domain/model`)* | **1** | **0** |
-| Tests totales                                                  |          **33** | **67** ▲19 |  **≥ 120** |
-| Tests fallando                                                 |           **0** | ✅ **0** |      **0** |
-| Cobertura `domain/model`                                       | **0 %** *(sin pruebas)* | **0 %** |  **≥ 90 %** |
-| Cobertura `domain/usecase`                                     |      **68,2 %** | **68,2 %** |   **≥ 90 %** |
-| Cobertura `mcp-server` / `rest-consumer` / `app-service`       | **70,5 % / 51,1 % / 17,0 %** | **70,2 % / 90,0 % / 48,4 %** | **≥ 80 / 80 / 60 %** |
-| Mutaciones eliminadas (Pitest)                                 |      **5 / 44** | *por remedir* |   **≥ 60 %** |
-| Cobertura de `getTeamFieldValues` y `getTeamIterations`        |           **0 %** | **cubiertas** | **cubiertas** |
-| Complejidad cognitiva máx. por método                          | *por medir (Fase 04)* | *por medir* |     **≤ 15** |
+| Métrica                                                        |        Baseline | Fase 02 | Fase 03 |   Objetivo |
+|----------------------------------------------------------------|----------------:|--------:|--------:|-----------:|
+| Modos de seguridad declarados y probados                       |           **0** | ✅ **2** |   **2** | **2** *(`permissive` + `enforced`)* |
+| Recompilaciones necesarias para pasar a `enforced`             |           **1** | ✅ **0** |   **0** |      **0** |
+| Tools MCP con autorización declarada **y compilada**           |           **2** | ✅ **8** |   **8** |  **8 de 8** |
+| Anotaciones de seguridad comentadas                            |           **3** | ✅ **0** |   **0** |      **0** |
+| Rutas abiertas a componentes inexistentes (`/h2-console/**`)   |           **1** | ✅ **0** |   **0** |      **0** |
+| Secretos con valor por defecto en YAML                         |           **1** | ✅ **0** |   **0** |      **0** |
+| Arranques posibles sin credencial en modo `enforced`           |         **sí** | ✅ **no** |  **no** |     **no** |
+| Mecanismos de wiring por bean                                  |           **2** |   **2** |   **2** |      **1** |
+| Cortacircuitos declarados **sin** configuración correspondiente|           **7** |   **7** |   **7** |      **0** |
+| Líneas de `AzureDevOpsTools`                                   |         **267** | **275** | **277** |    **≤ 120** |
+| Líneas de `RestConsumer` (clase única)                         |         **237** | **237** | ✅ **186** ▼51 | **≤ 120 por adaptador resultante** |
+| Clases productivas > 200 líneas                                |           **2** |   **2** | ✅ **1** |      **0** |
+| Reglas de negocio en `entry-points`                            |       **4** *(WIQL, rutas, tipos, defaults)* | **4** | **4** | **0** |
+| Sentencias WIQL construidas con `String.format`                |           **1** |   **1** |   **1** |      **0** |
+| Cálculos del año por calendario                                |           **1** |   **1** |   **1** | **1, medido y en un solo punto del dominio** |
+| Modelos de dominio serializados por Jackson/`WebClient`        |           **3** |   **3** | ✅ **0** |      **0** |
+| Modelos de dominio deserializados como `@McpToolParam`         |           **2** |   **2** | ✅ **0** |      **0** |
+| Mappers en la frontera de salida                               |           **0** |   **0** | ✅ **5** |  **≥ 3**   |
+| Mappers en la frontera de entrada                              |           **0** |   **0** | ✅ **1** |  **≥ 1**   |
+| Excepciones de dominio                                         |           **0** |   **0** |   **0** |  **≥ 3**   |
+| Errores técnicos que llegan crudos al cliente MCP              |         **todos** | **todos** | **todos** |  **0** |
+| Puertos por agregado (hoy por operación CRUD)                  |       **7 / 1** | **7 / 1** | **7 / 1** | **≤ 3 puertos, agrupados por agregado** |
+| Puertos huérfanos                                              |           **1** |   **1** |   **1** |      **0** |
+| Versiones de API hardcodeadas                                  |           **7** |   **7** |   **7** |      **0** |
+| Clases de `domain/model` con `@Setter`                         |          **21** |  **21** |  **21** |      **0** |
+| ArchUnit `Rule_2.2` (violaciones reales)                       |           **1** |   **1** | ✅ **0** |      **0** |
+| ArchUnit — violaciones **exportadas a Sonar**                  | **0 de 1** *(informe roto, D-25)* | **0 de 1** | **0 de 0** *(ya no hay ninguna que exportar; D-25 sigue viva)* | **= reales** |
+| ArchUnit ejecutado como                                        |     **warning** | **warning** | **warning** | **error**  |
+| Módulos sin carpeta de pruebas                                 |           **1** *(`domain/model`)* | **1** | **1** | **0** |
+| Tests totales                                                  |          **33** | **67** ▲19 | **77** ▲10 |  **≥ 120** |
+| Tests fallando                                                 |           **0** | ✅ **0** | ✅ **0** |      **0** |
+| Cobertura `domain/model`                                       | **0 %** *(sin pruebas)* | **0 %** | **0 %** |  **≥ 90 %** |
+| Cobertura `domain/usecase`                                     |      **68,2 %** | **68,2 %** | **68,2 %** |   **≥ 90 %** |
+| Cobertura `mcp-server` / `rest-consumer` / `app-service`       | **70,5 % / 51,1 % / 17,0 %** | **70,2 % / 90,0 % / 48,4 %** | **73,1 % / 88,1 % / 48,4 %** | **≥ 80 / 80 / 60 %** |
+| Mutaciones eliminadas (Pitest)                                 |      **5 / 44** | *por remedir* | **19 / 52 (37 %)**, *test strength* 90 % |   **≥ 60 %** |
+| Cobertura de `getTeamFieldValues` y `getTeamIterations`        |           **0 %** | **cubiertas** | **cubiertas** | **cubiertas** |
+| Complejidad cognitiva máx. por método                          | *por medir (Fase 04)* | *por medir* | *por medir* |     **≤ 15** |
 
 **Criterio transversal:** al cerrar cada fase, `./gradlew build` termina en verde y **el contrato MCP
 público no cambia** —nombres de tool, nombres de parámetro y forma del resultado— salvo donde una
@@ -399,6 +401,7 @@ sin aviso es un fallo de la fase, no un efecto colateral.
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|------------|
 | **DP-01** | **La seguridad se queda laxa, pero deja de ser código y pasa a ser configuración.** El sistema es una **POC** y **no existe todavía el Service Principal**, así que ni el agente ni el BFF envían token. El objetivo declarado es enviar a pre y producción una **copia 1 a 1** del binario, sin reconstruir. · **Flujo objetivo:** el front pide al IDP (Entra ID) un token **de usuario** válido **solo para el BFF**; el BFF llama al agente; el agente obtiene un **segundo token M2M**, distinto del de usuario, para hablar con el MCP. · **Por tanto: no se elimina nada de la seguridad existente.** Se introduce `mcp.security.mode` con dos valores —`permissive` (por defecto, comportamiento **idéntico** al de hoy) y `enforced` (`.anyExchange().authenticated()`)—, se **descomentan y uniforman los `@PreAuthorize`** en las seis tools que hoy no los tienen, y en `permissive` se concede una identidad anónima con los roles de lectura y escritura para que **el comportamiento observable no cambie**. Resultado: mismo binario, dos modos, ambos probados. | Usuario | 2026-08-30 |
 | **DP-02** | **El PAT vive fuera del repositorio y su ausencia debe romper el arranque, no una llamada.** Se usa un **usuario de servicio** para Azure DevOps que **todavía no existe**; en local cada desarrollador usa su PAT personal, y en los entornos el valor vendrá de una **variable de entorno o un secreto**. · **Por tanto:** se elimina el valor por defecto `your-token-here`; en modo `enforced` la ausencia de token **falla al arranque** con un mensaje explícito; en `permissive` arranca con un `WARN` inequívoco. · **Corrección técnica registrada:** el PAT de Azure DevOps **no es la fusión de dos claves**. El encabezado es `Basic Base64(":" + PAT)` — usuario **vacío**, dos puntos y el PAT; el usuario se ignora, por eso «cualquier cosa`:`PAT» también funciona. El código actual **asume que la propiedad ya llega en Base64** y solo le antepone `Basic `, de modo que un PAT crudo produce un **401 mudo**. Se resuelve en la Fase 02 con **B-01**. | Usuario | 2026-08-30 |
+| **DP-03** | **Sí se permite renombrar tipos de `domain/model`, y el cable no se toca.** Tres respuestas: **(1)** el DTO de entrada **se renombra** a `WorkItemsBatchInput` en el entry-point, para que se distinga del DTO de salida del adaptador; **(2)** se **autoriza renombrar la clase de dominio** a `WorkItemBatchCriteria`, que es como ya la llamaba §4.1 de este plan, cerrando `Rule_2.2` (D-17) sin excepciones a la regla ni tocar el `ArchitectureTest`; **(3)** `JsonPatchOperation` se **duplica**: un DTO por frontera (`JsonPatchOperationInput` en el entry-point, `JsonPatchOperationRequestDTO` en el adaptador) con el dominio en medio — un DTO compartido habría dejado al entry-point serializando hacia Azure DevOps, moviendo el acoplamiento de sitio en vez de eliminarlo. · **Cuestión colateral arbitrada el mismo día:** cerrar `Rule_2.2` obliga a tocar **3 líneas de `RestConsumerTest`** (un `import` y dos usos del nombre de clase), lo que colisiona con la regla «0 pruebas heredadas modificadas». Se autorizó el **renombrado mecánico de símbolo**, sin alterar ni una aserción, ni un cuerpo JSON, ni un código de estado: la red de seguridad queda intacta. | Usuario | 2026-08-30 |
 
 ### Sub-decisiones abiertas dentro de la Fase 02
 
@@ -412,7 +415,6 @@ sin aviso es un fallo de la fase, no un efecto colateral.
 
 | ID        | Fase | Decisión requerida                                                                                                                                                                                                                                                                                              |
 |-----------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **DP-03** | 03   | **¿Se permite renombrar tipos de `domain/model`?** Sacar `WorkItemsBatchRequest` del dominio cierra D-17, pero es un tipo que **Jackson deserializa desde el payload MCP**: cambiarlo mal rompe a los clientes en silencio. Decidir si el DTO conserva el nombre actual en el cable.                            |
 | **DP-04** | 04   | **¿El repliegue por concatenación se conserva?** (a) sí, con métrica y log de aviso; (b) sí, pero con el año **eliminado**, devolviendo error si Azure DevOps no responde; (c) se retira. Y: **¿el mapeo `User Story → Historia de Usuario` y los tipos por defecto son configurables o son regla de dominio?** |
 | **DP-05** | 05   | **¿Se autoriza reagrupar los paquetes de `domain/model`** (`getworkitem`, `createworkitem`, … → `workitem`)? Cambia rutas de importación en tres módulos y en el `ArchitectureTest`, que lleva un aviso de «no modificar».                                                                                       |
 | **DP-06** | 06   | **¿Qué debe ver el cliente MCP ante un fallo de Azure DevOps?** Forma exacta del error (mensaje, código, si se propaga el cuerpo original) y **valores de resiliencia**: umbrales de cada cortacircuito y timeout por operación, incluido el de lote.                                                            |
@@ -454,8 +456,8 @@ Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de 
 |------|--------------------|------------|-------------:|-----------|
 | 01   | 🟢 **COMPLETADA**  | 2026-08-30 | **48** (0 ❌) | [`fase-01.md`](../fases/fase-01.md) · [`BASELINE.md`](../resultados/BASELINE.md) · [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) · **+15 pruebas** · **D-21 saldada** · **sentencia WIQL congelada carácter a carácter (8 ramas)** · `rest-consumer` 51,1 % → **71,5 %** · **D-06 y D-17 confirmadas** · **D-05 degradada a 🟡** (el `@ComponentScan` es inerte) · **D-25, D-26 y D-27 detectadas** · **0 ficheros de `src/main` tocados** |
 | 02   | 🟢 **COMPLETADA**  | 2026-08-30 | **67** (0 ❌) | [`fase-02.md`](../fases/fase-02.md) · [`ACTIVACION-SEGURIDAD.md`](../resultados/ACTIVACION-SEGURIDAD.md) · **+19 pruebas** · **D-01, D-02, D-03 y D-04 saldadas**; **D-22 saldada en su mayor parte** · **2 modos de seguridad** (`PERMISSIVE`/`ENFORCED`) conmutables por `MCP_SECURITY_MODE`, **sin recompilar** · **8/8 tools con autorización declarada, compilada y probada con rol y sin rol**; **0 anotaciones comentadas** · token sin default, **validado al arranque** (B-01: formato intacto) · `/h2-console/**` y `spring.h2.console` retirados tras `grep` con **0 coincidencias**; **`spring.devtools` conservado porque el `grep` demostró que su dependencia existe** · `rest-consumer` 71,5 % → **90 %**, `app-service` 23,6 % → **48,4 %** · **0 pruebas heredadas modificadas** y **0 cambios observables** en `PERMISSIVE` |
-| 03   | 🔵 **Activa**   | —     | —     | [`fase-03.md`](../fases/fase-03.md) · generada · **bloqueada por DP-03** en su primer paso |
-| 04   | ⚪ Pendiente    | —     | —     | — |
+| 03   | 🟢 **COMPLETADA**  | 2026-08-30 | **77** (0 ❌) | [`fase-03.md`](../fases/fase-03.md) · **+10 pruebas** · **D-11 y D-17 saldadas** · ✅ **DP-03 resuelta** · **el dominio dejó de ser el contrato de cable**: **0** modelos deserializados como `@McpToolParam` y **0** serializados por el `WebClient` · **1 mapper de entrada** (`McpToolDtoMapper`) y **5 de salida** (`JsonPatchMapper`, `WiqlQueryMapper`, `WorkItemBatchMapper`, `WorkItemMapper`, `TeamMapper`) · `WorkItemsBatchRequest` → **`WorkItemBatchCriteria`**: **`Rule_2.2` a 0 violaciones**, verificado **en el log** (D-25 sigue viva) · `RestConsumer` 237 → **186** líneas · `mcp-server` 70,2 % → **73,1 %** · **0 nombres de campo del cable modificados**, con prueba por reflexión · cuerpo HTTP emitido congelado **carácter a carácter** · **0 cambios en el contrato MCP público** · **1 desviación**: 3 líneas de `RestConsumerTest` renombradas, autorizado por el propietario |
+| 04   | 🔵 **Activa**   | —     | —     | [`fase-04.md`](../fases/fase-04.md) · generada · **bloqueada por DP-04** en su primer paso |
 | 05   | ⚪ Pendiente    | —     | —     | — |
 | 06   | ⚪ Pendiente    | —     | —     | — |
 | 07   | ⚪ Pendiente    | —     | —     | — |

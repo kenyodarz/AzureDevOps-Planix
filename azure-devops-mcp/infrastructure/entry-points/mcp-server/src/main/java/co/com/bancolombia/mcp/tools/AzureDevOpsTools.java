@@ -1,12 +1,13 @@
 package co.com.bancolombia.mcp.tools;
 
+import co.com.bancolombia.mcp.dto.JsonPatchOperationInput;
+import co.com.bancolombia.mcp.dto.McpToolDtoMapper;
+import co.com.bancolombia.mcp.dto.WorkItemsBatchInput;
 import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.model.team.TeamFieldValues;
-import co.com.bancolombia.model.workitem.JsonPatchOperation;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
-import co.com.bancolombia.model.workitem.WorkItemsBatchRequest;
 import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
@@ -68,10 +69,11 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "Tipo de Work Item a crear (ej. User Story, Task, Issue)", required = true) String type,
-            @McpToolParam(description = "Lista de operaciones JSON Patch para inicializar los campos (ej. [{op: 'add', path: '/fields/System.Title', value: '...' }])", required = true) List<JsonPatchOperation> patch,
+            @McpToolParam(description = "Lista de operaciones JSON Patch para inicializar los campos (ej. [{op: 'add', path: '/fields/System.Title', value: '...' }])", required = true) List<JsonPatchOperationInput> patch,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [createWorkItem] ejecutada para tipo: {}", type);
-        return createWorkItemUseCase.createWorkItem(organization, project, type, patch, apiVersion);
+        return createWorkItemUseCase.createWorkItem(organization, project, type,
+                McpToolDtoMapper.toDomain(patch), apiVersion);
     }
 
     /**
@@ -86,10 +88,11 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
             @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
             @McpToolParam(description = "ID único numérico del Work Item a actualizar", required = true) int id,
-            @McpToolParam(description = "Lista de operaciones JSON Patch para aplicar cambios (ej. [{op: 'add', path: '/relations/-', value: {...} }])", required = true) List<JsonPatchOperation> patch,
+            @McpToolParam(description = "Lista de operaciones JSON Patch para aplicar cambios (ej. [{op: 'add', path: '/relations/-', value: {...} }])", required = true) List<JsonPatchOperationInput> patch,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [updateWorkItem] ejecutada para ID: {}", id);
-        return updateWorkItemUseCase.updateWorkItem(organization, project, id, patch, apiVersion);
+        return updateWorkItemUseCase.updateWorkItem(organization, project, id,
+                McpToolDtoMapper.toDomain(patch), apiVersion);
     }
 
     /**
@@ -262,12 +265,13 @@ public class AzureDevOpsTools {
             @McpToolParam(description = "Política de error si algún elemento no existe (Fail, Omit)", required = false) String errorPolicy,
             @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.1)", required = false) String apiVersion) {
         log.info("MCP Tool [getWorkItemsBatch] ejecutada para ids: {}", ids);
-        WorkItemsBatchRequest request = WorkItemsBatchRequest.builder()
+        WorkItemsBatchInput input = WorkItemsBatchInput.builder()
                 .ids(ids)
                 .fields(fields)
                 .expand(expand != null && !expand.isBlank() ? expand : "None")
                 .errorPolicy(errorPolicy != null && !errorPolicy.isBlank() ? errorPolicy : "Omit")
                 .build();
-        return getWorkItemsBatchUseCase.getWorkItemsBatch(organization, project, request, apiVersion);
+        return getWorkItemsBatchUseCase.getWorkItemsBatch(organization, project,
+                McpToolDtoMapper.toDomain(input), apiVersion);
     }
 }

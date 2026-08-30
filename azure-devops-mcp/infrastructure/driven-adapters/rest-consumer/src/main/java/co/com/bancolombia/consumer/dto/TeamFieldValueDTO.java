@@ -1,6 +1,5 @@
-package co.com.bancolombia.consumer;
+package co.com.bancolombia.consumer.dto;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamIterationsDTO {
+public class TeamFieldValueDTO {
 
-    private int count;
-    private List<TeamIterationDTO> value;
+    private String value;
+    private boolean includeChildren;
 }
 

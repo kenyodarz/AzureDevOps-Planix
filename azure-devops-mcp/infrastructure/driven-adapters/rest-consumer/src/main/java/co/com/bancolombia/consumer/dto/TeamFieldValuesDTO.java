@@ -1,4 +1,4 @@
-package co.com.bancolombia.consumer;
+package co.com.bancolombia.consumer.dto;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
