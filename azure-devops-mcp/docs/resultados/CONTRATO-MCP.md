@@ -22,12 +22,20 @@
 | Tipo                     | `ASYNC`                                   |
 | Endpoint                 | `/mcp/McpAzureDevOps`                     |
 | Puerto                   | `8080`                                    |
-| Capacidades              | `tool: true`, `resource: true`, `prompt: true`, `completion: false` |
+| Capacidades              | `tool: true`, **`resource: false`**, **`prompt: false`**, `completion: false` |
 | Timeout de petición      | `30s`                                     |
 
-> ⚠️ Se declaran las capacidades `resource` y `prompt`, pero **no existe ni un solo `@McpResource` ni
-> `@McpPrompt`** en el repositorio. El servidor anuncia capacidades que no puede atender.
-> Se anota como observación para la Fase 08 (emparentada con D-19 y D-20).
+> ✅ **Actualizado al cierre de la Fase 08 (DP-08 §0.2(c)).** Hasta ahora el servidor anunciaba
+> `resource: true` y `prompt: true` **sin una sola implementación**: cero `@McpResource` y cero
+> `@McpPrompt` en todo el repositorio.
+>
+> **Es un cambio observable, y se hizo con el criterio invertido respecto a la intuición inicial.**
+> La especificación MCP dice: *«Servers that **declare** the `resources` capability **MUST respond**
+> to `resources/list` requests»*. Declarar una capacidad **no es un permiso: es una promesa de
+> responder**. Anunciar `true` sin handler es el antipatrón que hace que un cliente llame y reciba
+> un **error genérico**; con `false`, un cliente conforme **ni siquiera llama**.
+>
+> El día que exista un `@McpResource` o un `@McpPrompt`, se vuelven a poner en `true`.
 
 ---
 
@@ -144,16 +152,25 @@ contrato de facto, aunque no estén documentados en la descripción de la tool):
 > modelo de dominio `WorkItemsBatchRequest`, que era la clase responsable de la violación de ArchUnit
 > `Rule_2.2` (D-17, **saldada**). **Los siete parámetros de la tool no cambiaron.**
 
-### 2.6 `checkHealth` / `getServerInfo` (`HealthTool`)
+### 2.6 ❌ `checkHealth` / `getServerInfo` — **RETIRADAS en la Fase 08**
 
-| Tool            | Parámetros | Retorna       | Autorización |
-|-----------------|------------|---------------|--------------|
-| `checkHealth`   | ninguno    | `Mono<String>` | ✅ `permitAll()` **declarado** *(Fase 02)* |
-| `getServerInfo` | ninguno    | `Mono<String>` | ✅ `permitAll()` **declarado** *(Fase 02)* |
+> 🔴 **Cambio observable. DP-08 §0.2(b).** Las dos tools de `HealthTool` **ya no existen**.
 
-`getServerInfo` devuelve la cadena literal `"Server:  v1.0.0 - Package: co.com.bancolombia"`, con la
-versión hardcodeada y **un placeholder sin rellenar** (doble espacio tras `Server:`). Ambas duplican
-lo que ya ofrece el actuator (D-20).
+| Tool            | Estado |
+|-----------------|--------|
+| `checkHealth`   | ❌ **Retirada** |
+| `getServerInfo` | ❌ **Retirada** |
+
+**Por qué.** Duplicaban lo que ya ofrece el actuator (`/actuator/health`, `/actuator/info`) y
+`getServerInfo` devolvía la cadena `"Server:  v1.0.0 - Package: co.com.bancolombia"`, con la
+versión **codificada a fuego** y un **placeholder sin rellenar** —el doble espacio tras `Server:`—
+que llevaba ahí desde el scaffold original (D-20).
+
+⚠️ **Si el agente o el BFF las estaban llamando, dejarán de funcionar.** El sustituto es el actuator,
+que da la misma información y se mantiene solo. Es el cambio observable más grande de todo el plan
+después del contrato de errores de la Fase 06, y por eso lo decidió el propietario expresamente.
+
+**Tools públicas tras este cambio: 6.**
 
 ---
 
@@ -304,9 +321,9 @@ preservando orden y nulos; `WiqlQuery` exige sentencia no vacía; `JsonPatchOper
 
 | Elemento     | Estado                                                                                     |
 |--------------|--------------------------------------------------------------------------------------------|
-| `queryByWiql`| 🟠 **Camino muerto (D-19).** El `@McpTool` sigue **comentado**, pero el método es `public`, y su caso de uso, su gateway y su prueba de adaptador existen y funcionan. **No forma parte del contrato público de hoy.** La Fase 08 debe decidir: exponerla o retirarla. **Cambio de la Fase 02:** su `@PreAuthorize` **ya no está comentado** (`hasRole('MCP.AZURE_DEVOPS.READ')`), de modo que el método público queda protegido sin exponer la tool |
-| `@McpResource` | Capacidad `resource: true` anunciada, **cero implementaciones**                            |
-| `@McpPrompt`   | Capacidad `prompt: true` anunciada, **cero implementaciones**                              |
+| `queryByWiql`| ✅ **RESUELTA en la Fase 08 (D-19, DP-08 §0.2(a)): la tool se retira.** El `@McpTool` comentado **ya no existe**; el método sigue siendo `public` y con `@PreAuthorize`, pero es **una operación interna**, no una tool. **No es código muerto**: lo invoca `ListWorkItemsByTeamAndSprintUseCase` a través de `QueryByWiqlUseCase`, y es el corazón del flujo compuesto. **Por qué no se expuso:** una tool que acepta **WIQL crudo del cliente** convertiría al llamante en el dueño de *cómo* se consulta Azure DevOps — justo lo contrario de la misión de §1 del plan maestro. Quien necesite listar usa `listWorkItemsByTeamAndSprint`, que expresa la **intención** |
+| `@McpResource` | ✅ Capacidad `resource` puesta a **`false`** en la Fase 08 (§1). Ya no se anuncia lo que no se implementa |
+| `@McpPrompt`   | ✅ Capacidad `prompt` puesta a **`false`** en la Fase 08 (§1) |
 
 ---
 

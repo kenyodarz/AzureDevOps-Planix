@@ -115,24 +115,29 @@ public class AzureDevOpsTools {
     }
 
     /**
-     * Consultar Work Items usando WIQL.
+     * Consulta Work Items mediante WIQL. <b>Operación interna: NO es una tool MCP.</b>
      *
-     * <p>La anotación {@code @McpTool} sigue comentada a propósito: esta tool <b>no forma parte del
-     * contrato MCP público</b> y su destino se decide en la Fase 08 (D-19). Lo que sí se activa aquí
-     * es su autorización, para que el método —que es público y sí se invoca internamente— quede
-     * protegido en modo {@code ENFORCED} sin necesidad de recompilar.
+     * <p><b>D-19, saldada en la Fase 08 (DP-08 §0.2(a)): se retira la tool.</b> Hasta ahora este
+     * método arrastraba un {@code @McpTool} <b>comentado</b>, un camino muerto que nadie sabía si
+     * estaba a medio construir o a medio retirar. Se decidió <b>no exponerla</b>, y el motivo es de
+     * diseño, no de limpieza: una tool que acepta <b>WIQL crudo del cliente</b> convertiría al
+     * llamante en el dueño de <i>cómo</i> se consulta Azure DevOps, que es exactamente lo contrario
+     * de la misión declarada en §1 del plan maestro — <i>«el MCP es el dueño del cómo»</i>. Quien
+     * necesite listar elementos de trabajo usa {@code listWorkItemsByTeamAndSprint}, que expresa la
+     * <b>intención</b> y deja la sentencia en manos del dominio.
+     *
+     * <p><b>El método sigue vivo y no es código muerto:</b> lo invoca
+     * {@code ListWorkItemsByTeamAndSprintUseCase} a través de {@code QueryByWiqlUseCase}, que es el
+     * corazón del flujo compuesto. Conserva su {@code @PreAuthorize} para que quede protegido en
+     * modo {@code ENFORCED} sin depender de que alguien recuerde añadirlo.
      */
-    // @McpTool(
-    //         name = "queryByWiql",
-    //         description = "Realiza una consulta estructurada en lenguaje WIQL (Work Item Query Language) para buscar y listar elementos de trabajo."
-    // )
     @PreAuthorize(McpRoles.HAS_READ)
     public Mono<WiqlResultResponse> queryByWiql(
-            @McpToolParam(description = "Nombre de la organización en Azure DevOps (ej. GrupoBancolombia)", required = true) String organization,
-            @McpToolParam(description = "Nombre o UUID del proyecto en Azure DevOps", required = true) String project,
-            @McpToolParam(description = "Query estructurado en lenguaje WIQL", required = true) String query,
-            @McpToolParam(description = "Versión de la API de Azure DevOps (por defecto 7.0)", required = false) String apiVersion) {
-        log.info("MCP Tool [queryByWiql] ejecutada");
+            String organization,
+            String project,
+            String query,
+            String apiVersion) {
+        log.info("Consulta WIQL interna ejecutada");
         WiqlQuery wiqlQuery = WiqlQuery.builder().query(query).build();
         return queryByWiqlUseCase.queryByWiql(organization, project, wiqlQuery, apiVersion)
                 .map(McpResponseMapper::toResponse)

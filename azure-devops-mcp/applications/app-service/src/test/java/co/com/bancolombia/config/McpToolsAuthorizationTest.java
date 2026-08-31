@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.mcp.security.McpRoles;
 import co.com.bancolombia.mcp.tools.AzureDevOpsTools;
-import co.com.bancolombia.mcp.tools.HealthTool;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
@@ -37,24 +36,27 @@ import reactor.test.StepVerifier;
 import reactor.util.context.Context;
 
 /**
- * Prueba que las ocho tools tienen autorización <b>declarada, compilada y ejecutada</b>.
+ * Prueba que las <b>seis</b> tools tienen autorización <b>declarada, compilada y ejecutada</b>.
  *
  * <p>Antes de la Fase 02 tres {@code @PreAuthorize} estaban comentados y
  * {@code listWorkItemsByTeamAndSprint} —la tool más usada— no tenía ninguno: el día del Service
  * Principal se habrían estrenado en producción sin haberse ejecutado jamás. Aquí se ejecutan los
  * dos caminos, con rol y sin rol, sobre el proxy real de seguridad de métodos.
+ *
+ * <p><b>Cambio de la Fase 08 (DP-08 §0.2(b)): de ocho tools a seis.</b> {@code checkHealth} y
+ * {@code getServerInfo} se retiraron con {@code HealthTool}, porque duplicaban lo que ya ofrece el
+ * actuator y devolvían una versión codificada a fuego. <b>Ningún escenario de las seis restantes
+ * ha cambiado</b>: lo único que desaparece es el bloque que probaba las dos sondas de vida.
  */
 class McpToolsAuthorizationTest {
 
     private static AnnotationConfigApplicationContext context;
     private static AzureDevOpsTools tools;
-    private static HealthTool healthTool;
 
     @BeforeAll
     static void setUp() {
         context = new AnnotationConfigApplicationContext(SecuredToolsConfig.class);
         tools = context.getBean(AzureDevOpsTools.class);
-        healthTool = context.getBean(HealthTool.class);
     }
 
     @AfterAll
@@ -127,19 +129,6 @@ class McpToolsAuthorizationTest {
                 .verify();
     }
 
-    // ------------------------------------------------------------ sondas vida
-
-    @Test
-    @DisplayName("GIVEN ninguna identidad WHEN se invocan las sondas de vida THEN se permiten por politica declarada")
-    void givenNoIdentity_whenHealthTools_thenAllowedByExplicitPolicy() {
-        StepVerifier.create(healthTool.checkHealth())
-                .expectNextCount(1)
-                .verifyComplete();
-
-        StepVerifier.create(healthTool.getServerInfo())
-                .expectNextCount(1)
-                .verifyComplete();
-    }
 
     // ------------------------------------------------------------- utilidades
 
@@ -240,11 +229,6 @@ class McpToolsAuthorizationTest {
             return new AzureDevOpsTools(getWorkItemUseCase, createWorkItemUseCase,
                     updateWorkItemUseCase, queryByWiqlUseCase, getWorkItemsBatchUseCase,
                     listWorkItemsByTeamAndSprintUseCase);
-        }
-
-        @Bean
-        HealthTool healthTool() {
-            return new HealthTool();
         }
     }
 }

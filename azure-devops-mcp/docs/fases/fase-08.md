@@ -1,14 +1,14 @@
 # FASE 08 — Configuración tipada, ArchUnit y cierre del plan
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🔵 **ACTIVA**
-> **Deudas que ataca:** D-05, D-19, D-20, D-22 *(residual)*, D-23, D-25, D-27
-> **Decisión bloqueante:** ⚠️ **DP-08 (a plantear)** — §5 no le asignaba ninguna, pero **hay
-> decisiones de producto que un refactor no puede tomar**
-> **Riesgo:** 🟢 Bajo *(técnicamente)* · **Depende de:** Fases 01 a 07 (cerradas) · **Habilita:** el
-> cierre del plan
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Deudas que ataca:** D-05, D-19, D-20, D-22 *(residual)*, D-23, D-27 **saldadas** · **D-25 sigue viva**
+> **Decisión bloqueante:** ✅ **DP-08 (RESUELTA)**
+> **Riesgo:** 🟢 Bajo · **Depende de:** Fases 01 a 07 (cerradas) · **Cierra:** el plan
 > **Regla de oro de esta fase:** **es la última, así que lo que no se cierre aquí se queda sin
 > cerrar.** Y dos de sus deudas —**D-25** y **D-27**— no son código feo: son **mecanismos de control
 > que llevan todo el plan diciendo que todo está bien sin haberlo comprobado nunca**.
+> 🔸 **Desenlace:** D-27 **cerrada**; **D-25 no**, porque depende de ficheros que **genera el
+> plugin** y cualquier corrección se pierde en el siguiente build (§4.3).
 
 ---
 
@@ -195,45 +195,119 @@ que el build depende de un mecanismo que no se ha verificado nunca.
 
 ## 3. Orden de Ejecución
 
-- [ ] **0.** ⚠️ **Plantear DP-08 (y B-13, B-14, B-15) al propietario y esperar respuesta.**
-- [ ] **1.** Releer `CONTRATO-MCP.md` §1, §2.6 y §4: qué es contrato público de lo que se va a tocar.
-- [ ] **2.** Arreglar el informe de ArchUnit **y demostrarlo con una violación deliberada**. **(T-03)**
-- [ ] **3.** Arreglar `UseCasesConfigTest` para que **pueda fallar**. **(T-04)**
-- [ ] **4.** `.\gradlew.bat build` verde, con **≥ 205** pruebas y **0** fallos.
-- [ ] **5.** Aplicar B-13 sobre `UseCasesConfig`: **un solo mecanismo de wiring**. **(T-02)**
-- [ ] **6.** Aplicar DP-08 (a), (b) y (c) sobre `queryByWiql`, `HealthTool` y las capacidades. **(T-01)**
-- [ ] **7.** Aplicar B-15 sobre `McpAuditAspect` y B-14 sobre devtools. **(T-02)**
-- [ ] **8.** Pasar ArchUnit a `error`. **(T-05)**
-- [ ] **9.** Verificar que **las 3 caracterizaciones siguen verdes**: WIQL, cuerpo saliente y **JSON
+- [x] **0.** ⚠️ **Plantear DP-08 (y B-13, B-14, B-15) al propietario y esperar respuesta.**
+- [x] **1.** Releer `CONTRATO-MCP.md` §1, §2.6 y §4: qué es contrato público de lo que se va a tocar.
+- [x] **2.** Arreglar el informe de ArchUnit **y demostrarlo con una violación deliberada**. **(T-03)** → 🔸 **diagnosticado, no resoluble aquí**
+- [x] **3.** Arreglar `UseCasesConfigTest` para que **pueda fallar**. **(T-04)**
+- [x] **4.** `.\gradlew.bat build` verde, con **≥ 205** pruebas y **0** fallos.
+- [x] **5.** Aplicar B-13 sobre `UseCasesConfig`: **un solo mecanismo de wiring**. **(T-02)**
+- [x] **6.** Aplicar DP-08 (a), (b) y (c) sobre `queryByWiql`, `HealthTool` y las capacidades. **(T-01)**
+- [x] **7.** Aplicar B-15 sobre `McpAuditAspect` y B-14 sobre devtools. **(T-02)**
+- [x] **8.** Pasar ArchUnit a `error`. **(T-05)** → 🔸 **no aplicable: fichero generado por el plugin**
+- [x] **9.** Verificar que **las 3 caracterizaciones siguen verdes**: WIQL, cuerpo saliente y **JSON
       de respuesta MCP**.
-- [ ] **10.** Medir cobertura y mutaciones; `app-service` debe alcanzar el **60 %**.
-- [ ] **11.** `.\gradlew.bat build` verde, con **≥ 205** pruebas y **0** fallos.
-- [ ] **12.** Escribir **`CIERRE-DEL-PLAN.md`** y actualizar `CONTRATO-MCP.md`. **(T-06)**
-- [ ] **13.** Actualizar el plan maestro y **cerrarlo**. **(T-06)**
-- [ ] **14.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-06)**
-- [ ] **15.** Commit: `chore(mcp_config): tipar la configuracion y activar las reglas de arquitectura`
+- [x] **10.** Medir cobertura y mutaciones; `app-service` debe alcanzar el **60 %**. → 🔸 **55,7 %**
+- [x] **11.** `.\gradlew.bat build` verde, con **≥ 205** pruebas y **0** fallos. → **204**
+- [x] **12.** Escribir **`CIERRE-DEL-PLAN.md`** y actualizar `CONTRATO-MCP.md`. **(T-06)**
+- [x] **13.** Actualizar el plan maestro y **cerrarlo**. **(T-06)**
+- [x] **14.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-06)**
+- [x] **15.** Commit: `chore(mcp_config): tipar la configuracion y activar las reglas de arquitectura`
 
 ---
 
 ## 4. Resultado
 
-> Rellenar **al cerrar la fase**, con lo alcanzado de verdad.
+> Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **204 pruebas, 0 fallos**.
 
 | Métrica | Antes | Después |
 |---------|------:|--------:|
-| Mecanismos de wiring por bean | **2** | — |
-| ArchUnit ejecutado como | **warning** | — |
-| ArchUnit — violaciones exportadas a Sonar | **0 de 0** *(informe roto)* | — |
-| Violación deliberada detectada en el `issues.json` | **no probado nunca** | — |
-| Pruebas que no pueden fallar | **1** *(`UseCasesConfigTest`)* | — |
-| Tools comentadas con código vivo | **1** *(`queryByWiql`)* | — |
-| Capacidades MCP anunciadas sin implementación | **2** *(`resource`, `prompt`)* | — |
-| Pruebas totales | **205** | — |
-| Cobertura `app-service` | **58,2 %** | — |
-| Cambios en el contrato MCP público | n/a | — |
+| Mecanismos de wiring por bean | **2** | ✅ **1** *(solo `@ComponentScan`)* |
+| `@Bean` manuales en `UseCasesConfig` | **10** | ✅ **1** *(solo el `Clock`, que el escaneo no alcanza)* |
+| Pruebas que no pueden fallar | **1** | ✅ **0** |
+| Tools comentadas con código vivo | **1** | ✅ **0** |
+| Capacidades MCP anunciadas sin implementación | **2** | ✅ **0** |
+| Tools MCP públicas | **8** | 🔴 **6** *(cambio observable autorizado)* |
+| Ramas de código inalcanzable en `McpAuditAspect` | **1** | ✅ **0** |
+| `devtools` en el artefacto | **sí** | ✅ **no** |
+| ArchUnit ejecutado como | **warning** | 🔸 **warning** *(no aplicable — ver §4.3)* |
+| ArchUnit — violaciones exportadas a Sonar | **0 de 0** | 🔸 **0 de 0** *(D-25 sigue viva)* |
+| Pruebas totales | **205** | **204** ▼1 |
+| Cobertura `app-service` | **58,2 %** | 🔸 **55,7 %** |
+| Cobertura `domain/model` · `usecase` · `mcp-server` · `rest-consumer` | 96,2 / 97,8 / 84,3 / 92,3 % | ✅ **sin variación** |
 
-**Decisión DP-08:** *(pendiente)*
-**Cambios en el contrato MCP público:** *(pendiente)*
-**Bloqueos encontrados:** *(pendiente)*
-**Plan cerrado:** ☐ `docs/resultados/CIERRE-DEL-PLAN.md`
+**Decisión DP-08:** ✅ resuelta el 2026-08-30, antes de escribir código.
 
+| Sub-pregunta | Respuesta |
+|--------------|-----------|
+| **§0.2(a) `queryByWiql`** | **Se retira la tool.** El `@McpTool` comentado desaparece; el método sigue vivo como **operación interna** del flujo compuesto. Exponerla habría añadido al contrato una tool que acepta **WIQL crudo del cliente**, lo contrario de la misión de §1 |
+| **§0.2(b) `HealthTool`** | **Se retiran las dos tools.** Duplicaban el actuator y `getServerInfo` devolvía una versión codificada a fuego con un placeholder sin rellenar |
+| **§0.2(c) Capacidades** | **A `false`.** Se decidió con el criterio **invertido** respecto a la intuición inicial: la spec MCP dice que declarar una capacidad es **una promesa de responder**, no un permiso |
+| **§0.2(d) ArchUnit a `error`** | Autorizado, pero **no aplicable** — ver §4.3 |
+| **B-13** | **Se retiran los `@Bean`**, se conserva el `@ComponentScan`. El `Clock` sobrevive porque no es un `*UseCase` |
+| **B-14** | **devtools retirado** del artefacto: dependencia y propiedad |
+| **B-15** | **Rama no reactiva retirada.** Se midió: es **inalcanzable** — las seis tools devuelven `Mono` |
+
+**Cambios en el contrato MCP público:** **tres, todos autorizados expresamente** — las dos tools de
+`HealthTool` retiradas, `queryByWiql` que deja de figurar como tool comentada, y las capacidades
+`resource`/`prompt` a `false`. Documentados en `CONTRATO-MCP.md` §1, §2.6 y §4.
+
+**Bloqueos encontrados:** ninguno que detuviera la fase. **Dos objetivos resultaron no alcanzables**
+por una causa externa, documentada en §4.3.
+
+**Plan cerrado:** ☑ `docs/resultados/CIERRE-DEL-PLAN.md`
+
+### 4.1 Qué se construyó
+
+| Capa | Antes | Después |
+|------|-------|---------|
+| `app-service` | `UseCasesConfig` con **dos mecanismos** de wiring · `UseCasesConfigTest` que no podía fallar | **1 mecanismo** · **3 pruebas** que arrancan un contexto real y se ponen rojas si el wiring se rompe |
+| `mcp-server` | 8 tools · 1 tool comentada · rama de código inalcanzable | **6 tools** · **0 comentadas** · aspecto sin ramas muertas |
+| `application.yaml` | 2 capacidades anunciadas sin implementar · devtools | **0 capacidades falsas** · **sin devtools** |
+
+### 4.2 D-27: por qué la prueba no podía fallar
+
+Dos defectos que se sumaban:
+
+1. Registraba un bean llamado `myUseCase` y comprobaba «existe algún bean acabado en `UseCase`».
+   **Ese bean satisfacía la aserción por sí solo.**
+2. Envolvía todo en `catch (UnsatisfiedDependencyException) { assertTrue(true); }` sobre un contexto
+   que **no podía arrancar**, porque no registraba ningún gateway. **El camino que tomaba siempre era
+   el `catch`.**
+
+Ahora registra los cuatro puertos como dobles, arranca el contexto de verdad y comprueba que los
+**nueve** casos de uso se registran **exactamente una vez** cada uno — lo que además fija la decisión
+de B-13: si alguien reintroduce los `@Bean`, la prueba se pone roja.
+
+### 4.3 ⚠️ D-25 y ArchUnit a `error`: por qué no se pudieron cerrar
+
+**La causa está diagnosticada.** `Utils.findFiles()` construye la clave del mapa buscando el literal
+`"java/"` en la ruta del fichero. En Windows las rutas usan `\`, así que `indexOf` devuelve `-1` y
+`substring(-1 + 5)` produce una clave corrupta —se comprobó: `sers\minaj\...` en lugar de
+`co.com.bancolombia...`—. `files.get(...)` devuelve `null` para toda incidencia y el
+`if (file != null)` de `checkWithWarning` las descarta **todas, en silencio**.
+
+**Pero el arreglo no persiste.** `Utils.java` y `ArchitectureTest.java` los **genera el plugin**
+`co.com.bancolombia.cleanArchitecture` en cada build —el log lo anuncia: *«Injecting ArchitectureTest
+in module app-service»*—. La corrección se revirtió **dos veces**. El aviso «Please do not modify
+this file» no es una convención de estilo: es literal.
+
+Y por lo mismo, **(d) tampoco es aplicable**: el `checkWithWarning` que impide que ArchUnit rompa el
+build vive en ese mismo fichero generado. La documentación del plugin expone
+`arch.unit.forbiddenDomainSuffixes`, `arch.unit.forbiddenDomainClassNames` y `arch.unit.skip`, pero
+**ninguna propiedad para elevar la severidad ni para evitar la regeneración**.
+
+> 🔸 **Nota de honestidad.** La medición del `issues.json` se hizo **sin un `clean` previo**, así que
+> parte de lo observado pudo venir de artefactos cacheados. El diagnóstico del troceado de rutas es
+> sólido —está respaldado por la clave corrupta que imprimió el test de diagnóstico—, pero **la
+> conclusión de que el informe está roto en toda circunstancia no se verificó en frío**. Queda
+> anotado para quien retome D-25.
+
+### 4.4 Desviaciones
+
+| # | Desviación | Justificación |
+|---|------------|---------------|
+| **1** | **D-25 sin cerrar y ArchUnit sigue en `warning`** | Los dos dependen de ficheros **generados por el plugin**. Requiere arreglo *upstream* o una prueba de arquitectura propia, decisión que no se tomó por cuenta propia |
+| **2** | **Cobertura de `app-service`: 58,2 % → 55,7 %** | Por debajo del objetivo del 60 %. **Bajó al retirar código que sí estaba cubierto**: `HealthTool` y los nueve `@Bean`. Las tres pruebas nuevas de `UseCasesConfigTest` no compensan la pérdida |
+| **3** | **Pruebas: 205 → 204** | Se retiraron `HealthToolTest` y el escenario de las sondas de vida; se añadieron 3 en `UseCasesConfigTest`. El saldo es −1 |
+| **4** | **`McpToolsAuthorizationTest` adaptada de 8 a 6 tools** | Consecuencia directa e inevitable de DP-08 §0.2(b), **autorizada expresamente**. Ningún escenario de las seis tools restantes se alteró |
+| **5** | **Se creó y borró una clase de violación deliberada** | `DeliberateViolationResponse`, para comprobar si ArchUnit reportaba al `issues.json`. Cumplió su función —demostró que la violación se detecta pero no se exporta— y **se retiró** |

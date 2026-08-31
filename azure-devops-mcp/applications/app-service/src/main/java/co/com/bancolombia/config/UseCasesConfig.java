@@ -1,24 +1,32 @@
 package co.com.bancolombia.config;
 
-import co.com.bancolombia.model.team.gateways.TeamScopePort;
 import co.com.bancolombia.model.workitem.gateways.TeamScopeFallbackMetrics;
-import co.com.bancolombia.model.workitem.gateways.WorkItemCommandPort;
-import co.com.bancolombia.model.workitem.gateways.WorkItemQueryPort;
-import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
-import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
-import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
-import co.com.bancolombia.usecase.iteration.GetTeamIterationsUseCase;
-import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
-import co.com.bancolombia.usecase.listworkitems.ResolveTeamScopeUseCase;
-import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
-import co.com.bancolombia.usecase.team.GetTeamFieldValuesUseCase;
-import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
+/**
+ * Wiring de los casos de uso.
+ *
+ * <p><b>Cambio de la Fase 08 (D-05, B-13): un solo mecanismo de wiring.</b> Hasta ahora esta clase
+ * combinaba <b>dos</b>: el {@code @ComponentScan} por expresión regular y <b>nueve {@code @Bean}
+ * manuales del mismo tipo</b>. La Fase 01 midió que el escaneo era inerte —cada caso de uso
+ * resolvía a exactamente un bean—, de modo que no era un riesgo de arranque, pero sí <b>código
+ * muerto que induce a error</b>: quien leía la clase no podía saber cuál de los dos mecanismos
+ * estaba realmente registrando los beans.
+ *
+ * <p>B-13 decidió conservar el <b>escaneo</b> y retirar los {@code @Bean}. Los casos de uso se
+ * registran por el filtro {@code ^.+UseCase$} y Spring resuelve sus dependencias <b>por
+ * constructor</b>, que es justo lo que {@code spring-rules.md} pide para
+ * {@code domain/usecase}: inyección por constructor, sin anotaciones de Spring en el dominio.
+ *
+ * <p>⚠️ <b>El {@code Clock} sigue siendo un {@code @Bean} explícito, y no es una excepción
+ * arbitraria:</b> no es un caso de uso, así que el filtro no lo alcanza, y sin él
+ * {@code ResolveTeamScopeUseCase} no puede construirse. Es la única dependencia del wiring que no
+ * es un {@code *UseCase}.
+ */
 @Configuration
 @ComponentScan(basePackages = "co.com.bancolombia.usecase",
         includeFilters = {
@@ -27,49 +35,6 @@ import org.springframework.context.annotation.FilterType;
         useDefaultFilters = false)
 public class UseCasesConfig {
 
-    @Bean
-    public GetTeamFieldValuesUseCase getTeamFieldValuesUseCase(TeamScopePort teamScopePort) {
-        return new GetTeamFieldValuesUseCase(teamScopePort);
-    }
-
-    /**
-     * Gemelo del anterior para las iteraciones: resuelve el {@code IterationPath} preguntándoselo a
-     * Azure DevOps en lugar de fabricarlo con el año del calendario.
-     *
-     * <p>Desde la Fase 05 ambos reciben el <b>mismo</b> puerto: las dos consultas describen el
-     * ámbito de un equipo y ya no viven en dos gateways de dos paquetes distintos (D-14).
-     */
-    @Bean
-    public GetTeamIterationsUseCase getTeamIterationsUseCase(TeamScopePort teamScopePort) {
-        return new GetTeamIterationsUseCase(teamScopePort);
-    }
-
-    @Bean
-    public GetWorkItemUseCase getWorkItemUseCase(WorkItemQueryPort workItemQueryPort) {
-        return new GetWorkItemUseCase(workItemQueryPort);
-
-    }
-
-    @Bean
-    public CreateWorkItemUseCase createWorkItemUseCase(WorkItemCommandPort workItemCommandPort) {
-        return new CreateWorkItemUseCase(workItemCommandPort);
-    }
-
-    @Bean
-    public UpdateWorkItemUseCase updateWorkItemUseCase(WorkItemCommandPort workItemCommandPort) {
-        return new UpdateWorkItemUseCase(workItemCommandPort);
-    }
-
-    @Bean
-    public QueryByWiqlUseCase queryByWiqlUseCase(WorkItemQueryPort workItemQueryPort) {
-        return new QueryByWiqlUseCase(workItemQueryPort);
-    }
-
-    @Bean
-    public GetWorkItemsBatchUseCase getWorkItemsBatchUseCase(WorkItemQueryPort workItemQueryPort) {
-        return new GetWorkItemsBatchUseCase(workItemQueryPort);
-    }
-
     /**
      * Reloj del sistema, inyectado en lugar de invocarse estáticamente.
      *
@@ -77,34 +42,14 @@ public class UseCasesConfig {
      * {@code LocalDate.now()} dentro del dominio lo ataba al reloj de la máquina y hacía imposible
      * probarlo de forma determinista, que es una de las razones por las que <b>D-09</b> sobrevivió
      * tanto tiempo sin que nadie pudiera reproducir el fallo del tablero vacío.
+     *
+     * <p><b>Es el único {@code @Bean} que sobrevive a B-13</b>: el {@code @ComponentScan} solo
+     * registra clases cuyo nombre acaba en {@code UseCase}, y {@link Clock} no lo es. Sin esta
+     * declaración, {@code ResolveTeamScopeUseCase} no tendría cómo resolver su cuarto argumento.
+     * {@link TeamScopeFallbackMetrics} sí lo aporta el adaptador de métricas.
      */
     @Bean
     public Clock systemClock() {
         return Clock.systemDefaultZone();
-    }
-
-    /**
-     * Resolución del ámbito (AreaPath + IterationPath) con su repliegue medido.
-     */
-    @Bean
-    public ResolveTeamScopeUseCase resolveTeamScopeUseCase(
-            GetTeamFieldValuesUseCase getTeamFieldValuesUseCase,
-            GetTeamIterationsUseCase getTeamIterationsUseCase,
-            TeamScopeFallbackMetrics teamScopeFallbackMetrics,
-            Clock clock) {
-        return new ResolveTeamScopeUseCase(getTeamFieldValuesUseCase, getTeamIterationsUseCase,
-                teamScopeFallbackMetrics, clock);
-    }
-
-    /**
-     * El flujo compuesto, que en la Fase 04 bajó del entry-point a la capa de aplicación
-     * (D-07, D-12).
-     */
-    @Bean
-    public ListWorkItemsByTeamAndSprintUseCase listWorkItemsByTeamAndSprintUseCase(
-            ResolveTeamScopeUseCase resolveTeamScopeUseCase,
-            QueryByWiqlUseCase queryByWiqlUseCase) {
-        return new ListWorkItemsByTeamAndSprintUseCase(resolveTeamScopeUseCase,
-                queryByWiqlUseCase);
     }
 }

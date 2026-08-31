@@ -3,8 +3,6 @@ server:
 spring:
   application:
     name: "McpAzureDevOps"
-  devtools:
-    add-properties: false
   ai:
     mcp:
       server:
@@ -13,15 +11,20 @@ spring:
         version: "1.0.0"
         type: "ASYNC"
         instructions: "Reactive MCP Server with capabilities:\n- Tools: Executable\
-          \ tools\n- Resources: Access to system and user data\n- Prompts: Custom\
-          \ conversation templates\n\nSecurity: Authenticated via Entra ID (Bearer\
-          \ Token)"
+          \ tools\n\nSecurity: Authenticated via Entra ID (Bearer Token)"
         streamable-http:
           mcp-endpoint: "/mcp/${spring.application.name}"
+        # FASE 08 (DP-08 §0.2(c)): `resource` y `prompt` pasan de true a false.
+        # El servidor las anunciaba con CERO @McpResource y CERO @McpPrompt en todo el
+        # repositorio. La especificacion MCP es explicita: "Servers that declare the resources
+        # capability MUST respond to resources/list requests". Declararla es una PROMESA de
+        # responder, no un permiso; anunciarla sin implementarla es el antipatron que hace que un
+        # cliente llame y reciba un error generico. Con false, un cliente conforme ni siquiera
+        # llama. El dia que exista un @McpResource o un @McpPrompt, se vuelven a poner en true.
         capabilities:
           tool: true
-          resource: true
-          prompt: true
+          resource: false
+          prompt: false
           completion: false
         request-timeout: "30s"
   security:

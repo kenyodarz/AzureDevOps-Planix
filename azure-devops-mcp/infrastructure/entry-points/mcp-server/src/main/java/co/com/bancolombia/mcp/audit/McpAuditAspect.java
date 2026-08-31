@@ -67,6 +67,22 @@ public class McpAuditAspect {
 
     /**
      * Metodo genérico de auditoría
+     *
+     * <p><b>D-23, saldada en la Fase 08 (B-15): se retira la rama no reactiva.</b> El enunciado
+     * original decía que este aspecto «no audita la rama no reactiva (solo un {@code warn})». Al
+     * medirlo se comprobó que <b>esa rama es inalcanzable</b>: las <b>seis</b> tools MCP del
+     * servidor devuelven {@code Mono<...>}, sin excepción. No existe ningún método síncrono que
+     * auditar, así que el {@code log.warn} nunca se ha ejecutado ni podía ejecutarse.
+     *
+     * <p>En su lugar queda un fallo explícito: si algún día alguien añade una tool que no devuelva
+     * {@code Mono}, <b>el aspecto lo dirá en voz alta</b> en vez de dejar pasar la llamada sin
+     * auditar. En una aplicación WebFlux eso es un defecto de diseño, no un caso de uso legítimo.
+     *
+     * <p><b>Sobre el orden de {@code proceed()}:</b> se invoca antes de resolver el contexto de
+     * seguridad, y <b>es correcto</b>. {@code Mono} es <i>lazy</i>: {@code proceed()} solo
+     * <b>ensambla</b> el flujo, no ejecuta la tool. La ejecución ocurre al suscribirse, ya dentro
+     * del {@code flatMap}, es decir, <b>después</b> de haber resuelto la identidad del llamante. El
+     * log de auditoría refleja el orden real de los hechos.
      */
     private Object auditMcpCall(ProceedingJoinPoint joinPoint, String mcpType) throws Throwable {
         long startTime = System.currentTimeMillis();
@@ -77,55 +93,52 @@ public class McpAuditAspect {
         Object[] args = joinPoint.getArgs();
         String argsString = formatArgs(args);
 
-        // Ejecutar el metodo
+        // Ensambla el flujo. NO ejecuta la tool: Mono es lazy.
         Object result = joinPoint.proceed();
 
-        // Si es reactivo (Mono), inyectar lógica de auditoría en el flujo
-        if (result instanceof Mono) {
-            return ReactiveSecurityContextHolder.getContext()
-                    .map(SecurityContext::getAuthentication)
-                    .map(this::extractClientId)
-                    .defaultIfEmpty("anonymous")
-                    .flatMap(clientId -> {
-                        log.info("📊 [AUDIT] {} llamado por: {} | Método: {}.{} | Args: {}",
-                                mcpType,
-                                clientId,
-                                className,
-                                methodName,
-                                argsString);
-
-                        return ((Mono<?>) result)
-                                .doOnSuccess(value -> {
-                                    long executionTime = System.currentTimeMillis() - startTime;
-                                    log.info(
-                                            "✅ [AUDIT] {} exitoso | Client: {} | Método: {}.{} | Tiempo: {}ms",
-                                            mcpType,
-                                            clientId,
-                                            className,
-                                            methodName,
-                                            executionTime);
-                                })
-                                .doOnError(error -> {
-                                    long executionTime = System.currentTimeMillis() - startTime;
-                                    log.error(
-                                            "❌ [AUDIT] {} fallido | Client: {} | Método: {}.{} | Tiempo: {}ms | Error: {}",
-                                            mcpType,
-                                            clientId,
-                                            className,
-                                            methodName,
-                                            executionTime,
-                                            error.getMessage());
-                                });
-                    });
+        if (!(result instanceof Mono)) {
+            throw new IllegalStateException(
+                    "Una operacion MCP no reactiva no puede auditarse en una aplicacion WebFlux: "
+                            + className + "." + methodName + " debe devolver Mono<...>");
         }
 
-        // Para métodos síncronos (fallback básico, aunque SecurityContextHolder
-        // probablemente esté vacío)
-        // En una app Full Reactive esto raramente ocurrirá para endpoints WebFlux
-        log.warn("⚠️ [AUDIT] Interceptado método no reactivo en aplicación WebFlux: {}.{}",
-                className, methodName);
-        return result;
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(this::extractClientId)
+                .defaultIfEmpty("anonymous")
+                .flatMap(clientId -> {
+                    log.info("📊 [AUDIT] {} llamado por: {} | Método: {}.{} | Args: {}",
+                            mcpType,
+                            clientId,
+                            className,
+                            methodName,
+                            argsString);
+
+                    return ((Mono<?>) result)
+                            .doOnSuccess(value -> {
+                                long executionTime = System.currentTimeMillis() - startTime;
+                                log.info(
+                                        "✅ [AUDIT] {} exitoso | Client: {} | Método: {}.{} | Tiempo: {}ms",
+                                        mcpType,
+                                        clientId,
+                                        className,
+                                        methodName,
+                                        executionTime);
+                            })
+                            .doOnError(error -> {
+                                long executionTime = System.currentTimeMillis() - startTime;
+                                log.error(
+                                        "❌ [AUDIT] {} fallido | Client: {} | Método: {}.{} | Tiempo: {}ms | Error: {}",
+                                        mcpType,
+                                        clientId,
+                                        className,
+                                        methodName,
+                                        executionTime,
+                                        error.getMessage());
+                            });
+                });
     }
+
 
     private String extractClientId(Authentication auth) {
         if (auth == null) {
