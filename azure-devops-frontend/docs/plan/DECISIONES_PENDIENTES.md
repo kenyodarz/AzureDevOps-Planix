@@ -28,25 +28,11 @@
 
 ## DP-02 — Umbrales de calidad y definición de «historia grande»
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fase 07
-- **Evidencia:** `components/planning-dashboard/planning-dashboard.component.ts`
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 07
+- **Decisión adoptada:** Se aplicó la acción por defecto segura (**R-2**): trasladar los valores **literalmente tal como están** a `src/app/features/devops-agent/domain/quality-score.ts`, incluida la discrepancia `90/70/50` (etiqueta) frente a `80/50` (color y filtro), sin unificarlos ni alterar el comportamiento histórico congelado en pruebas.
+- **Implementación:** `domain/quality-score.ts`, subcomponentes del tablero de calidad y suites unitarias asociadas.
+- **Evidencia original:** `components/planning-dashboard/planning-dashboard.component.ts`
   | Línea | Literal | Uso | |---:|---|---| | 702-707 | `90`, `70`, `50` | Etiquetas *Excelente / Buena / Regular / Deficiente* | | 709-713 | `80`, `50` | Color de la barra de calidad | | 627-637 | `50`, `80` | Filtro *critical / regular / good* | | 715-718 | `13` | Conteo de «historias grandes» |
-- **Pregunta:** ¿Son reglas de negocio confirmadas? Nótese que **los umbrales de la etiqueta (`90/70/50`) y los del color y el filtro (`80/50`) no coinciden**: una historia con `85` se etiqueta como *Buena* pero cae en el filtro *good*, mientras que con `75` se etiqueta *Buena* y cae en el filtro *regular*. ¿Es intencional o es un defecto?
-- **Impacto si se asume mal:** unificar los umbrales cambia la clasificación visible de historias reales para los equipos.
-- **Acción por defecto si sigue abierta:** trasladar los valores **literalmente tal como están**, incluida la discrepancia, a `domain/quality-score.ts`, y **no unificarlos**.
-- **✅ EVIDENCIA APORTADA POR LA FASE 01 (2026-08-31).** La discrepancia está **confirmada y congelada por prueba** en
-  `planning-dashboard.component.spec.ts` →
-  `«THEN a score of 75 is labelled GOOD but filtered as REGULAR (discrepancia viva)»`:
-
-  | `qualityScore` | Etiqueta mostrada | Filtro en el que cae |
-    |---:|---|---|
-  | 95 | Excelente | good |
-  | 85 | **Buena (Suficiente)** | **good** |
-  | **75** | **Buena (Suficiente)** | **regular** ⚠️ |
-  | 60 | Regular | regular |
-  | 45 | Deficiente | critical |
-
-  Dos historias etiquetadas igual (*Buena*) caen en filtros distintos. **Se necesita tu decisión para saber si es intencional.**
 
 ---
 
@@ -152,3 +138,4 @@
 | **DP-08** | 2026-09-01 | Separar loading independiente por flujo en stores atómicos con agregador en fachada.                                              | Plan / Usuario |
 | **DP-10** | 2026-09-01 | Preservar reactividad y ciclo de repintado en modo zoneless respetando R-1 y R-3.                                                 | Plan / Usuario |
 | **DP-06** | 2026-09-01 | Conservar intervalos literales y migrar a pipeline declarativo RxJS con ciclo de vida seguro.                                     | Plan / Usuario |
+| **DP-02** | 2026-09-01 | Conservar umbrales literales 90/70/50 y 80/50 en domain/quality-score.ts sin unificar (R-2).                                      | Plan / Usuario |

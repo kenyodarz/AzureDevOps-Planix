@@ -4,7 +4,7 @@
 > **este archivo primero**, después `docs/plan/DECISIONES_PENDIENTES.md` y por último el MD de la
 > fase activa en `docs/fases/`.
 >
-> **Actualizado:** 2026-09-01 (cierre de la Fase 06)
+> **Actualizado:** 2026-09-01 (cierre de la Fase 07)
 
 ---
 
@@ -41,8 +41,8 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 | 04 — Segregación de la capa de API         | `docs/fases/fase-04.md` | 🟢 **COMPLETADA** | 220 pruebas (era 202) · 19 archivos (era 15) · D-11, D-08, D-26 saldadas · 4 clientes atómicos + fachada · 435.65 kB        | 2026-09-01 |
 | 05 — Separación de stores por flujo        | `docs/fases/fase-05.md` | 🟢 **COMPLETADA** | 259 pruebas (era 220) · 24 archivos (era 19) · D-01, D-03, D-04, D-12, D-16, D-17 saldadas · 5 stores + fachada · 435.65 kB | 2026-09-01 |
 | 06 — Flujo de tareas y polling             | `docs/fases/fase-06.md` | 🟢 **COMPLETADA** | 260 pruebas (era 259) · 24 archivos · D-02, D-15, M-06 saneadas en tasks-state · pipeline RxJS declarativo · 437.91 kB      | 2026-09-01 |
-| 07 — Descomposición del Tablero de Calidad | `docs/fases/fase-07.md` | ⚪ PENDIENTE      | —                                                                                                                           | —          |
-| 08 — Endurecimiento y cierre               | *(por generar)*         | ⚪ PENDIENTE      | —                                                                                                                           | —          |
+| 07 — Descomposición del Tablero de Calidad | `docs/fases/fase-07.md` | 🟢 **COMPLETADA** | 291 pruebas (era 260) · 29 archivos (era 24) · M-03 (200 L ≤ 200), D-09, D-14, D-20 saldadas · 444.56 kB                    | 2026-09-01 |
+| 08 — Endurecimiento y cierre               | `docs/fases/fase-08.md` | ⚪ PENDIENTE      | —                                                                                                                           | —          |
 
 **Leyenda:** 🟢 COMPLETADA · 🟡 ACTIVA · 🔴 BLOQUEADA · ⚪ PENDIENTE
 
@@ -50,9 +50,7 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 
 ## 2. Siguiente acción concreta
 
-> Ejecutar `docs/fases/fase-07.md` (Descomposición del Tablero de Calidad).
->
-> Requiere revisar la decisión pendiente DP-02 (umbrales de calidad en `domain/quality-score.ts`).
+> Ejecutar `docs/fases/fase-08.md` (Endurecimiento, erradicación de `console.error` y cierre).
 
 ---
 
@@ -61,7 +59,7 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 | ID    | Bloquea      | Estado                                                                                  |
 |-------|--------------|-----------------------------------------------------------------------------------------|
 | DP-01 | Fases 05     | 🟢 **RESUELTA** (2026-09-01) — se conserva alias público `messages`                     |
-| DP-02 | Fase 07      | 🔴 ABIERTA — **con evidencia nueva de la Fase 01**                                      |
+| DP-02 | Fase 07      | 🟢 **RESUELTA** (2026-09-01) — umbrales trasladados literalmente a `domain/` (R-2)      |
 | DP-03 | Fases 02, 04 | 🟢 **RESUELTA** (2026-08-31) — se conserva `POST '/'`                                   |
 | DP-04 | Fase 03      | 🟢 **RESUELTA** (2026-09-01) — copys trasladados a `domain/` carácter por carácter      |
 | DP-05 | Fases 05, 06 | 🟢 **RESUELTA** (2026-09-01) — BehaviorSubjects encapsulados expuestos como Observables |
@@ -81,22 +79,22 @@ Detalle completo en `docs/plan/DECISIONES_PENDIENTES.md`.
 |-----:|----------------------------------------------|---------------------:|-----------------------------:|---------:|--------------------------------|
 | M-01 | Líneas `devops-agent-state.service.ts`       |            406 → 418 |                      **148** |     ≤ 60 | 08                             |
 | M-02 | Líneas del store más grande                  |                  418 |         **117** (Refinement) |    ≤ 150 | 05 ✅                          |
-| M-03 | Líneas `planning-dashboard.component.ts`     |                  753 |                          753 |    ≤ 200 | 07                             |
+| M-03 | Líneas `planning-dashboard.component.ts`     |                  753 |                      **200** |    ≤ 200 | 07 ✅                          |
 | M-04 | Ocurrencias de `any`                         |                **9** |                     **0** ✅ |        0 | 02 ✅                          |
 | M-05 | `.subscribe()` en producción                 |               **17** |                           17 |        — | 08                             |
 | M-06 | Temporizadores sin limpieza                  |                **3** |                        **2** |        0 | 08                             |
-| M-07 | Componentes con `OnPush`                     |                0 / 9 |                        0 / 9 |    100 % | 08                             |
-| M-08 | Componentes con `.spec.ts`                   |                0 / 9 |                 **9 / 9** ✅ |    100 % | 01 ✅                          |
-| M-09 | Archivos `.spec.ts`                          |                    4 |                       **24** |     ≥ 18 | 04 / 05 ✅                     |
-|    — | Casos de prueba                              |                   29 |                      **260** |        — | —                              |
+| M-07 | Componentes con `OnPush`                     |                0 / 9 |                       0 / 13 |    100 % | 08                             |
+| M-08 | Componentes con `.spec.ts`                   |                0 / 9 |               **13 / 13** ✅ |    100 % | 01 / 07 ✅                     |
+| M-09 | Archivos `.spec.ts`                          |                    4 |                       **29** |     ≥ 18 | 04 / 05 / 07 ✅                |
+|    — | Casos de prueba                              |                   29 |                      **291** |        — | —                              |
 | M-10 | Rutas literales en `http.*`                  |               **10** |                     **0** ✅ |        0 | 02 ✅                          |
-| M-11 | Números mágicos                              |                   12 |                        **8** |        0 | 02 ✅ (sondeo) / 07 (umbrales) |
+| M-11 | Números mágicos                              |                   12 |                     **0** ✅ |        0 | 02 ✅ (sondeo) / 07 (umbrales) |
 | M-12 | Señales `loading` por flujo                  |                    1 |                        **5** |      ≥ 4 | 05 ✅                          |
 | M-13 | Existe `core/{guards,interceptors,services}` |                   ❌ |                       **✅** |       ✅ | 02 ✅                          |
 | M-14 | Existe `environments/`                       |                   ❌ |                       **✅** |       ✅ | 02 ✅                          |
-| M-18 | `pnpm build`                                 |          ❌ **rota** |                 ✅ 437.91 kB |       ✅ | 01 ✅                          |
-| M-19 | `pnpm test`                                  | ❌ **no ejecutable** |                   ✅ 260/260 |       ✅ | 01 ✅                          |
-| M-20 | Archivos con `aria-label`                    |          4 / 11 usos |                            4 |        — | 07 / 08                        |
+| M-18 | `pnpm build`                                 |          ❌ **rota** |                 ✅ 444.56 kB |       ✅ | 01 ✅                          |
+| M-19 | `pnpm test`                                  | ❌ **no ejecutable** |                   ✅ 291/291 |       ✅ | 01 ✅                          |
+| M-20 | Archivos con `aria-label`                    |          4 / 11 usos |                            4 |        — | 08                             |
 | M-21 | `console.error` en producción                |     10 *(declarado)* | **16** *(medido en Fase 02)* |        0 | 08                             |
 
 ---
@@ -142,5 +140,8 @@ Detalle completo en `docs/plan/DECISIONES_PENDIENTES.md`.
 | 2026-09-01 | **Fase 06 ejecutada.** Migrado `TasksStateService` a pipeline declarativo RxJS (`timer`, `switchMap`, `takeUntil`, `Subject`) eliminando `setTimeout` recursivo. D-02, D-15 y M-06 saneadas en tasks-state. DP-06 🟢 resuelta.                                                                                                                                                                                    |
 | 2026-09-01 | Fase 06: pruebas **259 → 260** (24 archivos) sin tocar `.spec.ts` previos de Fases 01 a 05 (R-3 cumplida). Build **437.91 kB**.                                                                                                                                                                                                                                                                                   |
 | 2026-09-01 | Generado `docs/fases/fase-07.md`. Siguiente fase: Descomposición del Tablero de Calidad.                                                                                                                                                                                                                                                                                                                          |
+| 2026-09-01 | **Fase 07 ejecutada.** Creada la capa `domain/quality-score.ts` y 4 subcomponentes (`QualitySummaryCardsComponent`, `QualityStoriesTableComponent`, `QualityChartComponent`, `StoryAuditModalComponent`). `PlanningDashboardComponent` reducido de 753 a **200 líneas** (M-03). D-09, D-14, D-20 saldadas. DP-02 🟢 aplicada con R-2.                                                                             |
+| 2026-09-01 | Fase 07: pruebas **260 → 291** (29 archivos) sin tocar `.spec.ts` previos de Fases 01 a 05 (R-3 cumplida). Build **444.56 kB**.                                                                                                                                                                                                                                                                                   |
+| 2026-09-01 | Generado `docs/fases/fase-08.md`. Siguiente fase: Endurecimiento, erradicación de `console.error` y cierre.                                                                                                                                                                                                                                                                                                       |
 
 
