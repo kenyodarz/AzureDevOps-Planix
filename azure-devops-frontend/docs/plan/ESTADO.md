@@ -4,7 +4,7 @@
 > **este archivo primero**, después `docs/plan/DECISIONES_PENDIENTES.md` y por último el MD de la
 > fase activa en `docs/fases/`.
 >
-> **Actualizado:** 2026-08-31 (cierre de la Fase 02)
+> **Actualizado:** 2026-09-01 (cierre de la Fase 03)
 
 ---
 
@@ -33,16 +33,16 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 
 ## 1. Tablero de fases
 
-| Fase                                       | Archivo                 | Estado                                           | Métricas de cierre                                                                                                   | Fecha      |
-|--------------------------------------------|-------------------------|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|------------|
-| 01 — Baseline y red de seguridad           | `docs/fases/fase-01.md` | 🟢 **COMPLETADA**                                | 188 pruebas (era 29) · 12 archivos (era 4) · 9/9 componentes cubiertos · build restaurado                            | 2026-08-31 |
-| 02 — Núcleo transversal (`core/`)          | `docs/fases/fase-02.md` | 🟢 **COMPLETADA**                                | 200 pruebas (era 188) · `any` 9 → **0** · rutas literales 10 → **0** · `core/` y `environments/` creados · 435.66 kB | 2026-08-31 |
-| 03 — Externalización de copys y prompts    | `docs/fases/fase-03.md` | 🔴 **BLOQUEADA** por DP-04 (DP-07 acota alcance) | —                                                                                                                    | —          |
-| 04 — Segregación de la capa de API         | *(por generar)*         | ⚪ PENDIENTE                                     | —                                                                                                                    | —          |
-| 05 — Separación de stores por flujo        | *(por generar)*         | ⚪ PENDIENTE                                     | —                                                                                                                    | —          |
-| 06 — Flujo de tareas y polling             | *(por generar)*         | ⚪ PENDIENTE                                     | —                                                                                                                    | —          |
-| 07 — Descomposición del Tablero de Calidad | *(por generar)*         | ⚪ PENDIENTE                                     | —                                                                                                                    | —          |
-| 08 — Endurecimiento y cierre               | *(por generar)*         | ⚪ PENDIENTE                                     | —                                                                                                                    | —          |
+| Fase                                       | Archivo                 | Estado            | Métricas de cierre                                                                                                   | Fecha      |
+|--------------------------------------------|-------------------------|-------------------|----------------------------------------------------------------------------------------------------------------------|------------|
+| 01 — Baseline y red de seguridad           | `docs/fases/fase-01.md` | 🟢 **COMPLETADA** | 188 pruebas (era 29) · 12 archivos (era 4) · 9/9 componentes cubiertos · build restaurado                            | 2026-08-31 |
+| 02 — Núcleo transversal (`core/`)          | `docs/fases/fase-02.md` | 🟢 **COMPLETADA** | 200 pruebas (era 188) · `any` 9 → **0** · rutas literales 10 → **0** · `core/` y `environments/` creados · 435.66 kB | 2026-08-31 |
+| 03 — Externalización de copys y prompts    | `docs/fases/fase-03.md` | 🟢 **COMPLETADA** | 202 pruebas (era 200) · 15 archivos · D-06, D-19, D-21 saldadas · `domain/` creado · state 370 líneas · 435.65 kB    | 2026-09-01 |
+| 04 — Segregación de la capa de API         | `docs/fases/fase-04.md` | ⚪ PENDIENTE      | —                                                                                                                    | —          |
+| 05 — Separación de stores por flujo        | *(por generar)*         | ⚪ PENDIENTE      | —                                                                                                                    | —          |
+| 06 — Flujo de tareas y polling             | *(por generar)*         | ⚪ PENDIENTE      | —                                                                                                                    | —          |
+| 07 — Descomposición del Tablero de Calidad | *(por generar)*         | ⚪ PENDIENTE      | —                                                                                                                    | —          |
+| 08 — Endurecimiento y cierre               | *(por generar)*         | ⚪ PENDIENTE      | —                                                                                                                    | —          |
 
 **Leyenda:** 🟢 COMPLETADA · 🟡 ACTIVA · 🔴 BLOQUEADA · ⚪ PENDIENTE
 
@@ -50,14 +50,10 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 
 ## 2. Siguiente acción concreta
 
-> **Responder DP-04** (¿los copys se conservan carácter por carácter, incluida la mención al puerto
-> 8081?) y a continuación ejecutar `docs/fases/fase-03.md`.
+> Ejecutar `docs/fases/fase-04.md` (Segregación de la capa de API).
 >
-> DP-07 es informativa: si no se responde, se centraliza en constantes en español **sin** introducir
-> `@angular/localize`.
->
-> Si DP-04 no se responde, la **acción por defecto (R-4) es segura**: los textos se **mueven** sin
-> alterar un solo carácter, así que la fase puede ejecutarse igualmente.
+> DP-03 está 🟢 RESUELTA (se conserva `POST '/'` para cancelación de tareas).
+> Se aplica la restricción **R-5**: `DevopsAgentApiService` debe conservarse como fachada delegante.
 
 ---
 
@@ -68,10 +64,10 @@ security find-certificate -a -p /Library/Keychains/System.keychain              
 | DP-01 | Fase 05      | 🔴 ABIERTA                                                                              |
 | DP-02 | Fase 07      | 🔴 ABIERTA — **con evidencia nueva de la Fase 01**                                      |
 | DP-03 | Fases 02, 04 | 🟢 **RESUELTA** (2026-08-31) — se conserva `POST '/'`                                   |
-| DP-04 | Fase 03      | 🔴 ABIERTA                                                                              |
+| DP-04 | Fase 03      | 🟢 **RESUELTA** (2026-09-01) — copys trasladados a `domain/` carácter por carácter      |
 | DP-05 | Fases 05, 06 | 🔴 ABIERTA                                                                              |
 | DP-06 | Fases 02, 06 | 🟡 **PARCIAL** (2026-08-31) — deuda técnica reconocida; valores trasladados sin cambios |
-| DP-07 | Fase 03      | ⚪ INFORMATIVA                                                                          |
+| DP-07 | Fase 03      | 🟢 **RESUELTA** (2026-09-01) — centralización en español sin dependencias de i18n       |
 | DP-08 | Fase 05      | 🔴 ABIERTA                                                                              |
 | DP-09 | Fase 02      | 🟢 **RESUELTA** (2026-08-31) — tipos derivados de `azure-devops-backend`                |
 | DP-10 | Fase 05      | 🔴 ABIERTA                                                                              |
@@ -84,23 +80,23 @@ Detalle completo en `docs/plan/DECISIONES_PENDIENTES.md`.
 
 |    # | Métrica                                      |      Baseline medido |                       Actual | Objetivo | Cierra en                      |
 |-----:|----------------------------------------------|---------------------:|-----------------------------:|---------:|--------------------------------|
-| M-01 | Líneas `devops-agent-state.service.ts`       |            406 → 418 |                          424 |     ≤ 60 | 05 / 06                        |
-| M-02 | Líneas del store más grande                  |                  418 |                          424 |    ≤ 150 | 05                             |
+| M-01 | Líneas `devops-agent-state.service.ts`       |            406 → 418 |                      **370** |     ≤ 60 | 05 / 06                        |
+| M-02 | Líneas del store más grande                  |                  418 |                      **370** |    ≤ 150 | 05                             |
 | M-03 | Líneas `planning-dashboard.component.ts`     |                  753 |                          753 |    ≤ 200 | 07                             |
 | M-04 | Ocurrencias de `any`                         |                **9** |                     **0** ✅ |        0 | 02 ✅                          |
 | M-05 | `.subscribe()` en producción                 |               **17** |                           17 |        — | 08                             |
 | M-06 | Temporizadores sin limpieza                  |                **3** |                            3 |        0 | 06 / 08                        |
 | M-07 | Componentes con `OnPush`                     |                0 / 9 |                        0 / 9 |    100 % | 08                             |
 | M-08 | Componentes con `.spec.ts`                   |                0 / 9 |                 **9 / 9** ✅ |    100 % | 01 ✅                          |
-| M-09 | Archivos `.spec.ts`                          |                    4 |                       **14** |     ≥ 18 | 08                             |
-|    — | Casos de prueba                              |                   29 |                      **200** |        — | —                              |
+| M-09 | Archivos `.spec.ts`                          |                    4 |                       **15** |     ≥ 18 | 08                             |
+|    — | Casos de prueba                              |                   29 |                      **202** |        — | —                              |
 | M-10 | Rutas literales en `http.*`                  |               **10** |                     **0** ✅ |        0 | 02 ✅                          |
 | M-11 | Números mágicos                              |                   12 |                        **8** |        0 | 02 ✅ (sondeo) / 07 (umbrales) |
 | M-12 | Señales `loading` por flujo                  |                    1 |                            1 |        4 | 05                             |
 | M-13 | Existe `core/{guards,interceptors,services}` |                   ❌ |                       **✅** |       ✅ | 02 ✅                          |
 | M-14 | Existe `environments/`                       |                   ❌ |                       **✅** |       ✅ | 02 ✅                          |
-| M-18 | `pnpm build`                                 |          ❌ **rota** |                 ✅ 435.66 kB |       ✅ | 01 ✅                          |
-| M-19 | `pnpm test`                                  | ❌ **no ejecutable** |                   ✅ 200/200 |       ✅ | 01 ✅                          |
+| M-18 | `pnpm build`                                 |          ❌ **rota** |                 ✅ 435.65 kB |       ✅ | 01 ✅                          |
+| M-19 | `pnpm test`                                  | ❌ **no ejecutable** |                   ✅ 202/202 |       ✅ | 01 ✅                          |
 | M-20 | Archivos con `aria-label`                    |          4 / 11 usos |                            4 |        — | 07 / 08                        |
 | M-21 | `console.error` en producción                |     10 *(declarado)* | **16** *(medido en Fase 02)* |        0 | 08                             |
 
@@ -136,3 +132,7 @@ Detalle completo en `docs/plan/DECISIONES_PENDIENTES.md`.
 | 2026-08-31 | Fase 02: `any` **9 → 0**, rutas literales **10 → 0**, pruebas **188 → 200** sin tocar un solo `.spec.ts` previo (R-3 cumplida). Build 434.21 → **435.66 kB** (+1.45 kB).                                                                     |
 | 2026-08-31 | Fase 02: hallazgo H-1 — `console.error` recontado a **16** (se declaraban 10); nueva métrica M-21. Hallazgo H-2 → deuda nueva **D-28** (`[object Object]` al usuario), asignada a la Fase 08. Nuevas restricciones **R-5** y **R-6**.        |
 | 2026-08-31 | Generado `docs/fases/fase-03.md`. **Bloqueada** por DP-04 (DP-07 acota el alcance); la acción por defecto R-4 permite ejecutarla sin riesgo.                                                                                                 |
+| 2026-09-01 | **Fase 03 ejecutada.** Creada la capa `features/devops-agent/domain/` (`chat-greetings.ts`, `chat-prompts.ts`, `chat-suggestions.ts`, `tech-tags.ts`). D-06, D-19 y D-21 saldadas. DP-04 y DP-07 🟢 resueltas.                               |
+| 2026-09-01 | Fase 03: `state.service` **424 → 370** líneas (0 líneas de markdown), pruebas **200 → 202** (15 archivos) sin tocar `.spec.ts` previos (R-3 cumplida). Build **435.65 kB**.                                                                  |
+| 2026-09-01 | Generado `docs/fases/fase-04.md`. Siguiente fase: Segregación de la capa de API.                                                                                                                                                             |
+

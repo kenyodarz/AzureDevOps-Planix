@@ -1,6 +1,7 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CHAT_SUGGESTIONS } from '../../domain';
 
 @Component({
   selector: 'app-chat-input',
@@ -22,7 +23,9 @@ import {FormsModule} from '@angular/forms';
 
     <!-- Input Box -->
     <div class="p-8 pt-0 w-full max-w-[1000px] mx-auto min-w-0">
-      <div class="bg-[rgba(17,24,39,0.7)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-2 px-4 flex items-center gap-3 backdrop-blur-md shadow-2xl focus-within:border-[#f2c94c] transition-colors">
+      <div
+        class="bg-[rgba(17,24,39,0.7)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-2 px-4 flex items-center gap-3 backdrop-blur-md shadow-2xl focus-within:border-[#f2c94c] transition-colors"
+      >
         <textarea
           aria-label="Responder o escribir idea"
           class="flex-1 bg-transparent border-none text-[#f3f4f6] text-[0.95rem] py-3 outline-none resize-none h-[48px] max-h-[150px] overflow-y-auto"
@@ -41,7 +44,7 @@ import {FormsModule} from '@angular/forms';
         </button>
       </div>
     </div>
-  `
+  `,
 })
 export class ChatInputComponent {
   @Input() loading = false;
@@ -49,14 +52,7 @@ export class ChatInputComponent {
 
   protected messageText = '';
 
-  protected readonly suggestions = [
-    {
-      label: '💡 CRUD Aprobadores (Idea corta)',
-      value: 'AI Admin panel - Crear la funcion de carga en batch para poblar la tabla de aprovadores de MCP y todo el tema de CRUD'
-    },
-    { label: '✅ Aprobado', value: 'Aprobado' },
-    { label: '🚀 Crear', value: 'Crear' }
-  ];
+  protected readonly suggestions = CHAT_SUGGESTIONS;
 
   protected onInput(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;

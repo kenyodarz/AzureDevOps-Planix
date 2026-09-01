@@ -74,13 +74,11 @@
 
 ## DP-04 — Copys de saludo y de error
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fase 03
-- **Evidencia:** `services/devops-agent-state.service.ts:49-87` (~40 líneas de markdown),
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 03
+- **Decisión adoptada:** Se aplicó la acción por defecto segura (R-4) según instrucciones de la Fase 03: **los copys se trasladaron a la capa `domain/` de forma exacta carácter por carácter**, sin reescribir, sin corregir la errata «aprovadores» de `chat-input` y conservando el texto de error del puerto 8081 intacto.
+- **Evidencia original:** `services/devops-agent-state.service.ts:49-87` (~40 líneas de markdown),
   `:127`, `:227`, `:258`, `:393`.
-- **Pregunta:** ¿Estos textos están aprobados por negocio y deben conservarse **carácter por carácter**, o pueden ajustarse durante la externalización?
-- **Nota concreta:** el mensaje de error del chat (`:393`) dice literalmente *«Asegúrate de que corre en el puerto 8081»*. Es un detalle de infraestructura de desarrollo expuesto al usuario final. ¿Se conserva?
-- **Impacto si se asume mal:** modificar copys de cara al usuario sin aprobación.
-- **Acción por defecto si sigue abierta:** la Fase 03 **mueve** los textos sin alterar un solo carácter.
+- **Implementación:** `features/devops-agent/domain/chat-greetings.ts`, `chat-prompts.ts`, `chat-suggestions.ts`, `tech-tags.ts`.
 
 ---
 
@@ -111,10 +109,9 @@
 
 ## DP-07 — Internacionalización
 
-- **Estado:** ⚪ INFORMATIVA · **Bloquea:** Fase 03 (solo el alcance)
-- **Contexto:** todos los copys están en español y embebidos en TypeScript y en plantillas.
-- **Pregunta:** ¿Entra `@angular/localize` en el alcance de este plan, o los textos simplemente se centralizan en constantes en español?
-- **Acción por defecto si sigue abierta:** centralizar en constantes en español. **No** introducir i18n.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 03 (solo el alcance)
+- **Decisión adoptada:** Centralizar en constantes en español en `features/devops-agent/domain/`. **No** se introduce `@angular/localize` ni librerías externas de i18n.
+- **Implementación:** `features/devops-agent/domain/` agrupa todos los catálogos y mensajes en constantes tipadas inmutables.
 
 ---
 
@@ -166,8 +163,10 @@
 
 ## Bitácora de resoluciones
 
-| ID        | Fecha      | Decisión adoptada                                                                                                                 | Quién   |
-|-----------|------------|-----------------------------------------------------------------------------------------------------------------------------------|---------|
-| **DP-09** | 2026-08-31 | Derivar los tipos de `azure-devops-backend` / `azure-devops-agent` tal cual.                                                      | Usuario |
-| **DP-03** | 2026-08-31 | Conservar `POST '/'` con envoltorio JSON-RPC (acción recomendada).                                                                | Usuario |
-| **DP-06** | 2026-08-31 | Parcial: deuda técnica reconocida. Se aplica la acción por defecto (valores literales, sin topes). Sigue abierta para la Fase 06. | Usuario |
+| ID        | Fecha      | Decisión adoptada                                                                                                                 | Quién          |
+|-----------|------------|-----------------------------------------------------------------------------------------------------------------------------------|----------------|
+| **DP-09** | 2026-08-31 | Derivar los tipos de `azure-devops-backend` / `azure-devops-agent` tal cual.                                                      | Usuario        |
+| **DP-03** | 2026-08-31 | Conservar `POST '/'` con envoltorio JSON-RPC (acción recomendada).                                                                | Usuario        |
+| **DP-06** | 2026-08-31 | Parcial: deuda técnica reconocida. Se aplica la acción por defecto (valores literales, sin topes). Sigue abierta para la Fase 06. | Usuario        |
+| **DP-04** | 2026-09-01 | Mover los copys a `domain/` de forma exacta carácter por carácter (R-4 segura).                                                   | Plan / Usuario |
+| **DP-07** | 2026-09-01 | Centralizar constantes en español sin dependencias de i18n.                                                                       | Plan / Usuario |

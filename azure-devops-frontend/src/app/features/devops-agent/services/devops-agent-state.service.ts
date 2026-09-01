@@ -2,10 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { DevopsAgentApiService } from './devops-agent-api.service';
-import {
-  POLLING_INTERVAL_ACTIVE_MS,
-  POLLING_INTERVAL_IDLE_MS,
-} from '../../../core/config/app-tuning';
+import { POLLING_INTERVAL_ACTIVE_MS, POLLING_INTERVAL_IDLE_MS } from '../../../core';
 import {
   AgentCard,
   AgentTask,
@@ -16,6 +13,14 @@ import {
   SendMessageRequest,
   SendMessageResponse,
 } from '../models/devops-agent.model';
+import {
+  buildAuditPrompt,
+  buildRefinementPrompt,
+  GENERAL_GREETING,
+  GENERAL_RESET_GREETING,
+  REFINEMENT_GREETING,
+  REFINEMENT_RESET_GREETING,
+} from '../domain';
 
 @Injectable({
   providedIn: 'root',
@@ -26,78 +31,33 @@ export class DevopsAgentStateService {
   private generalContextId = `general-${crypto.randomUUID()}`;
   private refinementContextId = `refinement-${crypto.randomUUID()}`;
 
-  public readonly generalMessages: Observable<Message[]> = this.generalMessages$.asObservable();
   private pollingTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ---------------------------------------------------------------------------------------------
-  // BLOQUE 1 — Constantes de saludo.
+  // BLOQUE 1 — Configuración e intervalos.
   //
-  // Los campos de una clase se inicializan en orden de declaración: usar uno antes de declararlo
-  // no es un aviso de estilo, deja el valor en `undefined` y el `.asObservable()` revienta al
-  // construir el servicio (TS2729). Por eso los saludos van PRIMERO, los Subject que los consumen
-  // después (bloque 2) y los Observables públicos al final (bloque 3).
+  // Tras la externalización a la capa domain (Fase 03), los saludos residen en constantes
+  // inmutables fuera de la clase. Se conserva la estructura de bloques para respetar el orden
+  // de inicialización de TypeScript y evitar TS2729.
   private pollingInterval = POLLING_INTERVAL_IDLE_MS;
-  private readonly initialGreeting: Message = {
-    role: 'agent',
-    parts: [
-      {
-        text: `### ¡Hola! Soy tu asistente y Scrum Master virtual de Bancolombia. 🤖
-
-Estoy aquí para ayudarte a redactar e instanciar tus **Historias de Usuario (HU)** o **Historias Habilitadoras (HA)** en Azure DevOps, siguiendo estrictamente la plantilla corporativa.
-
----
-
-### 📝 ¿Cómo enviarme tu idea?
-Puedes escribir una descripción breve, pero obtendrás un resultado ideal si me proporcionas una estructura clara.
-
-**Ejemplo de mensaje perfecto:**
-* **Título**: Carga masiva de aprobadores
-* **Equipo**: Canales Digitales - Célula Core
-* **Descripción**: Crear la función de carga en batch (.csv) para poblar la tabla de aprobadores del sistema de control de accesos (MCP). Esto incluye el CRUD completo para gestionar los registros individuales desde el panel de administración, asegurando que solo usuarios con rol de SuperAdmin puedan operarlo.
-* **Criterios de Aceptación**: Debe validar que los campos requeridos no estén vacíos, que el formato de correo sea válido y que el proceso se ejecute de forma asíncrona informando el resultado al finalizar.
-
----
-
-### 📘 ¿Cómo funciona la sección "Cargar Planeación"?
-En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí puedes subir archivos de planeación en formato Markdown (\`.md\`).
-
-**¿Cómo ayuda esto al proceso?**
-1. **Contexto Semántico**: Al subir un documento (como la planeación de un Q o los lineamientos de arquitectura), el contenido se procesa y se almacena en nuestra **base de datos vectorial**.
-2. **Generación Alineada**: Cuando me pidas redactar una HU o HA, realizaré una **búsqueda semántica** automática en ese archivo cargado. De este modo, la historia generada adoptará automáticamente los detalles de negocio, restricciones técnicas, criterios técnicos u objetivos previamente acordados en tu planeación.
-3. **Menos esfuerzo**: No necesitas redactar todo desde cero ni copiar y pegar extensos documentos en el chat; el agente recuperará la información relevante por ti.
-`,
-      },
-    ],
-  };
 
   // ---------------------------------------------------------------------------------------------
-  // BLOQUE 2 — Subjects privados. Consumen las constantes del bloque 1, por eso van después.
+  // BLOQUE 2 — Subjects privados. Consumen las constantes importadas del dominio.
   // ---------------------------------------------------------------------------------------------
-  private readonly generalGreeting: Message = {
-    role: 'agent',
-    parts: [
-      {
-        text: `### ¡Hola! Soy tu asistente y Scrum Master virtual de Bancolombia. 🤖
+  private readonly generalMessages$ = new BehaviorSubject<Message[]>([GENERAL_GREETING]);
+  // BLOQUE 3 — Observables públicos. Consumen los Subjects del bloque 2, por eso van los últimos.
+  public readonly generalMessages: Observable<Message[]> = this.generalMessages$.asObservable();
+  private readonly refinementMessages$ = new BehaviorSubject<Message[]>([REFINEMENT_GREETING]);
+  private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
+  private readonly loading$ = new BehaviorSubject<boolean>(false);
 
-Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas libres, pedir reportes, listados de DevOps, soporte general y más.`,
-      },
-    ],
-  };
-  private readonly generalMessages$ = new BehaviorSubject<Message[]>([this.generalGreeting]);
   // ---------------------------------------------------------------------------------------------
-  private readonly refinementMessages$ = new BehaviorSubject<Message[]>([this.initialGreeting]);
-  // ---------------------------------------------------------------------------------------------
+  private readonly uploading$ = new BehaviorSubject<boolean>(false);
   public readonly refinementMessages: Observable<Message[]> =
     this.refinementMessages$.asObservable();
-  private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
   public readonly agentCard: Observable<AgentCard | null> = this.agentCard$.asObservable();
-  private readonly loading$ = new BehaviorSubject<boolean>(false);
   public readonly loading: Observable<boolean> = this.loading$.asObservable();
-  private readonly uploading$ = new BehaviorSubject<boolean>(false);
   public readonly uploading: Observable<boolean> = this.uploading$.asObservable();
-
-  // ---------------------------------------------------------------------------------------------
-  // BLOQUE 3 — Observables públicos. Consumen los Subjects del bloque 2, por eso van los últimos.
   private readonly uploadStatus$ = new BehaviorSubject<string | null>(null);
   public readonly uploadStatus: Observable<string | null> = this.uploadStatus$.asObservable();
   public readonly messages: Observable<Message[]> = this.refinementMessages; // Por compatibilidad con tests antiguos
@@ -139,15 +99,7 @@ Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas l
 
   public clearGeneralChat(): void {
     this.generalContextId = `general-${crypto.randomUUID()}`;
-    const resetGreeting: Message = {
-      role: 'agent',
-      parts: [
-        {
-          text: 'Chat general limpio. Entrégame una consulta libre, listado de DevOps o reporte para comenzar.',
-        },
-      ],
-    };
-    this.generalMessages$.next([resetGreeting]);
+    this.generalMessages$.next([GENERAL_RESET_GREETING]);
   }
 
   public triggerImmediatePoll(): void {
@@ -239,15 +191,7 @@ Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas l
 
   public clearRefinementChat(): void {
     this.refinementContextId = `refinement-${crypto.randomUUID()}`;
-    const resetGreeting: Message = {
-      role: 'agent',
-      parts: [
-        {
-          text: 'Chat limpio (Asistente de Refinamiento). Entrégame una nueva idea de Historia de Usuario o Historia Habilitadora para comenzar.',
-        },
-      ],
-    };
-    this.refinementMessages$.next([resetGreeting]);
+    this.refinementMessages$.next([REFINEMENT_RESET_GREETING]);
   }
 
   public loadDashboardData(cell: string, sprint: string): void {
@@ -299,7 +243,7 @@ Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas l
   }
 
   public refineStoryInChat(storyId: string, title: string): void {
-    const prompt = `Asistente, quiero que analicemos y refinemos la Historia de Usuario: "${title}" (ID: ${storyId}). Ayúdame a revisar sus criterios de aceptación y calidad de documentación.`;
+    const prompt = buildRefinementPrompt(storyId, title);
     this.sendRefinementMessage(prompt);
   }
 
@@ -314,7 +258,7 @@ Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas l
         role: 'user',
         messageId: 'msg-audit-' + Date.now(),
         contextId,
-        parts: [{ text: `audita la calidad de (ID:${id})` }],
+        parts: [{ text: buildAuditPrompt(id) }],
       },
     };
     this.triggerImmediatePoll();
