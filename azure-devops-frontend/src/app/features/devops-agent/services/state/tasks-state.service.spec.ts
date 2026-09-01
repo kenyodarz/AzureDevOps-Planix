@@ -142,5 +142,13 @@ describe('GIVEN TasksStateService', () => {
       vi.advanceTimersByTime(POLLING_INTERVAL_IDLE_MS);
       expect(mockApi.getTasks).toHaveBeenCalledTimes(3);
     });
+
+    it('THEN stopDynamicPolling cancels the polling pipeline and stops subsequent polls', () => {
+      service.stopDynamicPolling();
+
+      vi.advanceTimersByTime(POLLING_INTERVAL_IDLE_MS * 2);
+
+      expect(mockApi.getTasks).toHaveBeenCalledTimes(1);
+    });
   });
 });

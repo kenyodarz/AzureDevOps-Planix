@@ -86,15 +86,10 @@
 
 ## DP-06 — Intervalos de sondeo de tareas
 
-- **Estado:** 🟡 **PARCIAL (2026-08-31)** · **Bloqueaba:** Fase 02 · **Sigue abierta para:** Fase 06
-- **Respuesta del usuario:** *«Esta parte no era para actualizar el dashboard en vivo, pero no supe si hacerlo bien y me quedó esta deuda técnica.»* No se confirmaron los valores ni se definió un tope de reintentos.
-- **Acción aplicada (la acción por defecto, que conserva el comportamiento):** los valores se trasladaron **literalmente** a `core/config/app-tuning.ts` como `POLLING_INTERVAL_IDLE_MS = 30000`
-  y `POLLING_INTERVAL_ACTIVE_MS = 5000`, **sin modificarlos y sin añadir topes**.
-- **Pendiente para la Fase 06:** decidir si el sondeo debe rediseñarse (¿el tablero necesita actualización en vivo por SSE en lugar de sondeo de tareas?), si se define un tope de ciclos y si se corrige la fuga del `setTimeout` recursivo (D-15 / M-06).
-- **Evidencia original:** `services/devops-agent-state.service.ts:40` (`30000`), `:135` (`5000`),
-  `:330` (`30000`), `:341` (`5000 : 30000`).
-- **Pregunta original:** ¿`5 s` con tareas activas y `30 s` en reposo son valores acordados con negocio o son provisionales? ¿Debe existir un tope de reintentos? → **Provisionales; sin tope.**
-- **Impacto si se asume mal:** afecta carga sobre el BFF y consumo de batería del cliente.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fases 02 y 06
+- **Respuesta del usuario:** *«Esta parte no era para actualizar el dashboard en vivo, pero no supe si hacerlo bien y me quedó esta deuda técnica.»*
+- **Decisión adoptada:** Conservar los valores fijados en `core/config/app-tuning.ts` (`POLLING_INTERVAL_IDLE_MS = 30000` y `POLLING_INTERVAL_ACTIVE_MS = 5000`) sin modificarlos. En la Fase 06 se erradicó el `setTimeout` recursivo (D-15, M-06) sustituyéndolo por un pipeline declarativo RxJS (`timer`, `switchMap`, `takeUntil`, `Subject`) y gestión de ciclo de vida en `TasksStateService`.
+- **Implementación:** `services/state/tasks-state.service.ts` y `core/config/app-tuning.ts`.
 
 ---
 
@@ -156,3 +151,4 @@
 | **DP-05** | 2026-09-01 | BehaviorSubjects encapsulados en stores atómicos exponiendo Observables inmutables.                                               | Plan / Usuario |
 | **DP-08** | 2026-09-01 | Separar loading independiente por flujo en stores atómicos con agregador en fachada.                                              | Plan / Usuario |
 | **DP-10** | 2026-09-01 | Preservar reactividad y ciclo de repintado en modo zoneless respetando R-1 y R-3.                                                 | Plan / Usuario |
+| **DP-06** | 2026-09-01 | Conservar intervalos literales y migrar a pipeline declarativo RxJS con ciclo de vida seguro.                                     | Plan / Usuario |

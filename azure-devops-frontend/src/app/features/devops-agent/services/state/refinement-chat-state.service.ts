@@ -15,13 +15,13 @@ import {
   providedIn: 'root',
 })
 export class RefinementChatStateService {
-  public readonly messages: Observable<Message[]> = this.refinementMessages;
   private readonly api = inject(DevopsAgentApiService);
   private readonly tasksState = inject(TasksStateService);
   private refinementContextId = `refinement-${crypto.randomUUID()}`;
   private readonly refinementMessages$ = new BehaviorSubject<Message[]>([REFINEMENT_GREETING]);
   public readonly refinementMessages: Observable<Message[]> =
     this.refinementMessages$.asObservable();
+  public readonly messages: Observable<Message[]> = this.refinementMessages;
   private readonly loading$ = new BehaviorSubject<boolean>(false);
   public readonly loading: Observable<boolean> = this.loading$.asObservable();
 
