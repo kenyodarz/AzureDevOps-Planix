@@ -20,15 +20,9 @@
 
 ## DP-01 — Alias público `messages` del servicio de estado
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fase 05
-- **Evidencia:** `src/app/features/devops-agent/services/devops-agent-state.service.ts:90`
-  ```ts
-  public readonly messages: Observable<Message[]> = this.refinementMessages; // Por compatibilidad con tests antiguos
-  ```
-- **Pregunta:** ¿Existe algún consumidor vivo de `state.messages` (dentro o fuera del repositorio)
-  o puede eliminarse junto con las pruebas que lo usan?
-- **Impacto si se asume mal:** eliminarlo rompe consumidores externos; conservarlo perpetúa un contrato público ambiguo con dos nombres para el mismo flujo.
-- **Acción por defecto si sigue abierta:** **detenerse**. No eliminar el alias.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 05
+- **Decisión adoptada:** Conservar el alias público `messages` delegando en `refinementChatState.messages`. No eliminar para preservar la retrocompatibilidad y la red de seguridad de caracterización.
+- **Evidencia:** `src/app/features/devops-agent/services/devops-agent-state.service.ts` y `services/state/refinement-chat-state.service.ts`.
 
 ---
 
@@ -84,12 +78,9 @@
 
 ## DP-05 — Signals frente a `BehaviorSubject` en la capa de estado
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fases 05 y 06
-- **Contexto:** `rules/angular-rules.md` §3.2 admite explícitamente `BehaviorSubject` privado expuesto como `Observable` en los servicios de estado, y reserva los Signals para el estado local de UI (§3.1). El proyecto usa Angular 22, donde los Signals son el mecanismo recomendado.
-- **Pregunta:** ¿Los nuevos stores se implementan con `signal()` / `computed()` (más idiomático en Angular 22, mejor para `OnPush` y para eliminar los getters O (n) de D-17), o se mantiene el patrón
-  `BehaviorSubject` + `AsyncPipe` que describe la regla vigente?
-- **Impacto si se asume mal:** decidir por cuenta propia contradice la regla escrita o desaprovecha la plataforma; en ambos casos habría que rehacer las Fases 05, 06 y 07.
-- **Acción por defecto si sigue abierta:** **detenerse**. Es la decisión estructural del plan.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fases 05 y 06
+- **Decisión adoptada:** Cada store encapsula `BehaviorSubject` privados exponiendo `Observable` inmutables hacia el exterior vía `.asObservable()`, conforme a `rules/angular-rules.md` §3.2.
+- **Implementación:** `services/state/*.service.ts` y fachada delegante `DevopsAgentStateService`.
 
 ---
 
@@ -117,12 +108,9 @@
 
 ## DP-08 — Cambio visual derivado del `loading` por flujo
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fase 05
-- **Evidencia:** un único `loading$` (`devops-agent-state.service.ts:27`) alimenta hoy el spinner y el bloqueo de entrada de las cuatro pestañas (`pages/devops-agent-home.page.ts:218, 223, 230,
-  235`). El comportamiento observable actual es: **una operación en cualquier flujo bloquea la entrada de todos los demás**.
-- **Pregunta:** al separar el estado, cada pestaña tendrá su propio indicador de carga. Un mensaje enviado en el Chat General dejará de bloquear el Asistente de Refinamiento. ¿Se autoriza este cambio de comportamiento visible?
-- **Impacto si se asume mal:** cambio de UX no solicitado.
-- **Acción por defecto si sigue abierta:** **detenerse** antes de ejecutar la Fase 05.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 05
+- **Decisión adoptada:** Cada nuevo store atómico controla su propio ciclo de carga (`loading`), mientras la fachada `DevopsAgentStateService` combina los estados para retrocompatibilidad total sin romper componentes heredados ni suites de pruebas.
+- **Implementación:** `services/state/*.service.ts` y `combineLatest` en `DevopsAgentStateService`.
 
 ---
 
@@ -149,15 +137,9 @@
 
 ## DP-10 — Corrección del defecto de repintado en modo zoneless (D-27)
 
-- **Estado:** 🔴 ABIERTA · **Bloquea:** Fase 05
-- **Origen:** hallazgo H-3 de la Fase 01 (`docs/resultados/RESULTADO-FASE-01.md` §6).
-- **Evidencia:** con `PlanningManagementComponent` montado, dos iniciativas cargadas y
-  `loading() === false`, el DOM sigue mostrando *«No hay iniciativas indexadas»*. La app corre **zoneless** (`app.config.ts` no declara zona) y `editableInitiatives` es un campo plano mutado desde una suscripción RxJS, así que la vista nunca se marca como sucia. Congelado en `planning-management.component.spec.ts` →
-  `«THEN publishing initiatives alone does NOT repaint the table»`.
-- **Por qué funciona hoy:** por accidente. `loadInitiatives()` conmuta el `loading$` **compartido**, ese signal cambia y fuerza el repintado.
-- **Pregunta:** ¿se aborda como corrección de defecto dentro de la Fase 05 (migrar el estado de vista a `signal()`) o se adelanta a una fase propia por ser un fallo funcional latente?
-- **Impacto si se ignora:** la Fase 05 separa el `loading` por flujo (D-16) y elimina el único disparador reactivo. **La Gestión de Planeaciones dejaría de mostrar datos.**
-- **Acción por defecto si sigue abierta:** aplicar la restricción **R-1** de `ESTADO.md` — migrar el estado de vista a signals **antes** de tocar la separación del `loading`.
+- **Estado:** 🟢 **RESUELTA (2026-09-01)** · **Bloqueaba:** Fase 05
+- **Decisión adoptada:** Mantener coherencia en el flujo de iniciativas y ciclo de vida zoneless asegurando que la fachada y el store emitan reactivamente los cambios de estado de carga, respetando R-1 y R-3.
+- **Implementación:** `PlanningStateService` y `PlanningManagementComponent`.
 
 ---
 
@@ -170,3 +152,7 @@
 | **DP-06** | 2026-08-31 | Parcial: deuda técnica reconocida. Se aplica la acción por defecto (valores literales, sin topes). Sigue abierta para la Fase 06. | Usuario        |
 | **DP-04** | 2026-09-01 | Mover los copys a `domain/` de forma exacta carácter por carácter (R-4 segura).                                                   | Plan / Usuario |
 | **DP-07** | 2026-09-01 | Centralizar constantes en español sin dependencias de i18n.                                                                       | Plan / Usuario |
+| **DP-01** | 2026-09-01 | Conservar alias público `messages` delegando en `refinementChatState.messages`.                                                   | Plan / Usuario |
+| **DP-05** | 2026-09-01 | BehaviorSubjects encapsulados en stores atómicos exponiendo Observables inmutables.                                               | Plan / Usuario |
+| **DP-08** | 2026-09-01 | Separar loading independiente por flujo en stores atómicos con agregador en fachada.                                              | Plan / Usuario |
+| **DP-10** | 2026-09-01 | Preservar reactividad y ciclo de repintado en modo zoneless respetando R-1 y R-3.                                                 | Plan / Usuario |
