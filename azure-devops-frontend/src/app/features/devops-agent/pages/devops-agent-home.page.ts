@@ -1,7 +1,14 @@
-import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
-import {AsyncPipe, CommonModule} from '@angular/common';
-import {DevopsAgentStateService} from '../services/devops-agent-state.service';
-import {Subscription} from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { DevopsAgentStateService } from '../services/devops-agent-state.service';
+import { Subscription } from 'rxjs';
 import {
   AgentInfoComponent,
   ChatInputComponent,
@@ -9,7 +16,7 @@ import {
   InfoCardsComponent,
   PlanningDashboardComponent,
   PlanningManagementComponent,
-  PlanningUploadComponent
+  PlanningUploadComponent,
 } from '../components';
 
 @Component({
@@ -24,15 +31,25 @@ import {
     ChatMessagesComponent,
     ChatInputComponent,
     PlanningManagementComponent,
-    PlanningDashboardComponent
+    PlanningDashboardComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="h-screen w-screen flex overflow-hidden bg-[#0b0f19] text-[#f3f4f6] bg-[radial-gradient(at_0%_0%,rgba(242,201,76,0.05)_0px,transparent_50%),radial-gradient(at_100%_100%,rgba(37,99,235,0.05)_0px,transparent_50%)] font-sans">
-
+    <div
+      class="h-screen w-screen flex overflow-hidden bg-[#0b0f19] text-[#f3f4f6] bg-[radial-gradient(at_0%_0%,rgba(242,201,76,0.05)_0px,transparent_50%),radial-gradient(at_100%_100%,rgba(37,99,235,0.05)_0px,transparent_50%)] font-sans"
+    >
       <!-- SIDEBAR -->
-      <aside class="w-[320px] bg-[rgba(17,24,39,0.7)] border-r border-[rgba(255,255,255,0.08)] backdrop-blur-md p-6 flex flex-col gap-6 overflow-y-auto h-full shrink-0">
-        <div class="logo-container flex items-center gap-3 pb-5 border-b border-[rgba(255,255,255,0.08)]">
-          <div class="logo-icon w-9 h-9 bg-[#f2c94c] rounded-lg flex items-center justify-center text-[#000] font-bold text-lg shadow-[0_0_15px_rgba(242,201,76,0.3)]">A</div>
+      <aside
+        class="w-[320px] bg-[rgba(17,24,39,0.7)] border-r border-[rgba(255,255,255,0.08)] backdrop-blur-md p-6 flex flex-col gap-6 overflow-y-auto h-full shrink-0"
+      >
+        <div
+          class="logo-container flex items-center gap-3 pb-5 border-b border-[rgba(255,255,255,0.08)]"
+        >
+          <div
+            class="logo-icon w-9 h-9 bg-[#f2c94c] rounded-lg flex items-center justify-center text-[#000] font-bold text-lg shadow-[0_0_15px_rgba(242,201,76,0.3)]"
+          >
+            A
+          </div>
           <div class="logo-text">
             <h1 class="font-semibold text-lg leading-none">DevOps Agent</h1>
             <span class="text-[0.75rem] text-[#9ca3af] uppercase font-medium">Bancolombia</span>
@@ -52,10 +69,13 @@ import {
         <!-- MONITOREO DE TAREAS EN BACKGROUND -->
         @if (activeTab === 'general' || activeTab === 'refinement' || activeTab === 'dashboard') {
           <div
-            class="border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] rounded-xl p-4 flex flex-col gap-3 shadow-md">
+            class="border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] rounded-xl p-4 flex flex-col gap-3 shadow-md"
+          >
             <button
               type="button"
-              [aria-label]="isTasksPanelOpen() ? 'Colapsar panel de tareas' : 'Expandir panel de tareas'"
+              [aria-label]="
+                isTasksPanelOpen() ? 'Colapsar panel de tareas' : 'Expandir panel de tareas'
+              "
               class="flex items-center justify-between bg-transparent border-none text-[#f3f4f6] font-bold text-xs cursor-pointer outline-none w-full p-0"
               (click)="toggleTasksPanel()"
             >
@@ -67,36 +87,48 @@ import {
                 }
                 Tareas del Agente ({{ (state.tasks | async)?.length || 0 }})
               </span>
-              <span class="pi text-xs text-[#9ca3af]"
-                    [ngClass]="isTasksPanelOpen() ? 'pi-chevron-down' : 'pi-chevron-right'"></span>
+              <span
+                class="pi text-xs text-[#9ca3af]"
+                [ngClass]="isTasksPanelOpen() ? 'pi-chevron-down' : 'pi-chevron-right'"
+              ></span>
             </button>
 
             @if (isTasksPanelOpen()) {
               <div class="flex flex-col gap-2 mt-2 transition-all">
                 @if (!(state.tasks | async) || (state.tasks | async)?.length === 0) {
-                  <span
-                    class="text-[0.7rem] text-[#9ca3af] italic">No hay tareas en ejecución.</span>
+                  <span class="text-[0.7rem] text-[#9ca3af] italic"
+                    >No hay tareas en ejecución.</span
+                  >
                 } @else {
                   <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
                     @for (task of state.tasks | async; track task.id) {
                       <div
-                        class="flex flex-col gap-1 bg-[#0b0f19] border border-[rgba(255,255,255,0.06)] rounded p-2.5 text-[0.7rem]">
+                        class="flex flex-col gap-1 bg-[#0b0f19] border border-[rgba(255,255,255,0.06)] rounded p-2.5 text-[0.7rem]"
+                      >
                         <div class="flex justify-between items-center">
-                          <span
-                            class="font-mono text-[#2563eb] truncate max-w-[130px] font-bold">#{{ task.id }}</span>
+                          <span class="font-mono text-[#2563eb] truncate max-w-[130px] font-bold"
+                            >#{{ task.id }}</span
+                          >
                           <div class="flex items-center gap-1.5">
                             <span
                               class="px-1.5 py-0.5 rounded text-[0.6rem] font-bold uppercase"
                               [ngClass]="{
-                                'bg-[rgba(16,185,129,0.1)] text-[#10b981]': task.status?.state === 'completed',
-                                'bg-[rgba(245,158,11,0.1)] text-[#f59e0b] animate-pulse': task.status?.state === 'working' || task.status?.state === 'submitted',
-                                'bg-[rgba(239,68,68,0.1)] text-[#ef4444]': task.status?.state === 'failed' || task.status?.state === 'canceled' || task.status?.state === 'rejected'
+                                'bg-[rgba(16,185,129,0.1)] text-[#10b981]':
+                                  task.status?.state === 'completed',
+                                'bg-[rgba(245,158,11,0.1)] text-[#f59e0b] animate-pulse':
+                                  task.status?.state === 'working' ||
+                                  task.status?.state === 'submitted',
+                                'bg-[rgba(239,68,68,0.1)] text-[#ef4444]':
+                                  task.status?.state === 'failed' ||
+                                  task.status?.state === 'canceled' ||
+                                  task.status?.state === 'rejected',
                               }"
                             >
                               {{ task.status?.state || 'Enviado' }}
                             </span>
-                            @if (task.status?.state === 'working' || task.status?.state
-                            === 'submitted') {
+                            @if (
+                              task.status?.state === 'working' || task.status?.state === 'submitted'
+                            ) {
                               <button
                                 [aria-label]="'Cancelar tarea ' + task.id"
                                 class="bg-transparent border-none text-[#ef4444] hover:text-[#dc2626] cursor-pointer p-0 flex items-center justify-center align-middle"
@@ -133,7 +165,9 @@ import {
 
       <!-- MAIN CHAT CONTAINER -->
       <main class="flex-1 flex flex-col h-full relative min-w-0 bg-transparent">
-        <header class="h-[70px] border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between px-8 bg-[rgba(11,15,25,0.5)] backdrop-blur-sm z-10 shrink-0">
+        <header
+          class="h-[70px] border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between px-8 bg-[rgba(11,15,25,0.5)] backdrop-blur-sm z-10 shrink-0"
+        >
           <div class="flex items-center gap-3">
             <div class="w-2 h-2 bg-[#10b981] rounded-full shadow-[0_0_8px_#10b981]"></div>
             <div>
@@ -145,6 +179,7 @@ import {
           <!-- TABS -->
           <div class="flex items-center gap-6 h-full">
             <button
+              aria-label="Pestaña Chat General"
               [class.text-[#f2c94c]]="activeTab === 'general'"
               [class.border-[#f2c94c]]="activeTab === 'general'"
               [class.text-[#9ca3af]]="activeTab !== 'general'"
@@ -155,6 +190,7 @@ import {
               Chat General
             </button>
             <button
+              aria-label="Pestaña Refinar HU o HA"
               [class.text-[#f2c94c]]="activeTab === 'refinement'"
               [class.border-[#f2c94c]]="activeTab === 'refinement'"
               [class.text-[#9ca3af]]="activeTab !== 'refinement'"
@@ -165,6 +201,7 @@ import {
               Refinar HU/HA
             </button>
             <button
+              aria-label="Pestaña Tablero de Calidad"
               [class.text-[#f2c94c]]="activeTab === 'dashboard'"
               [class.border-[#f2c94c]]="activeTab === 'dashboard'"
               [class.text-[#9ca3af]]="activeTab !== 'dashboard'"
@@ -175,6 +212,7 @@ import {
               Tablero de Calidad
             </button>
             <button
+              aria-label="Pestaña Gestión de Planeaciones"
               [class.text-[#f2c94c]]="activeTab === 'management'"
               [class.border-[#f2c94c]]="activeTab === 'management'"
               [class.text-[#9ca3af]]="activeTab !== 'management'"
@@ -189,6 +227,7 @@ import {
           <div>
             @if (activeTab === 'general') {
               <button
+                aria-label="Limpiar Chat General"
                 class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] text-[#9ca3af] hover:bg-[rgba(242,201,76,0.1)] hover:border-[#f2c94c] hover:text-[#f3f4f6] px-4 py-2 rounded-lg text-sm transition-all cursor-pointer"
                 (click)="state.clearGeneralChat()"
               >
@@ -196,6 +235,7 @@ import {
               </button>
             } @else if (activeTab === 'refinement') {
               <button
+                aria-label="Limpiar Asistente de Refinamiento"
                 class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] text-[#9ca3af] hover:bg-[rgba(242,201,76,0.1)] hover:border-[#f2c94c] hover:text-[#f3f4f6] px-4 py-2 rounded-lg text-sm transition-all cursor-pointer"
                 (click)="state.clearRefinementChat()"
               >
@@ -203,6 +243,7 @@ import {
               </button>
             } @else if (activeTab === 'management') {
               <button
+                aria-label="Actualizar iniciativas"
                 class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] text-[#9ca3af] hover:bg-[rgba(242,201,76,0.1)] hover:border-[#f2c94c] hover:text-[#f3f4f6] px-4 py-2 rounded-lg text-sm transition-all cursor-pointer flex items-center gap-2"
                 (click)="state.loadInitiatives()"
               >
@@ -242,12 +283,13 @@ import {
             class="flex-1 flex flex-col overflow-hidden min-h-0"
           ></app-planning-dashboard>
         } @else {
-          <app-planning-management class="flex-1 flex flex-col overflow-hidden min-h-0"></app-planning-management>
+          <app-planning-management
+            class="flex-1 flex flex-col overflow-hidden min-h-0"
+          ></app-planning-management>
         }
       </main>
-
     </div>
-  `
+  `,
 })
 export class DevopsAgentHomePage implements OnInit, OnDestroy {
   protected readonly state = inject(DevopsAgentStateService);
@@ -258,8 +300,10 @@ export class DevopsAgentHomePage implements OnInit, OnDestroy {
   private tasksSub: Subscription | null = null;
 
   public ngOnInit(): void {
-    this.tasksSub = this.state.tasks.subscribe(tasks => {
-      const active = (tasks || []).filter(t => t.status?.state === 'working' || t.status?.state === 'submitted');
+    this.tasksSub = this.state.tasks.subscribe((tasks) => {
+      const active = (tasks || []).filter(
+        (t) => t.status?.state === 'working' || t.status?.state === 'submitted',
+      );
       this.workingTasksCount.set(active.length);
     });
   }
@@ -271,6 +315,6 @@ export class DevopsAgentHomePage implements OnInit, OnDestroy {
   }
 
   protected toggleTasksPanel(): void {
-    this.isTasksPanelOpen.update(val => !val);
+    this.isTasksPanelOpen.update((val) => !val);
   }
 }

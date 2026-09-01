@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CHAT_SUGGESTIONS } from '../../domain';
@@ -7,12 +14,14 @@ import { CHAT_SUGGESTIONS } from '../../domain';
   selector: 'app-chat-input',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Sugerencias rápidas -->
     <div class="flex gap-3 p-3 px-8 overflow-x-auto w-full max-w-[1000px] mx-auto min-w-0">
       @for (sug of suggestions; track sug.label) {
         <button
           [disabled]="loading"
+          [attr.aria-label]="'Sugerencia: ' + sug.label"
           class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] text-[#9ca3af] px-4 py-2 rounded-full text-[0.8rem] cursor-pointer whitespace-nowrap hover:bg-[rgba(242,201,76,0.1)] hover:border-[#f2c94c] hover:text-[#f3f4f6] transition-all disabled:opacity-50"
           (click)="sendSuggestion(sug.value)"
         >
@@ -36,6 +45,7 @@ import { CHAT_SUGGESTIONS } from '../../domain';
           #textarea
         ></textarea>
         <button
+          aria-label="Enviar mensaje"
           [disabled]="loading || !messageText.trim()"
           class="bg-[#f2c94c] text-[#000] border-none px-6 py-3 rounded-lg font-semibold text-[0.9rem] cursor-pointer hover:bg-[#e0b83b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           (click)="submitMessage()"
@@ -46,13 +56,20 @@ import { CHAT_SUGGESTIONS } from '../../domain';
     </div>
   `,
 })
-export class ChatInputComponent {
+export class ChatInputComponent implements OnDestroy {
   @Input() loading = false;
   @Output() sendMessage = new EventEmitter<string>();
 
   protected messageText = '';
-
   protected readonly suggestions = CHAT_SUGGESTIONS;
+  private resetHeightTimer: ReturnType<typeof setTimeout> | null = null;
+
+  public ngOnDestroy(): void {
+    if (this.resetHeightTimer) {
+      clearTimeout(this.resetHeightTimer);
+      this.resetHeightTimer = null;
+    }
+  }
 
   protected onInput(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;
@@ -74,11 +91,15 @@ export class ChatInputComponent {
       this.messageText = '';
 
       // Reset height
-      setTimeout(() => {
+      if (this.resetHeightTimer) {
+        clearTimeout(this.resetHeightTimer);
+      }
+      this.resetHeightTimer = setTimeout(() => {
         const textareas = document.getElementsByTagName('textarea');
         if (textareas.length > 0) {
           textareas[0].style.height = '48px';
         }
+        this.resetHeightTimer = null;
       }, 0);
     }
   }

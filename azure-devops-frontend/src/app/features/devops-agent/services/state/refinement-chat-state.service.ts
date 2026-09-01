@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { NotificationService } from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
 import { TasksStateService } from './tasks-state.service';
 import { Message, SendMessageRequest, SendMessageResponse } from '../../models/devops-agent.model';
@@ -17,6 +18,7 @@ import {
 export class RefinementChatStateService {
   private readonly api = inject(DevopsAgentApiService);
   private readonly tasksState = inject(TasksStateService);
+  private readonly notifications = inject(NotificationService);
   private refinementContextId = `refinement-${crypto.randomUUID()}`;
   private readonly refinementMessages$ = new BehaviorSubject<Message[]>([REFINEMENT_GREETING]);
   public readonly refinementMessages: Observable<Message[]> =
@@ -73,8 +75,8 @@ export class RefinementChatStateService {
           };
           this.refinementMessages$.next([...this.refinementMessages$.value, agentMsg]);
         },
-        error: (error) => {
-          console.error(error);
+        error: () => {
+          this.notifications.error('Error al enviar mensaje de refinamiento');
           const errorMsg: Message = {
             role: 'agent',
             parts: [

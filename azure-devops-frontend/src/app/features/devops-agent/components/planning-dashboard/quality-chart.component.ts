@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardMetrics, DashboardStoryItem } from '../../models/devops-agent.model';
 import { COLOR_AMBER_MIN, COLOR_GREEN_MIN } from '../../domain/quality-score';
@@ -7,6 +7,7 @@ import { COLOR_AMBER_MIN, COLOR_GREEN_MIN } from '../../domain/quality-score';
   selector: 'app-quality-chart',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (metrics && items.length > 0) {
       <div

@@ -1,14 +1,28 @@
-import {Component, EventEmitter, Input, Output, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../../../core';
 
 @Component({
   selector: 'app-planning-upload',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex flex-col gap-3">
-      <h3 class="text-[0.9rem] text-[#f2c94c] font-semibold uppercase tracking-wider">Cargar Planeación</h3>
+    <div
+      class="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex flex-col gap-3"
+    >
+      <h3 class="text-[0.9rem] text-[#f2c94c] font-semibold uppercase tracking-wider">
+        Cargar Planeación
+      </h3>
       <p class="text-[0.75rem] text-[#9ca3af] -mt-1 leading-normal">
         Indexa un archivo Markdown en la base de datos vectorial para consultas semánticas.
       </p>
@@ -41,6 +55,7 @@ import {FormsModule} from '@angular/forms';
           <input
             accept=".md"
             id="planning-file"
+            aria-label="Seleccionar archivo Markdown"
             class="hidden"
             type="file"
             (change)="onFileSelected($event)"
@@ -48,8 +63,9 @@ import {FormsModule} from '@angular/forms';
         </div>
 
         <button
+          aria-label="Vectorizar contexto de planeación"
           [disabled]="uploading || !initiativeId || !title || !selectedFile"
-          [style.opacity]="(uploading || !initiativeId || !title || !selectedFile) ? 0.5 : 1"
+          [style.opacity]="uploading || !initiativeId || !title || !selectedFile ? 0.5 : 1"
           class="bg-[#f2c94c] text-[#000] border-none rounded-md py-2 font-semibold text-[0.8rem] cursor-pointer hover:bg-[#e0b83b] transition-colors"
           (click)="onVectorize()"
         >
@@ -57,18 +73,17 @@ import {FormsModule} from '@angular/forms';
         </button>
 
         @if (uploadStatus) {
-          <div
-            [style.color]="getStatusColor()"
-            class="text-[0.75rem] text-center mt-1 font-medium"
-          >
+          <div [style.color]="getStatusColor()" class="text-[0.75rem] text-center mt-1 font-medium">
             {{ uploadStatus }}
           </div>
         }
       </div>
     </div>
-  `
+  `,
 })
 export class PlanningUploadComponent {
+  private readonly notifications = inject(NotificationService);
+
   @Input() uploading = false;
   @Input() uploadStatus: string | null = null;
   @Output() upload = new EventEmitter<{ initiativeId: string; title: string; content: string }>();
@@ -94,22 +109,23 @@ export class PlanningUploadComponent {
       return;
     }
 
-    this.selectedFile.text()
-    .then((content) => {
-      this.upload.emit({
-        initiativeId: this.initiativeId.trim(),
-        title: this.title.trim(),
-        content
+    this.selectedFile
+      .text()
+      .then((content) => {
+        this.upload.emit({
+          initiativeId: this.initiativeId.trim(),
+          title: this.title.trim(),
+          content,
+        });
+        // Reset state on successful send request
+        this.initiativeId = '';
+        this.title = '';
+        this.selectedFile = null;
+        this.selectedFileName.set(null);
+      })
+      .catch(() => {
+        this.notifications.error('Error al leer el archivo seleccionado');
       });
-      // Reset state on successful send request
-      this.initiativeId = '';
-      this.title = '';
-      this.selectedFile = null;
-      this.selectedFileName.set(null);
-    })
-    .catch((err) => {
-      console.error('Error reading file:', err);
-    });
   }
 
   protected getStatusColor(): string {

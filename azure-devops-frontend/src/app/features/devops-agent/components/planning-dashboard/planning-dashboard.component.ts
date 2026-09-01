@@ -1,7 +1,16 @@
-import { Component, EventEmitter, inject, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  inject,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { NotificationService } from '../../../../core';
 import { DevopsAgentStateService } from '../../services/devops-agent-state.service';
 import { DashboardData, DashboardStoryItem } from '../../models/devops-agent.model';
 import {
@@ -29,6 +38,7 @@ import { StoryAuditModalComponent } from './story-audit-modal.component';
     QualityChartComponent,
     StoryAuditModalComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex-1 flex flex-col p-8 overflow-y-auto bg-transparent">
       <!-- HEADER & CONTROLS -->
@@ -158,7 +168,7 @@ import { StoryAuditModalComponent } from './story-audit-modal.component';
             (runDetailedAudit)="runDetailedAudit($event)"
           />
           <app-story-audit-modal
-            [visible]="isAuditModalOpen"
+            [(visible)]="isAuditModalOpen"
             [story]="selectedAuditStory"
             [loading]="
               selectedAuditStory ? !!detailedAudits[selectedAuditStory.id]?.loading : false
@@ -167,7 +177,6 @@ import { StoryAuditModalComponent } from './story-audit-modal.component';
             [auditContent]="
               selectedAuditStory ? detailedAudits[selectedAuditStory.id]?.content : undefined
             "
-            (close)="isAuditModalOpen = false"
             (runAudit)="runDetailedAudit($event)"
           />
         </div>
@@ -201,6 +210,7 @@ export class PlanningDashboardComponent implements OnInit, OnDestroy {
   @Output() refineRequested = new EventEmitter<void>();
 
   protected readonly state = inject(DevopsAgentStateService);
+  private readonly notifications = inject(NotificationService);
   protected dashboardData: DashboardData | null = null;
   protected errorMessage: string | null = null;
   protected cellInput: string = '';
@@ -294,8 +304,8 @@ export class PlanningDashboardComponent implements OnInit, OnDestroy {
         const replyText = response.message?.parts?.[0]?.text || 'No se obtuvo reporte.';
         this.detailedAudits[storyId] = { loading: false, content: replyText };
       },
-      error: (error) => {
-        console.error(error);
+      error: () => {
+        this.notifications.error('Error al procesar la auditoría');
         this.detailedAudits[storyId] = { loading: false, error: 'Error al procesar la auditoría.' };
       },
     });

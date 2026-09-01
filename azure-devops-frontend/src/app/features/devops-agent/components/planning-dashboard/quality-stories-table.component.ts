@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardStoryItem } from '../../models/devops-agent.model';
@@ -9,6 +9,7 @@ import { getQualityBgClass, getStateClass } from '../../domain/quality-score';
   selector: 'app-quality-stories-table',
   standalone: true,
   imports: [CommonModule, FormsModule, MarkdownParserPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[rgba(17,24,39,0.3)] backdrop-blur-md rounded-xl shadow-xl"

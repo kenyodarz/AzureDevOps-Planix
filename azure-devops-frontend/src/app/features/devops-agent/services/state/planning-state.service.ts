@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { extractErrorMessage, NotificationService } from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
 import { Initiative, PlanningChunk } from '../../models/devops-agent.model';
 
@@ -9,6 +10,7 @@ import { Initiative, PlanningChunk } from '../../models/devops-agent.model';
 })
 export class PlanningStateService {
   private readonly api = inject(DevopsAgentApiService);
+  private readonly notifications = inject(NotificationService);
 
   private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
   public readonly initiatives: Observable<Initiative[]> = this.initiatives$.asObservable();
@@ -31,8 +33,8 @@ export class PlanningStateService {
         next: (initiatives) => {
           this.initiatives$.next(initiatives);
         },
-        error: (error) => {
-          console.error('Error al cargar iniciativas', error);
+        error: () => {
+          this.notifications.error('Error al cargar iniciativas');
         },
       });
   }
@@ -49,9 +51,9 @@ export class PlanningStateService {
           this.uploadStatus$.next('¡Planeación indexada con éxito!');
           this.loadInitiatives();
         },
-        error: (error) => {
-          console.error(error);
-          const errText = error.error || error.message || 'Error desconocido';
+        error: (error: unknown) => {
+          this.notifications.error('Error al cargar planeación');
+          const errText = extractErrorMessage(error, 'Error desconocido');
           this.uploadStatus$.next(`Error: ${errText}`);
         },
       });
@@ -73,8 +75,8 @@ export class PlanningStateService {
           );
           this.initiatives$.next(updated);
         },
-        error: (error) => {
-          console.error(`Error al actualizar la célula de la iniciativa ${id}`, error);
+        error: () => {
+          this.notifications.error(`Error al actualizar la célula de la iniciativa ${id}`);
         },
       });
   }
@@ -89,8 +91,8 @@ export class PlanningStateService {
           const filtered = this.initiatives$.value.filter((init) => init.initiative_id !== id);
           this.initiatives$.next(filtered);
         },
-        error: (error) => {
-          console.error(`Error al eliminar la iniciativa ${id}`, error);
+        error: () => {
+          this.notifications.error(`Error al eliminar la iniciativa ${id}`);
         },
       });
   }

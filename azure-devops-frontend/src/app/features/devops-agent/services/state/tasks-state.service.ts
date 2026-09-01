@@ -1,15 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs';
 import { catchError, switchMap, takeUntil, tap } from 'rxjs/operators';
+import {
+  NotificationService,
+  POLLING_INTERVAL_ACTIVE_MS,
+  POLLING_INTERVAL_IDLE_MS,
+} from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
 import { AgentTask } from '../../models/devops-agent.model';
-import { POLLING_INTERVAL_ACTIVE_MS, POLLING_INTERVAL_IDLE_MS } from '../../../../core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TasksStateService {
   private readonly api = inject(DevopsAgentApiService);
+  private readonly notifications = inject(NotificationService);
 
   private pollingInterval = POLLING_INTERVAL_IDLE_MS;
   private readonly pollTrigger$ = new Subject<{ delay: number }>();
@@ -46,8 +51,8 @@ export class TasksStateService {
         next: (tasks) => {
           this.tasks$.next(tasks || []);
         },
-        error: (error) => {
-          console.error('Error al cargar tareas', error);
+        error: () => {
+          this.notifications.error('Error al cargar tareas');
         },
       });
   }
@@ -60,8 +65,8 @@ export class TasksStateService {
         next: () => {
           this.loadTasks();
         },
-        error: (error) => {
-          console.error(`Error al cancelar tarea ${id}`, error);
+        error: () => {
+          this.notifications.error(`Error al cancelar tarea ${id}`);
         },
       });
   }
@@ -77,8 +82,8 @@ export class TasksStateService {
                   this.tasks$.next(tasks || []);
                   this.adjustPollingInterval(tasks || []);
                 }),
-                catchError((error) => {
-                  console.error('Error al cargar tareas', error);
+                catchError(() => {
+                  this.notifications.error('Error al cargar tareas');
                   this.pollingInterval = POLLING_INTERVAL_IDLE_MS;
                   return of(null);
                 }),

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TECH_TAGS } from '../../domain';
 
@@ -6,6 +6,7 @@ import { TECH_TAGS } from '../../domain';
   selector: 'app-info-cards',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- PROTOCOLO -->
     <div

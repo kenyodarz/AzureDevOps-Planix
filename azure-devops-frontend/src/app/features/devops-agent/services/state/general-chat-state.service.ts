@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { NotificationService } from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
 import { Message, SendMessageRequest } from '../../models/devops-agent.model';
 import { GENERAL_GREETING, GENERAL_RESET_GREETING } from '../../domain';
@@ -10,6 +11,7 @@ import { GENERAL_GREETING, GENERAL_RESET_GREETING } from '../../domain';
 })
 export class GeneralChatStateService {
   private readonly api = inject(DevopsAgentApiService);
+  private readonly notifications = inject(NotificationService);
 
   private generalContextId = `general-${crypto.randomUUID()}`;
 
@@ -63,8 +65,8 @@ export class GeneralChatStateService {
           };
           this.generalMessages$.next([...this.generalMessages$.value, agentMsg]);
         },
-        error: (error) => {
-          console.error(error);
+        error: () => {
+          this.notifications.error('Error al enviar mensaje general');
           const errorMsg: Message = {
             role: 'agent',
             parts: [

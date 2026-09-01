@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { NotificationService } from '../../../core';
 import { DevopsAgentApiService } from './devops-agent-api.service';
 import {
   DashboardStateService,
@@ -19,34 +20,31 @@ import {
   SendMessageResponse,
 } from '../models/devops-agent.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class DevopsAgentStateService {
   private readonly api = inject(DevopsAgentApiService);
-  private readonly generalChatState = inject(GeneralChatStateService);
-  public readonly generalMessages: Observable<Message[]> = this.generalChatState.generalMessages;
-  private readonly refinementChatState = inject(RefinementChatStateService);
-  public readonly refinementMessages: Observable<Message[]> =
-    this.refinementChatState.refinementMessages;
-  public readonly messages: Observable<Message[]> = this.refinementChatState.messages;
-
+  private readonly notifications = inject(NotificationService);
+  private readonly general = inject(GeneralChatStateService);
+  public readonly generalMessages: Observable<Message[]> = this.general.generalMessages;
+  private readonly refinement = inject(RefinementChatStateService);
+  public readonly refinementMessages: Observable<Message[]> = this.refinement.refinementMessages;
+  public readonly messages: Observable<Message[]> = this.refinement.messages;
   private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
+
   public readonly agentCard: Observable<AgentCard | null> = this.agentCard$.asObservable();
-  private readonly planningState = inject(PlanningStateService);
-  public readonly uploading: Observable<boolean> = this.planningState.uploading;
-  public readonly uploadStatus: Observable<string | null> = this.planningState.uploadStatus;
-  public readonly initiatives: Observable<Initiative[]> = this.planningState.initiatives;
-  private readonly dashboardState = inject(DashboardStateService);
+  private readonly planning = inject(PlanningStateService);
+  public readonly uploading: Observable<boolean> = this.planning.uploading;
+  public readonly uploadStatus: Observable<string | null> = this.planning.uploadStatus;
+  public readonly initiatives: Observable<Initiative[]> = this.planning.initiatives;
+  private readonly dashboard = inject(DashboardStateService);
+  public readonly dashboardData: Observable<DashboardData | null> = this.dashboard.dashboardData;
+  public readonly dashboardError: Observable<string | null> = this.dashboard.dashboardError;
   public readonly loading: Observable<boolean> = combineLatest([
-    this.generalChatState.loading,
-    this.refinementChatState.loading,
-    this.planningState.loading,
-    this.dashboardState.loading,
+    this.general.loading,
+    this.refinement.loading,
+    this.planning.loading,
+    this.dashboard.loading,
   ]).pipe(map(([g, r, p, d]) => g || r || p || d));
-  public readonly dashboardData: Observable<DashboardData | null> =
-    this.dashboardState.dashboardData;
-  public readonly dashboardError: Observable<string | null> = this.dashboardState.dashboardError;
   private readonly tasksState = inject(TasksStateService);
   public readonly tasks: Observable<AgentTask[]> = this.tasksState.tasks;
 
@@ -56,11 +54,9 @@ export class DevopsAgentStateService {
 
   public loadAgentCard(): void {
     this.api.getAgentCard().subscribe({
-      next: (card) => {
-        this.agentCard$.next(card);
-      },
-      error: (error) => {
-        console.error('No se pudo obtener la tarjeta del agente', error);
+      next: (card) => this.agentCard$.next(card),
+      error: () => {
+        this.notifications.error('No se pudo obtener la tarjeta del agente');
         this.agentCard$.next({
           name: 'Agente Local',
           version: '1.0.0',
@@ -71,75 +67,57 @@ export class DevopsAgentStateService {
   }
 
   public clearGeneralChat(): void {
-    this.generalChatState.clearGeneralChat();
+    this.general.clearGeneralChat();
   }
-
   public triggerImmediatePoll(): void {
     this.tasksState.triggerImmediatePoll();
   }
-
-  public uploadPlanning(initiativeId: string, title: string, content: string): void {
-    this.planningState.uploadPlanning(initiativeId, title, content);
+  public uploadPlanning(id: string, title: string, content: string): void {
+    this.planning.uploadPlanning(id, title, content);
   }
-
   public sendGeneralMessage(text: string): void {
-    this.generalChatState.sendGeneralMessage(text);
+    this.general.sendGeneralMessage(text);
   }
-
   public sendRefinementMessage(text: string): void {
-    this.refinementChatState.sendRefinementMessage(text);
+    this.refinement.sendRefinementMessage(text);
   }
-
   public sendMessage(text: string): void {
-    this.refinementChatState.sendMessage(text);
+    this.refinement.sendMessage(text);
   }
-
   public loadInitiatives(): void {
-    this.planningState.loadInitiatives();
+    this.planning.loadInitiatives();
   }
-
   public updateInitiativeCell(id: string, cell: string): void {
-    this.planningState.updateInitiativeCell(id, cell);
+    this.planning.updateInitiativeCell(id, cell);
   }
-
   public deleteInitiative(id: string): void {
-    this.planningState.deleteInitiative(id);
+    this.planning.deleteInitiative(id);
   }
-
   public clearRefinementChat(): void {
-    this.refinementChatState.clearRefinementChat();
+    this.refinement.clearRefinementChat();
   }
-
   public loadDashboardData(cell: string, sprint: string): void {
-    this.dashboardState.loadDashboardData(cell, sprint);
+    this.dashboard.loadDashboardData(cell, sprint);
   }
-
   public loadTasks(): void {
     this.tasksState.loadTasks();
   }
-
   public clearChat(): void {
-    this.refinementChatState.clearChat();
+    this.refinement.clearChat();
   }
-
-  public refineStoryInChat(storyId: string, title: string): void {
-    this.refinementChatState.refineStoryInChat(storyId, title);
+  public refineStoryInChat(id: string, title: string): void {
+    this.refinement.refineStoryInChat(id, title);
   }
-
   public clearUploadStatus(): void {
-    this.planningState.clearUploadStatus();
+    this.planning.clearUploadStatus();
   }
-
   public auditStory(id: string): Observable<SendMessageResponse> {
-    return this.refinementChatState.auditStory(id);
+    return this.refinement.auditStory(id);
   }
-
   public cancelTask(id: string): void {
     this.tasksState.cancelTask(id);
   }
-
   public getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
-    return this.planningState.getInitiativeChunks(id);
+    return this.planning.getInitiativeChunks(id);
   }
 }
-

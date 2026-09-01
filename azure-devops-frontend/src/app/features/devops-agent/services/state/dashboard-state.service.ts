@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { extractErrorMessage, NotificationService } from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
 import { DashboardData } from '../../models/devops-agent.model';
 
@@ -8,6 +9,7 @@ import { DashboardData } from '../../models/devops-agent.model';
 })
 export class DashboardStateService {
   private readonly api = inject(DevopsAgentApiService);
+  private readonly notifications = inject(NotificationService);
 
   private readonly dashboardData$ = new BehaviorSubject<DashboardData | null>(null);
   public readonly dashboardData: Observable<DashboardData | null> =
@@ -21,7 +23,7 @@ export class DashboardStateService {
 
   public loadDashboardData(cell: string, sprint: string): void {
     if (!cell || !sprint) {
-      console.warn('Célula y Sprint son requeridos para cargar el dashboard.');
+      this.notifications.warn('Célula y Sprint son requeridos para cargar el dashboard.');
       return;
     }
     this.loading$.next(true);
@@ -36,12 +38,11 @@ export class DashboardStateService {
           this.dashboardData$.next(event.data);
         }
       },
-      error: (error) => {
-        console.error('Error al cargar datos del dashboard por SSE', error);
+      error: (error: unknown) => {
+        this.notifications.error('Error al cargar datos del dashboard por SSE');
         this.loading$.next(false);
         this.dashboardData$.next(null);
-        const errText =
-          error.error || error.message || 'Fallo en la comunicación con el agente o MCP.';
+        const errText = extractErrorMessage(error, 'Fallo en la comunicación con el agente o MCP.');
         this.dashboardError$.next(errText);
       },
       complete: () => {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardMetrics } from '../../models/devops-agent.model';
 import { getQualityBgClass, getQualityLabel } from '../../domain/quality-score';
@@ -7,6 +7,7 @@ import { getQualityBgClass, getQualityLabel } from '../../domain/quality-score';
   selector: 'app-quality-summary-cards',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (metrics) {
       <div class="grid grid-cols-1 md:grid-cols-4 gap-5">

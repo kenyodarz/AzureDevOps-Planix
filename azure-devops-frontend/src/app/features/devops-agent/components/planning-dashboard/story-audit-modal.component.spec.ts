@@ -37,18 +37,18 @@ describe('GIVEN StoryAuditModalComponent', () => {
       expect(text).toContain('Autenticación Biométrica');
     });
 
-    it('THEN emits close event when close button is clicked', () => {
+    it('THEN emits visibleChange event with false when close button is clicked', () => {
       component.visible = true;
       component.story = sampleStory;
       fixture.detectChanges();
 
-      let closed = false;
-      component.close.subscribe(() => (closed = true));
+      let visibleEmitted: boolean | null = null;
+      component.visibleChange.subscribe((val) => (visibleEmitted = val));
 
       const closeBtn: HTMLButtonElement = fixture.nativeElement.querySelector('button');
       closeBtn.click();
 
-      expect(closed).toBe(true);
+      expect(visibleEmitted).toBe(false);
     });
 
     it('THEN emits runAudit event when audit button is clicked', () => {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardStoryItem } from '../../models/devops-agent.model';
 import { MarkdownParserPipe } from '../../../../shared/pipes/markdown-parser.pipe';
@@ -7,6 +7,7 @@ import { MarkdownParserPipe } from '../../../../shared/pipes/markdown-parser.pip
   selector: 'app-story-audit-modal',
   standalone: true,
   imports: [CommonModule, MarkdownParserPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible && story) {
       <div
@@ -30,7 +31,7 @@ import { MarkdownParserPipe } from '../../../../shared/pipes/markdown-parser.pip
             </div>
             <button
               type="button"
-              (click)="close.emit()"
+              (click)="visibleChange.emit(false)"
               class="text-[#9ca3af] hover:text-[#f3f4f6] bg-transparent border-none p-1.5 rounded-lg cursor-pointer transition-colors"
             >
               <span class="pi pi-times text-base"></span>
@@ -85,7 +86,7 @@ import { MarkdownParserPipe } from '../../../../shared/pipes/markdown-parser.pip
           >
             <button
               type="button"
-              (click)="close.emit()"
+              (click)="visibleChange.emit(false)"
               class="px-4 py-2 bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[#f3f4f6] rounded-lg text-xs font-semibold cursor-pointer border border-[rgba(255,255,255,0.1)] transition-all"
             >
               Cerrar
@@ -103,6 +104,6 @@ export class StoryAuditModalComponent {
   @Input() loading: boolean = false;
   @Input() error: string | null | undefined = null;
 
-  @Output() close = new EventEmitter<void>();
-  @Output() runAudit = new EventEmitter<string>();
+  public readonly visibleChange = output<boolean>();
+  public readonly runAudit = output<string>();
 }

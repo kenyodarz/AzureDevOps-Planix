@@ -14,10 +14,7 @@ export interface AppNotification {
 /**
  * Canal único de notificaciones de la aplicación.
  *
- * En la Fase 02 el servicio **solo se registra y se alimenta desde el interceptor HTTP**. La
- * sustitución de los 10 `console.error` que hoy fallan en silencio (D-20) es responsabilidad de la
- * Fase 08: alterar ahora ese flujo cambiaría el comportamiento que congelan las 188 pruebas de
- * caracterización de la Fase 01.
+ * Se alimenta desde el interceptor HTTP y canaliza los errores de servicios y componentes (D-17, D-20).
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -29,7 +26,7 @@ export class NotificationService {
   /** Última notificación emitida, o `null` si aún no hubo ninguna. */
   public readonly last = computed<AppNotification | null>(() => {
     const all = this.notifications$();
-    return all.length > 0 ? all[all.length - 1] : null;
+    return all.at(-1) ?? null;
   });
 
   /** Publica una notificación de error. */

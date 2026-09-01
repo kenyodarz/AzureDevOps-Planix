@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_ENDPOINTS, dashboardStreamUrl } from '../../../../core';
+import { API_ENDPOINTS, dashboardStreamUrl, NotificationService } from '../../../../core';
 import { DashboardData, DashboardStreamEvent } from '../../models/devops-agent.model';
 
 /** Mensaje que se muestra si el evento `ERROR` del stream llega sin detalle. */
@@ -12,6 +12,7 @@ const DEFAULT_STREAM_ERROR_MESSAGE = 'Fallo en la comunicación con el agente o 
 })
 export class DashboardApiService {
   private readonly http = inject(HttpClient);
+  private readonly notifications = inject(NotificationService);
 
   getDashboardData(cell: string, sprint: string): Observable<DashboardData> {
     return this.http.get<DashboardData>(API_ENDPOINTS.DEVOPS_DASHBOARD, {
@@ -27,8 +28,8 @@ export class DashboardApiService {
       const handler = (event: MessageEvent<string>) => {
         try {
           observer.next(JSON.parse(event.data) as DashboardStreamEvent);
-        } catch (e) {
-          console.error('Error parsing SSE event data', e);
+        } catch {
+          this.notifications.error('Error al procesar evento SSE');
         }
       };
 
@@ -38,8 +39,8 @@ export class DashboardApiService {
           message =
             (JSON.parse(event.data) as DashboardStreamEvent)?.message ??
             DEFAULT_STREAM_ERROR_MESSAGE;
-        } catch (e) {
-          console.error('Error parsing SSE ERROR event data', e);
+        } catch {
+          this.notifications.error('Error al procesar evento SSE de error');
         }
         eventSource.close();
         observer.error(new Error(message));

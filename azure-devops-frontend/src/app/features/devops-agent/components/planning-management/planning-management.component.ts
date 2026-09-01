@@ -1,15 +1,24 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { NotificationService } from '../../../../core';
 import { DevopsAgentStateService } from '../../services/devops-agent-state.service';
 import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
 import { PlanningChunk } from '../../models/devops-agent.model';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-planning-management',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex-1 flex flex-col p-8 overflow-y-auto">
       <div class="mb-6">
@@ -207,6 +216,7 @@ import { Subscription } from 'rxjs';
 })
 export class PlanningManagementComponent implements OnInit, OnDestroy {
   protected readonly state = inject(DevopsAgentStateService);
+  private readonly notifications = inject(NotificationService);
   protected isModalOpen = signal<boolean>(false);
   private sub: Subscription | null = null;
   private loadingSub: Subscription | null = null;
@@ -275,8 +285,8 @@ export class PlanningManagementComponent implements OnInit, OnDestroy {
         this.selectedChunks.set(chunks || []);
         this.loadingChunks.set(false);
       },
-      error: (error) => {
-        console.error('Error al previsualizar iniciativa', error);
+      error: () => {
+        this.notifications.error('Error al previsualizar iniciativa');
         this.loadingChunks.set(false);
       },
     });

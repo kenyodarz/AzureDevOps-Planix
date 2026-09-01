@@ -6,6 +6,36 @@ import { NotificationService } from '../services/notification.service';
 /** Mensaje usado cuando la respuesta de error no trae ningún detalle legible. */
 export const DEFAULT_HTTP_ERROR_MESSAGE = 'Error desconocido';
 
+function extractStringProperty(obj: unknown, prop: string): string | null {
+  if (obj !== null && typeof obj === 'object') {
+    const val = (obj as Record<string, unknown>)[prop];
+    if (typeof val === 'string' && val.length > 0) {
+      return val;
+    }
+  }
+  return null;
+}
+
+function extractNestedErrorMessage(body: unknown): string | null {
+  if (body === null || typeof body !== 'object') {
+    return null;
+  }
+  const fromMessage = extractStringProperty(body, 'message');
+  if (fromMessage) {
+    return fromMessage;
+  }
+  const fromError = extractStringProperty(body, 'error');
+  if (fromError) {
+    return fromError;
+  }
+  const nestedError = (body as { error?: unknown }).error;
+  const fromNested = extractStringProperty(nestedError, 'message');
+  if (fromNested) {
+    return fromNested;
+  }
+  return extractStringProperty(body, 'detail');
+}
+
 /**
  * Extrae un mensaje legible de un `HttpErrorResponse` respetando **exactamente** la precedencia
  * que ya usa el código productivo (`error.error || error.message || <por defecto>`, ver
@@ -21,11 +51,9 @@ export function extractHttpErrorMessage(error: HttpErrorResponse): string {
     return body;
   }
 
-  if (body !== null && typeof body === 'object') {
-    const message = (body as { message?: unknown }).message;
-    if (typeof message === 'string' && message.length > 0) {
-      return message;
-    }
+  const nested = extractNestedErrorMessage(body);
+  if (nested) {
+    return nested;
   }
 
   if (typeof error.message === 'string' && error.message.length > 0) {
@@ -33,6 +61,31 @@ export function extractHttpErrorMessage(error: HttpErrorResponse): string {
   }
 
   return DEFAULT_HTTP_ERROR_MESSAGE;
+}
+
+/**
+ * Extrae un mensaje legible de cualquier tipo de error para evitar [object Object] (D-28).
+ */
+export function extractErrorMessage(
+  error: unknown,
+  defaultMsg: string = DEFAULT_HTTP_ERROR_MESSAGE,
+): string {
+  if (error instanceof HttpErrorResponse) {
+    return extractHttpErrorMessage(error);
+  }
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+  if (typeof error === 'string' && error.length > 0) {
+    return error;
+  }
+
+  const nested = extractNestedErrorMessage(error);
+  if (nested) {
+    return nested;
+  }
+
+  return defaultMsg;
 }
 
 /**
