@@ -3,12 +3,18 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { DevopsAgentApiService } from './devops-agent-api.service';
 import {
+  POLLING_INTERVAL_ACTIVE_MS,
+  POLLING_INTERVAL_IDLE_MS,
+} from '../../../core/config/app-tuning';
+import {
   AgentCard,
   AgentTask,
   DashboardData,
   Initiative,
   Message,
+  PlanningChunk,
   SendMessageRequest,
+  SendMessageResponse,
 } from '../models/devops-agent.model';
 
 @Injectable({
@@ -20,39 +26,17 @@ export class DevopsAgentStateService {
   private generalContextId = `general-${crypto.randomUUID()}`;
   private refinementContextId = `refinement-${crypto.randomUUID()}`;
 
-  public readonly refinementMessages: Observable<Message[]> =
-    this.refinementMessages$.asObservable();
-  private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
-  public readonly agentCard: Observable<AgentCard | null> = this.agentCard$.asObservable();
-  private readonly loading$ = new BehaviorSubject<boolean>(false);
-  public readonly loading: Observable<boolean> = this.loading$.asObservable();
-  private readonly uploading$ = new BehaviorSubject<boolean>(false);
-  public readonly uploading: Observable<boolean> = this.uploading$.asObservable();
-  private readonly uploadStatus$ = new BehaviorSubject<string | null>(null);
-  public readonly uploadStatus: Observable<string | null> = this.uploadStatus$.asObservable();
-  private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
-  public readonly initiatives: Observable<Initiative[]> = this.initiatives$.asObservable();
-  private readonly dashboardData$ = new BehaviorSubject<DashboardData | null>(null);
-  public readonly dashboardData: Observable<DashboardData | null> =
-    this.dashboardData$.asObservable();
-  private readonly dashboardError$ = new BehaviorSubject<string | null>(null);
-  private readonly tasks$ = new BehaviorSubject<AgentTask[]>([]);
-  private pollingInterval = 30000;
+  public readonly generalMessages: Observable<Message[]> = this.generalMessages$.asObservable();
   private pollingTimer: ReturnType<typeof setTimeout> | null = null;
-  // Estos dos Subject y los Observables que los exponen dependen de `generalGreeting` e
-  // `initialGreeting`, así que se declaran DESPUÉS de ellos. Los campos de una clase se inicializan
-  // en orden de declaración: usar uno antes de declararlo no es un aviso de estilo, lo deja en
-  private readonly generalGreeting: Message = {
-    role: 'agent',
-    parts: [
-      {
-        text: `### ¡Hola! Soy tu asistente y Scrum Master virtual de Bancolombia. 🤖
 
-Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas libres, pedir reportes, listados de DevOps, soporte general y más.`,
-      },
-    ],
-  };
-  private readonly refinementMessages$ = new BehaviorSubject<Message[]>([this.initialGreeting]);
+  // ---------------------------------------------------------------------------------------------
+  // BLOQUE 1 — Constantes de saludo.
+  //
+  // Los campos de una clase se inicializan en orden de declaración: usar uno antes de declararlo
+  // no es un aviso de estilo, deja el valor en `undefined` y el `.asObservable()` revienta al
+  // construir el servicio (TS2729). Por eso los saludos van PRIMERO, los Subject que los consumen
+  // después (bloque 2) y los Observables públicos al final (bloque 3).
+  private pollingInterval = POLLING_INTERVAL_IDLE_MS;
   private readonly initialGreeting: Message = {
     role: 'agent',
     parts: [
@@ -85,10 +69,45 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
       },
     ],
   };
-  // `undefined` y el `.asObservable()` revienta al construir el servicio (TS2729).
+
+  // ---------------------------------------------------------------------------------------------
+  // BLOQUE 2 — Subjects privados. Consumen las constantes del bloque 1, por eso van después.
+  // ---------------------------------------------------------------------------------------------
+  private readonly generalGreeting: Message = {
+    role: 'agent',
+    parts: [
+      {
+        text: `### ¡Hola! Soy tu asistente y Scrum Master virtual de Bancolombia. 🤖
+
+Estoy aquí para ayudarte en el **Chat General**. Aquí puedes hacer consultas libres, pedir reportes, listados de DevOps, soporte general y más.`,
+      },
+    ],
+  };
   private readonly generalMessages$ = new BehaviorSubject<Message[]>([this.generalGreeting]);
+  // ---------------------------------------------------------------------------------------------
+  private readonly refinementMessages$ = new BehaviorSubject<Message[]>([this.initialGreeting]);
+  // ---------------------------------------------------------------------------------------------
+  public readonly refinementMessages: Observable<Message[]> =
+    this.refinementMessages$.asObservable();
+  private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
+  public readonly agentCard: Observable<AgentCard | null> = this.agentCard$.asObservable();
+  private readonly loading$ = new BehaviorSubject<boolean>(false);
+  public readonly loading: Observable<boolean> = this.loading$.asObservable();
+  private readonly uploading$ = new BehaviorSubject<boolean>(false);
+  public readonly uploading: Observable<boolean> = this.uploading$.asObservable();
+
+  // ---------------------------------------------------------------------------------------------
+  // BLOQUE 3 — Observables públicos. Consumen los Subjects del bloque 2, por eso van los últimos.
+  private readonly uploadStatus$ = new BehaviorSubject<string | null>(null);
+  public readonly uploadStatus: Observable<string | null> = this.uploadStatus$.asObservable();
   public readonly messages: Observable<Message[]> = this.refinementMessages; // Por compatibilidad con tests antiguos
-  public readonly generalMessages: Observable<Message[]> = this.generalMessages$.asObservable();
+  private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
+  public readonly initiatives: Observable<Initiative[]> = this.initiatives$.asObservable();
+  private readonly dashboardData$ = new BehaviorSubject<DashboardData | null>(null);
+  public readonly dashboardData: Observable<DashboardData | null> =
+    this.dashboardData$.asObservable();
+  private readonly dashboardError$ = new BehaviorSubject<string | null>(null);
+  private readonly tasks$ = new BehaviorSubject<AgentTask[]>([]);
   public readonly dashboardError: Observable<string | null> = this.dashboardError$.asObservable();
   public readonly tasks: Observable<AgentTask[]> = this.tasks$.asObservable();
 
@@ -132,7 +151,7 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
   }
 
   public triggerImmediatePoll(): void {
-    this.pollingInterval = 5000;
+    this.pollingInterval = POLLING_INTERVAL_ACTIVE_MS;
     this.startDynamicPolling();
   }
 
@@ -288,7 +307,7 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
     this.uploadStatus$.next(null);
   }
 
-  public auditStory(id: string): Observable<any> {
+  public auditStory(id: string): Observable<SendMessageResponse> {
     const contextId = `audit-story-${id}`;
     const payload: SendMessageRequest = {
       message: {
@@ -313,6 +332,10 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
     });
   }
 
+  public getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
+    return this.api.getInitiativeChunks(id);
+  }
+
   private scheduleNextPoll(): void {
     if (this.pollingTimer) {
       clearTimeout(this.pollingTimer);
@@ -327,18 +350,11 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
         },
         error: (error) => {
           console.error('Error al cargar tareas', error);
-          this.pollingInterval = 30000;
+          this.pollingInterval = POLLING_INTERVAL_IDLE_MS;
           this.scheduleNextPoll();
         },
       });
     }, this.pollingInterval);
-  }
-
-  private adjustPollingInterval(tasks: AgentTask[]): void {
-    const hasActiveTasks = tasks.some(
-      (task) => task.status?.state === 'submitted' || task.status?.state === 'working',
-    );
-    this.pollingInterval = hasActiveTasks ? 5000 : 30000;
   }
 
   private sendChatMessage(
@@ -399,7 +415,10 @@ En el panel lateral izquierdo tienes la opción de **Cargar Planeación**. Aquí
       });
   }
 
-  public getInitiativeChunks(id: string): Observable<any[]> {
-    return this.api.getInitiativeChunks(id);
+  private adjustPollingInterval(tasks: AgentTask[]): void {
+    const hasActiveTasks = tasks.some(
+      (task) => task.status?.state === 'submitted' || task.status?.state === 'working',
+    );
+    this.pollingInterval = hasActiveTasks ? POLLING_INTERVAL_ACTIVE_MS : POLLING_INTERVAL_IDLE_MS;
   }
 }

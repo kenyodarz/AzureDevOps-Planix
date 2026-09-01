@@ -108,3 +108,68 @@ export interface AgentTask {
   status?: AgentTaskStatus;
 }
 
+// -------------------------------------------------------------------------------------------------
+// Contratos derivados de `azure-devops-backend` / `azure-devops-agent` (FASE 02, DP-09).
+//
+// DP-09 se resolvió el 2026-08-31: el usuario autorizó derivar estos tres tipos de la fuente de
+// verdad del contrato en lugar de inventarlos. No se ha supuesto ningún campo.
+// -------------------------------------------------------------------------------------------------
+
+/**
+ * Respuesta de `POST /api/planning/ingest`.
+ *
+ * Fuente: `azure-devops-backend/.../api/Handler.java:60-69` → `{ "message": "..." }`.
+ */
+export interface IngestResponse {
+  message: string;
+}
+
+/**
+ * Fragmento vectorizado de una planeación, devuelto por
+ * `GET /api/planning/initiatives/{id}/chunks`.
+ *
+ * Fuente: `azure-devops-backend/.../api/dto/planning/PlanningChunkResponse.java:23-29`.
+ * Serializa en camelCase (a diferencia de `Initiative`, que llega en snake_case desde el adaptador
+ * pgvector).
+ */
+export interface PlanningChunk {
+  id: string;
+  initiativeId: string;
+  sectionName: string | null;
+  content: string;
+  metadata: Record<string, unknown>;
+}
+
+/**
+ * Error de una respuesta JSON-RPC 2.0.
+ *
+ * Fuente: `azure-devops-agent/.../api/JsonRpcResponse.java:13-20`.
+ */
+export interface JsonRpcError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+
+/**
+ * Envoltorio de respuesta JSON-RPC 2.0 del agente.
+ *
+ * Fuente: `azure-devops-agent/.../api/JsonRpcResponse.java:13-20` y
+ * `JsonRpcResponseFactory.java:74-82`.
+ */
+export interface JsonRpcResponse<TResult> {
+  jsonrpc: string;
+  id: string;
+  result?: TResult | null;
+  error?: JsonRpcError | null;
+}
+
+/**
+ * Respuesta del método JSON-RPC `tasks/cancel`.
+ *
+ * DP-03 (resuelta): viaja como `POST '/'`, no como ruta REST. El `result` envuelve la tarea ya
+ * cancelada.
+ */
+export type CancelTaskResponse = JsonRpcResponse<{ task: AgentTask }>;
+
+

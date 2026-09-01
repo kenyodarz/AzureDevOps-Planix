@@ -122,6 +122,56 @@ describe('GIVEN DevopsAgentApiService', () => {
     });
   });
 
+  describe('WHEN getDashboardData is called', () => {
+    it('THEN performs a GET request to /api/devops/dashboard with cell and sprint params', () => {
+      service.getDashboardData('EQU1096', 'Sprint 247').subscribe();
+
+      const req = httpMock.expectOne((candidate) => candidate.url === '/api/devops/dashboard');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('cell')).toBe('EQU1096');
+      expect(req.request.params.get('sprint')).toBe('Sprint 247');
+      req.flush({ metrics: {}, items: [] });
+    });
+  });
+
+  describe('WHEN getInitiativeChunks is called', () => {
+    it('THEN performs a GET request to /api/planning/initiatives/:id/chunks', () => {
+      service.getInitiativeChunks('i1').subscribe();
+
+      const req = httpMock.expectOne('/api/planning/initiatives/i1/chunks');
+      expect(req.request.method).toBe('GET');
+      req.flush([]);
+    });
+  });
+
+  describe('WHEN getTasks is called', () => {
+    it('THEN performs a GET request to /api/tasks', () => {
+      service.getTasks().subscribe();
+
+      const req = httpMock.expectOne('/api/tasks');
+      expect(req.request.method).toBe('GET');
+      req.flush([]);
+    });
+  });
+
+  describe('WHEN cancelTask is called', () => {
+    // D-08 / DP-03 - La cancelacion viaja como JSON-RPC contra la RUTA RAIZ, no contra
+    // /api/tasks/:id/cancel. Este caso congela ese contrato hasta que DP-03 se resuelva.
+    it('THEN posts a JSON-RPC envelope to the ROOT path (D-08, ver DP-03)', () => {
+      service.cancelTask('t1').subscribe();
+
+      const req = httpMock.expectOne('/');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({
+        jsonrpc: '2.0',
+        method: 'tasks/cancel',
+        params: { taskId: 't1' },
+        id: 'cancel-t1',
+      });
+      req.flush({});
+    });
+  });
+
   describe('WHEN getDashboardDataStream receives an ERROR event (D-40)', () => {
     let originalEventSource: typeof EventSource;
 
@@ -184,6 +234,79 @@ describe('GIVEN DevopsAgentApiService', () => {
 
       // THEN
       expect(events).toHaveLength(1);
+    });
+
+    it('THEN forwards BATCH_UPDATE events as data', () => {
+      // GIVEN
+      const events: unknown[] = [];
+      service
+        .getDashboardDataStream('EQU1096', 'Sprint 247')
+        .subscribe({ next: (event) => events.push(event) });
+
+      // WHEN
+      EventSourceStub.last?.emit(
+        'BATCH_UPDATE',
+        JSON.stringify({ event: 'BATCH_UPDATE', data: { metrics: {}, items: [] } }),
+      );
+
+      // THEN
+      expect(events).toHaveLength(1);
+    });
+
+    it('THEN encodes cell and sprint into the stream URL', () => {
+      // GIVEN / WHEN
+      service.getDashboardDataStream('Celula A&B', 'Sprint 247/1').subscribe();
+
+      // THEN
+      expect(EventSourceStub.last?.url).toBe(
+        '/api/devops/dashboard/stream?cell=Celula%20A%26B&sprint=Sprint%20247%2F1',
+      );
+    });
+
+    it('THEN ignores events whose payload is not valid JSON', () => {
+      // GIVEN
+      const events: unknown[] = [];
+      let failed = false;
+      service.getDashboardDataStream('EQU1096', 'Sprint 247').subscribe({
+        next: (event) => events.push(event),
+        error: () => (failed = true),
+      });
+
+      // WHEN
+      EventSourceStub.last?.emit('INITIAL', 'esto no es json');
+
+      // THEN
+      expect(events).toHaveLength(0);
+      expect(failed).toBe(false);
+    });
+
+    it('THEN completes silently when the transport itself errors', () => {
+      // GIVEN
+      let completed = false;
+      let failed = false;
+      service.getDashboardDataStream('EQU1096', 'Sprint 247').subscribe({
+        complete: () => (completed = true),
+        error: () => (failed = true),
+      });
+
+      // WHEN
+      EventSourceStub.last?.onerror?.();
+
+      // THEN
+      expect(completed).toBe(true);
+      expect(failed).toBe(false);
+      expect(EventSourceStub.last?.closed).toBe(true);
+    });
+
+    it('THEN closes the EventSource when the consumer unsubscribes', () => {
+      // GIVEN
+      const subscription = service.getDashboardDataStream('EQU1096', 'Sprint 247').subscribe();
+
+      // WHEN
+      subscription.unsubscribe();
+
+      // THEN
+      expect(EventSourceStub.last?.closed).toBe(true);
     });
   });
 });

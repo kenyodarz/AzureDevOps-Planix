@@ -2,12 +2,22 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  API_ENDPOINTS,
+  dashboardStreamUrl,
+  initiativeCellUrl,
+  initiativeChunksUrl,
+  initiativeUrl
+} from '../../../core/config/api-endpoints';
+import {
   AgentCard,
   AgentTask,
+  CancelTaskResponse,
   DashboardData,
   DashboardStreamEvent,
   IngestPayload,
+  IngestResponse,
   Initiative,
+  PlanningChunk,
   SendMessageRequest,
   SendMessageResponse
 } from '../models/devops-agent.model';
@@ -22,32 +32,32 @@ export class DevopsAgentApiService {
   private readonly http = inject(HttpClient);
 
   getAgentCard(): Observable<AgentCard> {
-    return this.http.get<AgentCard>('/.well-known/agent-card.json');
+    return this.http.get<AgentCard>(API_ENDPOINTS.AGENT_CARD);
   }
 
   sendMessage(payload: SendMessageRequest): Observable<SendMessageResponse> {
-    return this.http.post<SendMessageResponse>('/message:send', payload);
+    return this.http.post<SendMessageResponse>(API_ENDPOINTS.MESSAGE_SEND, payload);
   }
 
-  uploadPlanning(payload: IngestPayload): Observable<any> {
-    return this.http.post<any>('/api/planning/ingest', payload);
+  uploadPlanning(payload: IngestPayload): Observable<IngestResponse> {
+    return this.http.post<IngestResponse>(API_ENDPOINTS.PLANNING_INGEST, payload);
   }
 
   getInitiatives(): Observable<Initiative[]> {
-    return this.http.get<Initiative[]>('/api/planning/initiatives');
+    return this.http.get<Initiative[]>(API_ENDPOINTS.PLANNING_INITIATIVES);
   }
 
   deleteInitiative(id: string): Observable<void> {
-    return this.http.delete<void>(`/api/planning/initiatives/${id}`);
+    return this.http.delete<void>(initiativeUrl(id));
   }
 
   updateInitiativeCell(id: string, cell: string): Observable<void> {
-    return this.http.put<void>(`/api/planning/initiatives/${id}/cell`, { cell });
+    return this.http.put<void>(initiativeCellUrl(id), { cell });
   }
 
   getDashboardData(cell: string, sprint: string): Observable<DashboardData> {
     const params = { cell, sprint };
-    return this.http.get<DashboardData>('/api/devops/dashboard', { params });
+    return this.http.get<DashboardData>(API_ENDPOINTS.DEVOPS_DASHBOARD, { params });
   }
 
   /**
@@ -61,7 +71,7 @@ export class DevopsAgentApiService {
    */
   getDashboardDataStream(cell: string, sprint: string): Observable<DashboardStreamEvent> {
     return new Observable<DashboardStreamEvent>((observer) => {
-      const url = `/api/devops/dashboard/stream?cell=${encodeURIComponent(cell)}&sprint=${encodeURIComponent(sprint)}`;
+      const url = dashboardStreamUrl(cell, sprint);
       const eventSource = new EventSource(url);
 
       const handler = (event: MessageEvent<string>) => {
@@ -101,15 +111,15 @@ export class DevopsAgentApiService {
     });
   }
 
-  getInitiativeChunks(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`/api/planning/initiatives/${id}/chunks`);
+  getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
+    return this.http.get<PlanningChunk[]>(initiativeChunksUrl(id));
   }
 
   getTasks(): Observable<AgentTask[]> {
-    return this.http.get<AgentTask[]>('/api/tasks');
+    return this.http.get<AgentTask[]>(API_ENDPOINTS.TASKS);
   }
 
-  cancelTask(id: string): Observable<any> {
+  cancelTask(id: string): Observable<CancelTaskResponse> {
     const payload = {
       jsonrpc: '2.0',
       method: 'tasks/cancel',
@@ -118,6 +128,6 @@ export class DevopsAgentApiService {
       },
       id: `cancel-${id}`,
     };
-    return this.http.post<any>('/', payload);
+    return this.http.post<CancelTaskResponse>(API_ENDPOINTS.TASKS_CANCEL_RPC, payload);
   }
 }
