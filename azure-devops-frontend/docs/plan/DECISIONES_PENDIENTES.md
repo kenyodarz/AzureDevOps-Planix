@@ -1,7 +1,7 @@
 # DECISIONES PENDIENTES — azure-devops-frontend
 
 > **Regla que aplica:** `rules/angular-rules.md` §7 — Política de No-Asunción.
-> **Actualizado:** 2026-08-31
+> **Actualizado:** 2026-09-01
 >
 > Si una decisión que bloquea la fase en curso sigue 🔴 **ABIERTA**, el ejecutor debe
 > **detenerse y preguntar al usuario**. Está prohibido resolverla por criterio propio.
