@@ -157,6 +157,30 @@ class ClasspathPromptTemplateAdapterTest {
     }
 
     @Test
+    @DisplayName("Sustituye todos los marcadores de la plantilla PROGRAM_PLANNING")
+    void givenProgramPlanningVariables_whenRender_thenReplacesAllPlaceholders() {
+        // GIVEN
+        Map<String, Object> variables = Map.of(
+                "trimestre", "Q3-2026",
+                "objetivos", "Migración tecnológica y observabilidad",
+                "frentes", "Canales, Core",
+                "capacidadSprint", 34,
+                "specsContexto", "Detalle de especificaciones");
+
+        // WHEN
+        String result = adapter.render(PromptTemplateId.PROGRAM_PLANNING, variables);
+
+        // THEN
+        assertThat(result)
+                .contains("Q3-2026")
+                .contains("Migración tecnológica y observabilidad")
+                .contains("Canales, Core")
+                .contains("34")
+                .contains("Detalle de especificaciones")
+                .doesNotContain("{{");
+    }
+
+    @Test
     @DisplayName("Todas las plantillas del catálogo se resuelven")
     void givenEveryTemplateId_whenRender_thenNoneIsMissing() {
         // GIVEN
@@ -170,7 +194,10 @@ class ClasspathPromptTemplateAdapterTest {
                 PromptTemplateId.STORY_REFINEMENT,
                 Map.of(WORK_ITEM_ID, "1", ORGANIZATION, "org", PROJECT, "proj", AGILE_GUIDE, "guia"),
                 PromptTemplateId.QUALITY_AUDIT,
-                Map.of(WORK_ITEM_ID, "1", ORGANIZATION, "org", PROJECT, "proj", STANDARDS, "std"));
+                Map.of(WORK_ITEM_ID, "1", ORGANIZATION, "org", PROJECT, "proj", STANDARDS, "std"),
+                PromptTemplateId.PROGRAM_PLANNING,
+                Map.of("trimestre", "Q3", "objetivos", "obj", "frentes", "fr", "capacidadSprint",
+                        "30", "specsContexto", "specs"));
 
         // WHEN / THEN
         for (PromptTemplateId id : PromptTemplateId.values()) {

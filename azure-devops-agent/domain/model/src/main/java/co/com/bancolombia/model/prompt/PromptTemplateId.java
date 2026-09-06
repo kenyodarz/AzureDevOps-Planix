@@ -31,6 +31,12 @@ public enum PromptTemplateId {
     /**
      * Auditoría de calidad de una historia según los estándares corporativos.
      */
-    QUALITY_AUDIT
+    QUALITY_AUDIT,
+
+    /**
+     * Planeación macro y roadmap trimestral (Program Planning) con distribución de HUs y HAs por
+     * sprint.
+     */
+    PROGRAM_PLANNING
 }
 

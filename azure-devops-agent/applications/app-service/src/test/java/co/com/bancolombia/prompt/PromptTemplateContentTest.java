@@ -56,6 +56,12 @@ class PromptTemplateContentTest {
                     PROJECT, "proj", AGILE_GUIDE, "guia");
             case QUALITY_AUDIT -> Map.of(WORK_ITEM_ID, "12345", ORGANIZATION, "org",
                     PROJECT, "proj", STANDARDS, "estandares");
+            case PROGRAM_PLANNING -> Map.of(
+                    "trimestre", "Q3-2026",
+                    "objetivos", "Objetivos estratégicos",
+                    "frentes", "Canales, Core",
+                    "capacidadSprint", 34,
+                    "specsContexto", "Contexto de especificaciones");
         };
     }
 
@@ -132,6 +138,38 @@ class PromptTemplateContentTest {
                 variablesFor(PromptTemplateId.STORY_REFINEMENT));
 
         assertThat(rendered).contains("No incluyas ni evalúes el DoR");
+    }
+
+    @Test
+    @DisplayName("DP-PL-02: la plantilla de planeación delimita HU (hasta QA) y HA (HyMS)")
+    void givenProgramPlanningTemplate_whenRender_thenEnforcesBusinessRulesHyMSAndQA() {
+        String rendered = adapter.render(PromptTemplateId.PROGRAM_PLANNING,
+                variablesFor(PromptTemplateId.PROGRAM_PLANNING));
+
+        assertThat(rendered)
+                .contains("HU (Historia de Usuario - USER_STORY)")
+                .contains("pruebas en ambiente **QA**")
+                .contains("HA (Historia Habilitadora - ENABLER)")
+                .contains("marco corporativo HyMS")
+                .contains(
+                        "Jamás mezcles la construcción funcional con la habilitación operativa HyMS");
+    }
+
+    @Test
+    @DisplayName("DP-PL-04: la plantilla de planeación requiere Fibonacci y estructura Markdown de roadmap")
+    void givenProgramPlanningTemplate_whenRender_thenEnforcesFibonacciAndRoadmapStructure() {
+        String rendered = adapter.render(PromptTemplateId.PROGRAM_PLANNING,
+                variablesFor(PromptTemplateId.PROGRAM_PLANNING));
+
+        assertThat(rendered)
+                .contains("1, 2, 3, 5, 8 o 13")
+                .contains("# Roadmap de Planeación — Q3-2026")
+                .contains("## 1. Resumen Ejecutivo")
+                .contains("## 2. Tabla de Roadmap por Sprints")
+                .contains("## 3. Especificaciones y Entregables por Frente")
+                .contains(
+                        "| Sprint | Tipo | Título | Story Points | Frente | Dependencias | Descripción / Criterio de Entrega |")
+                .doesNotContain("{{");
     }
 }
 

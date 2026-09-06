@@ -46,7 +46,8 @@ public class ClasspathPromptTemplateAdapter implements PromptTemplatePort {
             PromptTemplateId.STRUCTURED_STORY, "fase2-historia-estructurada.md",
             PromptTemplateId.STORY_DIVISION, "division-historias.md",
             PromptTemplateId.STORY_REFINEMENT, "refinamiento-historia.md",
-            PromptTemplateId.QUALITY_AUDIT, "auditoria-calidad.md");
+            PromptTemplateId.QUALITY_AUDIT, "auditoria-calidad.md",
+            PromptTemplateId.PROGRAM_PLANNING, "program-planning-roadmap.md");
 
     private final Map<PromptTemplateId, String> templates;
     private final Map<String, Object> sharedFragments;
