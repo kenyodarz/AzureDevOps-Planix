@@ -19,9 +19,6 @@ import {
 export class PlanningStateService {
   private readonly api = inject(DevopsAgentApiService);
   private readonly notifications = inject(NotificationService);
-  public readonly availableSpecsSignal: Signal<string[]> = toSignal(this.availableSpecs, {
-    initialValue: [] as string[],
-  });
 
   private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
   public readonly initiatives: Observable<Initiative[]> = this.initiatives$.asObservable();
@@ -48,6 +45,9 @@ export class PlanningStateService {
 
   private readonly planningRunning$ = new BehaviorSubject<boolean>(false);
   public readonly planningRunning: Observable<boolean> = this.planningRunning$.asObservable();
+  public readonly availableSpecsSignal: Signal<string[]> = toSignal(this.availableSpecs, {
+    initialValue: [] as string[],
+  });
   public readonly selectedSpecSignal: Signal<SpecDocumentDTO | null> = toSignal(this.selectedSpec, {
     initialValue: null,
   });

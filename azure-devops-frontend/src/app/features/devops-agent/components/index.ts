@@ -6,3 +6,4 @@ export * from './chat-input/chat-input.component';
 export * from './planning-management/planning-management.component';
 export * from './planning-specs-explorer/planning-specs-explorer.component';
 export * from './planning-dashboard';
+export * from './program-planning-modal/program-planning-modal.component';
