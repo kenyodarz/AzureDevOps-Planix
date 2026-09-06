@@ -2,6 +2,11 @@ package co.com.bancolombia.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.model.a2a.Message;
@@ -11,10 +16,24 @@ import co.com.bancolombia.model.a2a.SendMessageResponse;
 import co.com.bancolombia.model.a2a.Task;
 import co.com.bancolombia.model.a2a.TaskState;
 import co.com.bancolombia.model.a2a.TaskStatus;
+import co.com.bancolombia.model.agent.AgentIntent;
+import co.com.bancolombia.model.agent.IntentResolver;
+import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
+import co.com.bancolombia.model.chat.gateways.ChatGateway;
+import co.com.bancolombia.model.prompt.PromptTemplateId;
+import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.SpecDocument;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
+import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
+import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
+import co.com.bancolombia.usecase.planning.ProgramPlanningUseCase;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
@@ -315,5 +334,113 @@ class RouterRestTest {
                 .expectBody()
                 .jsonPath("$.protocolVersion").isEqualTo("1.0")
                 .jsonPath("$.name").isEqualTo("Financial Consumer Agent");
+    }
+
+    @Test
+    @DisplayName("GIVEN comando de planeación /plan Q3-2026 WHEN se envía vía JSON-RPC "
+            + "THEN retorna 200 COMPLETED con tabla Markdown respetando DP-PL-02 y persiste spec maestro")
+    void givenPlanningRequest_whenPostCommand_thenReturnsRoadmapMarkdown() {
+        // GIVEN: Puertos de infraestructura simulados para el caso de uso real de planeación
+        SpecStoragePort specStoragePort = mock(SpecStoragePort.class);
+        PromptTemplatePort promptTemplatePort = mock(PromptTemplatePort.class);
+        ChatGateway chatGateway = mock(ChatGateway.class);
+        AgentResponseGateway agentResponseGateway = mock(AgentResponseGateway.class);
+
+        SpecDocument specCanales = new SpecDocument("frente_canales.md",
+                "# Especificación de Canales\n- Funcionalidades móviles prioritarias",
+                "/specs/frente_canales.md");
+        when(specStoragePort.getSpec("frente_canales.md")).thenReturn(Mono.just(specCanales));
+        when(specStoragePort.saveSpec(eq("ideas_planning_q3_2026.md"), anyString()))
+                .thenReturn(Mono.empty());
+        when(promptTemplatePort.render(eq(PromptTemplateId.PROGRAM_PLANNING), anyMap()))
+                .thenReturn("Prompt Renderizado para Q3-2026");
+
+        String simulatedLlmRoadmap = """
+                # Roadmap de Planeación — Q3-2026
+                
+                ## 1. Resumen Ejecutivo
+                Plan de entregas estratégicas de Canales para Q3-2026.
+                
+                ## 2. Tabla de Roadmap por Sprints
+                | Sprint | Tipo | Título | Story Points | Frente | Dependencias | Descripción / Criterio de Entrega |
+                |:------:|:----:|:-------|:------------:|:-------|:-------------|:----------------------------------|
+                | 1 | HU | Login Biométrico Móvil | 5 | Canales | Ninguna | Construcción y certificación en QA |
+                | 1 | HA | Habilitación Pipeline HyMS | 3 | Canales | Ninguna | Runbook de despliegue y pase formal HyMS |
+                | 2 | HU | Consulta de Saldos | 8 | Canales | Login Biométrico Móvil | Pruebas integradas en QA |
+                
+                ## 3. Especificaciones y Entregables por Frente
+                - `ideas_planning_q3_2026.md`
+                - `frente_canales.md`
+                """;
+        when(chatGateway.sendMessage(anyString(), anyString()))
+                .thenReturn(Mono.just(simulatedLlmRoadmap));
+
+        // Construir la cadena de casos de uso y handlers reales del dominio
+        ProgramPlanningUseCase programPlanningUseCase = new ProgramPlanningUseCase(
+                promptTemplatePort, specStoragePort, chatGateway);
+        ProgramPlanningFlowHandler planningHandler = new ProgramPlanningFlowHandler(
+                programPlanningUseCase);
+
+        List<ChatFlowHandler> handlers = new ArrayList<>();
+        handlers.add(planningHandler);
+        for (AgentIntent intent : AgentIntent.values()) {
+            if (intent != AgentIntent.PROGRAM_PLANNING) {
+                ChatFlowHandler dummy = mock(ChatFlowHandler.class);
+                when(dummy.supports()).thenReturn(intent);
+                handlers.add(dummy);
+            }
+        }
+        ChatFlowDispatcher dispatcher = new ChatFlowDispatcher(handlers);
+        AgentChatUseCase realAgentChatUseCase = new AgentChatUseCase(
+                agentResponseGateway, taskStoreGateway, new IntentResolver(), dispatcher);
+
+        // Delegar la ejecución del mock inyectado al caso de uso real
+        when(agentChatUseCase.chatAndRespond(any(SendMessageRequest.class)))
+                .thenAnswer(invocation -> realAgentChatUseCase.chatAndRespond(
+                        invocation.getArgument(0)));
+
+        Map<String, Object> jsonRpcRequest = Map.of(
+                "jsonrpc", "2.0",
+                "id", "req-plan-q3",
+                "method", "message/send",
+                "params", Map.of(
+                        "message", Map.of(
+                                "role", "user",
+                                "parts",
+                                List.of(Map.of("text", "/plan Q3-2026 6 sprints 34 sp [Canales]")),
+                                "messageId", "msg-plan-001",
+                                "contextId", "ctx-plan-q3")));
+
+        // WHEN & THEN: Enviar petición JSON-RPC al entry-point y verificar respuesta E2E
+        webTestClient.post()
+                .uri(JSON_RPC_ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(jsonRpcRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.jsonrpc").isEqualTo("2.0")
+                .jsonPath("$.id").isEqualTo("req-plan-q3")
+                .jsonPath("$.result.task.status.state").isEqualTo("completed")
+                .jsonPath("$.result.message.parts[0].text").value(text -> {
+                    String body = String.valueOf(text);
+                    assertThat(body)
+                            .contains("# Roadmap de Planeación — Q3-2026")
+                            .contains("## Resumen Ejecutivo")
+                            .contains("Plan de entregas estratégicas de Canales para Q3-2026.")
+                            .contains("## Métricas del Plan")
+                            .contains("Total Story Points:** 16 pts")
+                            .contains("HUs hasta QA")
+                            .contains("HAs HyMS")
+                            .contains("ideas_planning_q3_2026.md")
+                            .contains("## Tabla de Asignaciones por Sprint")
+                            .contains("Login Biométrico Móvil")
+                            .contains("Habilitación Pipeline HyMS")
+                            .contains("Consulta de Saldos");
+                });
+
+        // THEN: Verificar persistencia documental del artefacto maestro de planeación
+        verify(specStoragePort).saveSpec(eq("ideas_planning_q3_2026.md"), anyString());
     }
 }
