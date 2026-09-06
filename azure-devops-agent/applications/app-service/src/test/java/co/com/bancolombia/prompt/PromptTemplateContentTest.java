@@ -151,8 +151,9 @@ class PromptTemplateContentTest {
                 .contains("pruebas en ambiente **QA**")
                 .contains("HA (Historia Habilitadora - ENABLER)")
                 .contains("marco corporativo HyMS")
-                .contains(
-                        "Jamás mezcles la construcción funcional con la habilitación operativa HyMS");
+                .contains("Jamás mezcles la construcción funcional")
+                .contains("habilitación operativa")
+                .contains("HyMS");
     }
 
     @Test

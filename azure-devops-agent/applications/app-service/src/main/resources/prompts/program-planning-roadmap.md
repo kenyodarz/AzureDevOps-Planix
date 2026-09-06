@@ -28,7 +28,8 @@ responsabilidades:
       (construcción de Runbook de operación, mesas de control, despliegue a producción y soporte
       post-producción inicial).
 3. **Separación Estricta:** Jamás mezcles la construcción funcional con la habilitación operativa
-   HyMS en una misma historia. Si una funcionalidad va a producción en el trimestre, debe existir su
+   HyMS
+   en una misma historia. Si una funcionalidad va a producción en el trimestre, debe existir su
    correspondiente HU (hasta QA) y su HA complementaria de habilitación/paso a producción HyMS.
 
 === REGLAS DE ESTIMACIÓN Y ROADMAP (DP-PL-04) ===
