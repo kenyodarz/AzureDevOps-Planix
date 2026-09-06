@@ -38,6 +38,8 @@ azure-devops-agent/docs/
 │   └── ESTADO.md                        <- Tablero vivo de avance (ÚNICA FUENTE DE VERDAD)
 ├── fases/
 │   └── FASE-01-modelos-y-puerto-spec-storage.md <- Fase activa lista para ejecutar
+├── prompts/
+│   └── PROMPT-FASE-01.md                <- Prompt para instruir la ejecución de la fase
 └── resultados/
     └── .gitkeep                         <- Resultados medidos de fases completadas
 ```
