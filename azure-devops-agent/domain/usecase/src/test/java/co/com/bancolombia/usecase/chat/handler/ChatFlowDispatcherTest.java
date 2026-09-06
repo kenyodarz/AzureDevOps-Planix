@@ -54,6 +54,19 @@ class ChatFlowDispatcherTest {
     }
 
     @Test
+    @DisplayName("Falla al construirse si falta el handler de PROGRAM_PLANNING")
+    void givenMissingProgramPlanningHandler_whenBuild_thenThrows() {
+        // GIVEN
+        List<ChatFlowHandler> incomplete = new ArrayList<>(allHandlers());
+        incomplete.removeIf(handler -> handler.supports() == AgentIntent.PROGRAM_PLANNING);
+
+        // WHEN / THEN
+        assertThatThrownBy(() -> new ChatFlowDispatcher(incomplete))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("PROGRAM_PLANNING");
+    }
+
+    @Test
     @DisplayName("Falla al construirse si hay dos handlers para la misma intención")
     void givenDuplicatedHandler_whenBuild_thenThrows() {
         // GIVEN

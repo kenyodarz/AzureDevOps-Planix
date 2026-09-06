@@ -29,8 +29,10 @@ import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.GeneralFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.PlanningDraftFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.QualityAuditFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.RefinementFlowHandler;
+import co.com.bancolombia.usecase.planning.ProgramPlanningUseCase;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,7 +122,7 @@ class AgentChatUseCaseCharacterizationTest {
     }
 
     /**
-     * Construye el dispatcher con los seis handlers reales apuntando a los mocks. Desde la Fase 04
+     * Construye el dispatcher con los siete handlers reales apuntando a los mocks. Desde la Fase 04
      * el caso de uso ya no conoce los puertos de cada flujo, solo el despachador.
      */
     private ChatFlowDispatcher buildDispatcher() {
@@ -133,7 +135,10 @@ class AgentChatUseCaseCharacterizationTest {
                 new RefinementFlowHandler(chatGateway, promptTemplatePort, scope, knowledge),
                 new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
                 new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
-                new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, specStoragePort)));
+                new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, specStoragePort),
+                new ProgramPlanningFlowHandler(
+                        new ProgramPlanningUseCase(promptTemplatePort, specStoragePort,
+                                chatGateway))));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -481,6 +486,36 @@ class AgentChatUseCaseCharacterizationTest {
 
         // THEN
         assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Flujo Program Planning
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    @DisplayName("Comando /plan o /roadmap enruta a ProgramPlanningFlowHandler")
+    void givenPlanningCommand_whenChatAndRespond_thenExecutesProgramPlanningFlow() {
+        // GIVEN
+        String planningMarkdown = "# Roadmap de Planeación — Q3-2026\n\n"
+                + "## Resumen Ejecutivo\n\nPlaneación ejecutiva.\n\n"
+                + "## Métricas del Plan\n\n- **Total Story Points:** 13 pts\n\n"
+                + "## Tabla de Asignaciones por Sprint\n\n"
+                + "| Sprint | Tipo | Título | Story Points | Frente | Dependencias | Criterio de Entrega |\n"
+                + "|:------:|:----:|:-------|:------------:|:-------|:-------------|:--------------------|\n"
+                + "| 1 | [HU] | Setup Inicial | 5 | Core | Ninguna | QA funcional |\n";
+        when(specStoragePort.getSpec(anyString()))
+                .thenReturn(Mono.just(new SpecDocument("ideas_planning_q3.md", "Specs previas",
+                        "/specs/ideas_planning_q3.md")));
+        when(promptTemplatePort.render(any(), anyMap())).thenReturn(RENDERED_PROMPT);
+        when(chatGateway.sendMessage(anyString(), any())).thenReturn(Mono.just(planningMarkdown));
+        when(specStoragePort.saveSpec(any(), any())).thenReturn(Mono.empty());
+
+        // WHEN
+        SendMessageResponse response = executeAndGet("/plan Q3-2026 6 sprints 34 sp", "plan-1");
+
+        // THEN
+        assertThat(response.getTask().getStatus().getState()).isEqualTo(TaskState.COMPLETED);
+        assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PROGRAM_PLANNING);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

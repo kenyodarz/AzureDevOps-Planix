@@ -14,7 +14,7 @@ import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
-import java.util.Arrays;
+import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
  * <p>Complementa a {@link UseCasesConfigTest}, que captura y descarta
  * {@code UnsatisfiedDependencyException} y por tanto no detecta un cableado roto.
  *
- * <p>Es la red de seguridad de las fases 04 y 05: el {@link ChatFlowDispatcher} valida la
+ * <p>Es la red de seguridad de las fases 04, 05 y 08: el {@link ChatFlowDispatcher} valida la
  * exhaustividad de los handlers al construirse, y {@link CorporateKnowledge} valida que los
  * recursos del classpath se hayan cargado. Si falta un handler o un {@code .md}, este test falla
  * en lugar de que lo descubra un usuario en producción.
@@ -38,25 +38,23 @@ import org.springframework.context.annotation.Import;
 class UseCasesConfigWiringTest {
 
     @Test
-    @DisplayName("El contexto arranca y publica el caso de uso con sus seis handlers")
+    @DisplayName("El contexto arranca y publica el caso de uso con sus siete handlers")
     void givenRealConfiguration_whenContextStarts_thenAllFlowBeansExist() {
         try (AnnotationConfigApplicationContext context =
                      new AnnotationConfigApplicationContext(WiringTestConfig.class)) {
 
-            // THEN: el caso de uso y el despachador existen
+            // THEN: el caso de uso, el despachador y el nuevo handler de planeación existen
             assertThat(context.getBean(AgentChatUseCase.class)).isNotNull();
             assertThat(context.getBean(ChatFlowDispatcher.class)).isNotNull();
+            assertThat(context.getBean(ProgramPlanningFlowHandler.class)).isNotNull();
 
-            // THEN: hay exactamente un handler por intención activa (PROGRAM_PLANNING se cablea en Fase 08)
+            // THEN: hay exactamente un handler por cada intención del dominio (exhaustividad total)
             Map<String, ChatFlowHandler> handlers =
                     context.getBeansOfType(ChatFlowHandler.class);
-            AgentIntent[] activeIntents = Arrays.stream(AgentIntent.values())
-                    .filter(intent -> intent != AgentIntent.PROGRAM_PLANNING)
-                    .toArray(AgentIntent[]::new);
-            assertThat(handlers).hasSize(activeIntents.length);
+            assertThat(handlers).hasSize(AgentIntent.values().length);
             assertThat(handlers.values())
                     .extracting(ChatFlowHandler::supports)
-                    .containsExactlyInAnyOrder(activeIntents);
+                    .containsExactlyInAnyOrder(AgentIntent.values());
         }
     }
 

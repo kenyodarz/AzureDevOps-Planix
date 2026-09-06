@@ -23,8 +23,10 @@ import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.GeneralFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.PlanningDraftFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.QualityAuditFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.RefinementFlowHandler;
+import co.com.bancolombia.usecase.planning.ProgramPlanningUseCase;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -107,7 +109,10 @@ class AgentChatUseCaseParsingTest {
                         new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
                         new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
                         new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
-                                specStoragePort))));
+                                specStoragePort),
+                        new ProgramPlanningFlowHandler(
+                                new ProgramPlanningUseCase(promptTemplatePort, specStoragePort,
+                                        chatGateway)))));
     }
 
     @Test

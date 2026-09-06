@@ -15,8 +15,10 @@ import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.GeneralFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.PlanningDraftFlowHandler;
+import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.QualityAuditFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.RefinementFlowHandler;
+import co.com.bancolombia.usecase.planning.ProgramPlanningUseCase;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,6 +114,12 @@ public class UseCasesConfig {
             PromptTemplatePort promptTemplatePort, SpecStoragePort specStoragePort) {
         return new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
                 specStoragePort);
+    }
+
+    @Bean
+    public ProgramPlanningFlowHandler programPlanningFlowHandler(
+            ProgramPlanningUseCase programPlanningUseCase) {
+        return new ProgramPlanningFlowHandler(programPlanningUseCase);
     }
 
     /**

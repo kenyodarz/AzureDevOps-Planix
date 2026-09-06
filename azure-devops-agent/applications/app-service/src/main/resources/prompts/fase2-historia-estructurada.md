@@ -21,8 +21,9 @@ de aceptación y tareas:
 2. **Historia Habilitadora (HA - ENABLER):**
     - **Alcance técnico u operativo:** Comprende setups técnicos previos de
       arquitectura/infraestructura, o la habilitación operativa formal bajo el **marco corporativo
-      HyMS** (construcción y validación de Runbook de operación, observabilidad y telemetría,
-      ciberseguridad, mesas de control y soporte post-producción inicial).
+      HyMS** (construcción y validación de Runbook de operación,
+      observabilidad y telemetría, ciberseguridad, mesas de control y soporte post-producción
+      inicial).
     - **Delimitación HyMS:** Si la HA corresponde a habilitación/paso a producción, todos los
       criterios de aceptación y tareas deben enfocarse exclusivamente en el cumplimiento riguroso de
       los artefactos y aprobaciones del marco HyMS.
