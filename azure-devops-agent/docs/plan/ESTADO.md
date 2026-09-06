@@ -4,7 +4,7 @@
 > Punto de entrada obligatorio antes de iniciar cualquier sesión de desarrollo o ejecutar código.
 >
 > **Última actualización:** 2026-09-06 · **Fase activa:**
-> `Fase 07 — Especialización de Prompts Story Creator con Regla HyMS`
+> `Fase 08 — Orquestación y Despacho del Harness`
 
 ---
 
@@ -18,8 +18,8 @@
 | **04** | Modelos de Dominio para Program Planning                       | `fases/FASE-04-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-04.md` | 🟢 **COMPLETADA** |   2026-09-06    |
 | **05** | Prompt Externalizado de Planeación (`roadmap`)                 | `fases/FASE-05-prompt-externalizado-planeacion.md` | `resultados/RESULTADO-FASE-05.md` | 🟢 **COMPLETADA** |   2026-09-06    |
 | **06** | Caso de Uso y Handler del Planner Agent                        | `fases/FASE-06-handler-planner-agent.md`           | `resultados/RESULTADO-FASE-06.md` | 🟢 **COMPLETADA** |   2026-09-06    |
-| **07** | Especialización de Prompts Story Creator con Regla HyMS        | `fases/FASE-07-prompts-story-creator-hyms.md`      | `resultados/RESULTADO-FASE-07.md` | 🟡 **PENDIENTE**  |        —        |
-| **08** | Orquestación y Despacho del Harness                            | `fases/FASE-08-orquestacion-despacho-harness.md`   | `resultados/RESULTADO-FASE-08.md` |  ⚪ NO GENERADA   |        —        |
+| **07** | Especialización de Prompts Story Creator con Regla HyMS        | `fases/FASE-07-prompts-story-creator-hyms.md`      | `resultados/RESULTADO-FASE-07.md` | 🟢 **COMPLETADA** |   2026-09-06    |
+| **08** | Orquestación y Despacho del Harness                            | `fases/FASE-08-orquestacion-despacho-harness.md`   | `resultados/RESULTADO-FASE-08.md` | 🟡 **PENDIENTE**  |        —        |
 | **09** | Validación E2E con Caso Real Q3-2026 y Cierre                  | `fases/FASE-09-validacion-e2e-cierre.md`           | `resultados/RESULTADO-FASE-09.md` |  ⚪ NO GENERADA   |        —        |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
@@ -28,13 +28,14 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 07 Lista para Ejecución:**
+> 🎯 **Fase 08 Lista para Ejecución:**
 >
 >
-Abrir [FASE-07-prompts-story-creator-hyms.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-07-prompts-story-creator-hyms.md)
-> y especializar las plantillas de prompt para Story Creator aplicando la regla rectora **DP-PL-02**
-> (separación de HUs funcionales hasta QA frente a HAs de habilitación y paso a producción HyMS) y
-> la inyección contextual de frentes (**DP-PL-03**).
+Abrir [FASE-08-orquestacion-despacho-harness.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-08-orquestacion-despacho-harness.md)
+> y ejecutar el cableado de `ProgramPlanningFlowHandler` en `UseCasesConfig`, eliminar el bypass de
+> exhaustividad
+> en `ChatFlowDispatcher` y certificar el despacho y la orquestación del flujo de planeación en el
+> harness.
  
 ---
 
@@ -55,7 +56,7 @@ Abrir [FASE-07-prompts-story-creator-hyms.md](file:///c:/Users/minaj/Work/GitHub
 
 | Métrica                                 | Baseline Actual | Meta del Plan | Estado Actual |
 |:----------------------------------------|:---------------:|:-------------:|:-------------:|
-| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 403 / 403  |
+| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 404 / 404  |
 | **Cobertura en `domain/model`**         |      99.7%      |  $\ge 90\%$   |   🟢 95.1%    |
 | **Cobertura en `domain/usecase`**       |      99.2%      |  $\ge 90\%$   |   🟢 92.3%    |
 | **Cobertura en `:spec-storage`**        |       N/A       |  $\ge 90\%$   |   🟢 92.0%    |
@@ -70,6 +71,7 @@ Abrir [FASE-07-prompts-story-creator-hyms.md](file:///c:/Users/minaj/Work/GitHub
 
 |     Fecha      | Evento                                                                                                                                                                                                                                                                                                                                                                                          |
 |:--------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-09-06** | Cierre exitoso de la Fase 07: especialización de la plantilla de prompt `fase2-historia-estructurada.md` con directivas corporativas de DP-PL-02 (HU hasta QA vs HA HyMS), delimitación taxativa de criterios de aceptación y tareas, y validación normativa en `PromptTemplateContentTest`. 404 pruebas (100% pasando), 100% test strength en `:app-service`. Se genera Fase 08.               |
 | **2026-09-06** | Cierre exitoso de la Fase 06: implementación de `ProgramPlanningUseCase` y `ProgramPlanningFlowHandler` en `domain/usecase`, integración de `SpecStoragePort`, `PromptTemplatePort` y `ChatGateway`, validación activa de DP-PL-02 y DP-PL-04, tolerancia a tablas complejas y 11 pruebas unitarias nuevas. 403 pruebas (100% pasando), 92.3% cobertura en `domain/usecase`. Se genera Fase 07. |
 | **2026-09-06** | Cierre exitoso de la Fase 05: externalización de la plantilla de prompt `program-planning-roadmap.md` bajo DP-PL-02 y DP-PL-04, adición de `PromptTemplateId.PROGRAM_PLANNING`, registro en `ClasspathPromptTemplateAdapter` y pruebas exhaustivas libres de placeholders residuales. 391 pruebas (100% pasando), 93.3% de cobertura en `:prompt-template`. Se genera Fase 06.                  |
 | **2026-09-06** | Cierre exitoso de la Fase 04: modelos de dominio inmutables para Program Planning (`ActivityType`, `SprintAllocation`, `ProgramPlanRequest`, `ProgramPlanResult`), `AgentIntent.PROGRAM_PLANNING` y resolución en `IntentResolver`. 389 pruebas (100% pasando), 95.1% de cobertura en `domain/model`. Se genera Fase 05.                                                                        |

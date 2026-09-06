@@ -157,6 +157,27 @@ class PromptTemplateContentTest {
     }
 
     @Test
+    @DisplayName("DP-PL-02: la plantilla estructurada delimita HU (hasta QA) y HA (HyMS y setups)")
+    void givenStructuredStoryTemplate_whenRender_thenEnforcesBusinessRulesHyMSAndQA() {
+        String rendered = adapter.render(PromptTemplateId.STRUCTURED_STORY,
+                variablesFor(PromptTemplateId.STRUCTURED_STORY));
+
+        assertThat(rendered)
+                .contains("DP-PL-02")
+                .contains("Historia de Usuario (HU - USER_STORY)")
+                .contains("pruebas integradas y certificación/aprobación en ambiente **QA**")
+                .contains("PROHIBICIÓN TAXATIVA")
+                .contains("despliegue a producción")
+                .contains("Historia Habilitadora (HA - ENABLER)")
+                .contains("marco corporativo HyMS")
+                .contains("Runbook de operación")
+                .contains("observabilidad y telemetría")
+                .contains("ciberseguridad")
+                .contains("Separación Estricta de Responsabilidades")
+                .doesNotContain("{{");
+    }
+
+    @Test
     @DisplayName("DP-PL-04: la plantilla de planeación requiere Fibonacci y estructura Markdown de roadmap")
     void givenProgramPlanningTemplate_whenRender_thenEnforcesFibonacciAndRoadmapStructure() {
         String rendered = adapter.render(PromptTemplateId.PROGRAM_PLANNING,
