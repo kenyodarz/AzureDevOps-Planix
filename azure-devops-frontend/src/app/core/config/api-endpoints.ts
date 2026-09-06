@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
   DEVOPS_DASHBOARD: `${BASE}/api/devops/dashboard`,
   DEVOPS_DASHBOARD_STREAM: `${BASE}/api/devops/dashboard/stream`,
   TASKS: `${BASE}/api/tasks`,
+  PLANNING_PROGRAM: `${BASE}/api/planning/program`,
+  PLANNING_SPECS: `${BASE}/api/planning/specs`,
   /**
    * DP-03 (resuelta 2026-08-31: «conservar la acción por defecto»): la cancelación de tareas viaja
    * como envoltorio JSON-RPC 2.0 contra la RAÍZ del BFF, no contra una ruta REST explícita.
@@ -36,6 +38,10 @@ export const initiativeCellUrl = (id: string): string => `${initiativeUrl(id)}/c
 
 /** URL de los fragmentos vectorizados: `/api/planning/initiatives/{id}/chunks`. */
 export const initiativeChunksUrl = (id: string): string => `${initiativeUrl(id)}/chunks`;
+
+/** URL de una especificación Markdown documental: `/api/planning/specs/{name}`. */
+export const specUrl = (name: string): string =>
+  `${API_ENDPOINTS.PLANNING_SPECS}/${encodeURIComponent(name)}`;
 
 /** URL del stream SSE del tablero, con `cell` y `sprint` ya codificados. */
 export const dashboardStreamUrl = (cell: string, sprint: string): string =>

@@ -172,4 +172,46 @@ export interface JsonRpcResponse<TResult> {
  */
 export type CancelTaskResponse = JsonRpcResponse<{ task: AgentTask }>;
 
+// -------------------------------------------------------------------------------------------------
+// Contratos para Program Planning y Especificaciones Documentales (FASE 01).
+// -------------------------------------------------------------------------------------------------
+
+/** Parámetros para iniciar la planeación de un programa trimestral. */
+export interface ProgramPlanRequestDTO {
+  readonly quarter: string;
+  readonly sprintCount: number;
+  readonly maxCapacityPerSprint: number;
+  readonly targetFronts: readonly string[];
+  readonly objectives: string;
+  readonly contextId?: string;
+}
+
+/** Respuesta inmediata (202 Accepted) tras encolar la planeación macro. */
+export interface ProgramPlanResponseDTO {
+  readonly summary: string;
+  readonly quarter: string;
+  readonly sprintCount: number;
+  readonly maxCapacityPerSprint: number;
+  readonly targetFronts: readonly string[];
+  readonly contextId: string;
+  readonly task: AgentTask;
+}
+
+/** Listado de especificaciones documentales disponibles en el repositorio. */
+export interface SpecListDTO {
+  readonly specs: readonly string[];
+  readonly total: number;
+}
+
+/** Contenido íntegro de una especificación Markdown. */
+export interface SpecDocumentDTO {
+  readonly name: string;
+  readonly content: string;
+  readonly path: string;
+}
+
+/** Vista activa en el centro unificado de planeación. */
+export type PlanningActiveView = 'explorer' | 'new-plan' | 'legacy-vector';
+
+
 

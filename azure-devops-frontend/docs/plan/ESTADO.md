@@ -2,20 +2,20 @@
 
 > **ÚNICA FUENTE DE VERDAD DEL PROGRESO.**  
 > Punto de entrada obligatorio al iniciar cualquier sesión de desarrollo o antes de ejecutar código.  
-> 
-> **Última actualización:** 2026-09-06 · **Fase activa:** `Fase 01 — Contratos de API, Modelos y DTOs`
+>
+> **Última actualización:** 2026-09-06 · **Fase activa:** `Fase 02 — Servicios de API y Gestión de Estado Reactivo`
 
 ---
 
 ## 1. Tablero de Fases
 
-| # | Fase | Archivo de Especificación | Resultado / Cierre | Estado | Fecha de Cierre |
-| :---: | :--- | :--- | :--- | :---: | :---: |
-| **01** | Contratos de API, Modelos y DTOs (`core/config` y `models`) | `fases/FASE-01-contratos-api-modelos-dtos.md` | `resultados/RESULTADO-FASE-01.md` | 🟡 **PENDIENTE** | — |
-| **02** | Servicios de API y Gestión de Estado Reactivo (`services/api` y `services/state`) | `fases/FASE-02-servicios-api-estado-reactivo.md` | `resultados/RESULTADO-FASE-02.md` | ⚪ NO GENERADA | — |
-| **03** | Visor y Explorador Documental de Specs (`components/planning-specs-explorer`) | `fases/FASE-03-visor-explorador-specs.md` | `resultados/RESULTADO-FASE-03.md` | ⚪ NO GENERADA | — |
-| **04** | Modal Lanzador de Program Planning (`components/program-planning-modal`) | `fases/FASE-04-modal-lanzador-planeacion.md` | `resultados/RESULTADO-FASE-04.md` | ⚪ NO GENERADA | — |
-| **05** | Integración en Página Principal, Navegación a Refinamiento y Cierre E2E | `fases/FASE-05-integracion-global-cierre-e2e.md` | `resultados/RESULTADO-FASE-05.md` | ⚪ NO GENERADA | — |
+|   #    | Fase                                                                              | Archivo de Especificación                        | Resultado / Cierre                |      Estado       | Fecha de Cierre |
+|:------:|:----------------------------------------------------------------------------------|:-------------------------------------------------|:----------------------------------|:-----------------:|:---------------:|
+| **01** | Contratos de API, Modelos y DTOs (`core/config` y `models`)                       | `fases/FASE-01-contratos-api-modelos-dtos.md`    | `resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-06    |
+| **02** | Servicios de API y Gestión de Estado Reactivo (`services/api` y `services/state`) | `fases/FASE-02-servicios-api-estado-reactivo.md` | `resultados/RESULTADO-FASE-02.md` | 🟡 **PENDIENTE**  |        —        |
+| **03** | Visor y Explorador Documental de Specs (`components/planning-specs-explorer`)     | `fases/FASE-03-visor-explorador-specs.md`        | `resultados/RESULTADO-FASE-03.md` |  ⚪ NO GENERADA   |        —        |
+| **04** | Modal Lanzador de Program Planning (`components/program-planning-modal`)          | `fases/FASE-04-modal-lanzador-planeacion.md`     | `resultados/RESULTADO-FASE-04.md` |  ⚪ NO GENERADA   |        —        |
+| **05** | Integración en Página Principal, Navegación a Refinamiento y Cierre E2E           | `fases/FASE-05-integracion-global-cierre-e2e.md` | `resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA   |        —        |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
 
@@ -23,8 +23,8 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 01 Lista para Ejecución:**  
-> Abrir `docs/fases/FASE-01-contratos-api-modelos-dtos.md` o ejecutar su prompt `docs/prompts/PROMPT-FASE-01.md` para registrar los endpoints en `api-endpoints.ts` y las interfaces DTO en `devops-agent.model.ts`.
+> 🎯 **Fase 02 Lista para Ejecución:**  
+> Abrir `docs/fases/FASE-02-servicios-api-estado-reactivo.md` o ejecutar su prompt `docs/prompts/PROMPT-FASE-02.md` para extender `PlanningApiService` con las llamadas a endpoints de Program Planning y Specs, y dotar a `PlanningStateService` de estado reactivo con Signals.
 
 ---
 
@@ -53,6 +53,7 @@
 
 ## 5. Bitácora del Plan
 
-| Fecha | Evento |
-| :---: | :--- |
-| **2026-09-06** | Inicialización del **Plan Maestro de Integración de Program Planning en el Frontend**. Resguardo del histórico de desacoplamiento en `docs/historico/plan_desacoplamiento_frontend/`. Fase 01 lista para ejecución. |
+|     Fecha      | Evento                                                                                                                                                                                                                                                                        |
+|:--------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-09-06** | Inicialización del **Plan Maestro de Integración de Program Planning en el Frontend**. Resguardo del histórico de desacoplamiento en `docs/historico/plan_desacoplamiento_frontend/`. Fase 01 lista para ejecución.                                                           |
+| **2026-09-06** | **Fase 01 COMPLETADA**: Contratos de API (`PLANNING_PROGRAM`, `PLANNING_SPECS`, `specUrl`) y DTOs inmutables (`ProgramPlanRequestDTO`, `ProgramPlanResponseDTO`, `SpecListDTO`, `SpecDocumentDTO`, `PlanningActiveView`) registrados y compilados limpiamente. Fase 02 lista. |
