@@ -33,3 +33,5 @@ include ':s3-repository'
 project(':s3-repository').projectDir = file('./infrastructure/driven-adapters/s3-repository')
 include ':report-storage-file'
 project(':report-storage-file').projectDir = file('./infrastructure/driven-adapters/report-storage-file')
+include ':spec-storage'
+project(':spec-storage').projectDir = file('./infrastructure/driven-adapters/spec-storage')

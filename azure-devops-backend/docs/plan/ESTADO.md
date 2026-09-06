@@ -4,7 +4,7 @@
 > Punto de entrada obligatorio al iniciar cualquier sesión de desarrollo o antes de ejecutar código.  
 >
 > **Última actualización:** 2026-09-06 · **Fase activa:**
-> `Fase 03 — Adaptador Concreto FileSystemSpecAdapter (infrastructure/driven-adapters)`
+> `Fase 04 — Casos de Uso de Gestión Documental y Planeación (domain/usecase)`
 
 ---
 
@@ -14,8 +14,8 @@
 |:------:|:------------------------------------------------------------------------------|:---------------------------------------------------|:----------------------------------|:-----------------:|:---------------:|
 | **01** | Modelos y Puerto de Almacenamiento Documental (`domain/model`)                | `fases/FASE-01-modelos-y-puerto-spec-storage.md`   | `resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-06    |
 | **02** | Modelos de Dominio para Program Planning (`domain/model`)                     | `fases/FASE-02-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-02.md` | 🟢 **COMPLETADA** |   2026-09-06    |
-| **03** | Adaptador Concreto `FileSystemSpecAdapter` (`infrastructure/driven-adapters`) | `fases/FASE-03-adaptador-filesystem-spec.md`       | `resultados/RESULTADO-FASE-03.md` | 🟡 **PENDIENTE**  |        —        |
-| **04** | Casos de Uso de Gestión Documental y Planeación (`domain/usecase`)            | `fases/FASE-04-casos-de-uso-planeacion.md`         | `resultados/RESULTADO-FASE-04.md` |  ⚪ NO GENERADA   |        —        |
+| **03** | Adaptador Concreto `FileSystemSpecAdapter` (`infrastructure/driven-adapters`) | `fases/FASE-03-adaptador-filesystem-spec.md`       | `resultados/RESULTADO-FASE-03.md` | 🟢 **COMPLETADA** |   2026-09-06    |
+| **04** | Casos de Uso de Gestión Documental y Planeación (`domain/usecase`)            | `fases/FASE-04-casos-de-uso-planeacion.md`         | `resultados/RESULTADO-FASE-04.md` | 🟡 **PENDIENTE**  |        —        |
 | **05** | Entry-Points Reactivos y DTOs (`infrastructure/entry-points/reactive-web`)    | `fases/FASE-05-entry-points-reactivos-planning.md` | `resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA   |        —        |
 | **06** | Cableado en Spring (`app-service`), Validación E2E y Cierre Definitivo        | `fases/FASE-06-cableado-spring-validacion-e2e.md`  | `resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA   |        —        |
 
@@ -25,14 +25,18 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 03 Lista para Ejecución:**
+> 🎯 **Fase 04 Lista para Ejecución:**
 >
-Abrir [FASE-03-adaptador-filesystem-spec.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-backend/docs/fases/FASE-03-adaptador-filesystem-spec.md)
-o ejecutar su
-prompt [PROMPT-FASE-03.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-backend/docs/prompts/PROMPT-FASE-03.md)
-para implementar `FileSystemSpecAdapter` en `infrastructure/driven-adapters/spec-storage`
-garantizando lectura/escritura reactiva sin bloqueos (NIO.2), protección contra Directory Traversal
-y pruebas unitarias con mock/archivos temporales.
+>
+Abrir [FASE-04-casos-de-uso-planeacion.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-backend/docs/fases/FASE-04-casos-de-uso-planeacion.md)
+> o ejecutar su
+> prompt [PROMPT-FASE-04.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-backend/docs/prompts/PROMPT-FASE-04.md)
+> para implementar en `domain/usecase`:
+> 1. `GetSpecDocumentUseCase` y `ListAvailableSpecsUseCase` (consumiendo `SpecStoragePort`).
+> 2. `TriggerProgramPlanningUseCase` (validando `ProgramPlanRequest`, componiendo el
+     `ProgramPlanningCommand` canónico
+>    y despachándolo hacia el agente autónomo mediante `TrackAgentTaskUseCase`).
+> 3. Suite de pruebas unitarias puras con Mockito alcanzando $\ge 90\%$ de cobertura.
 
 ---
 
@@ -52,10 +56,11 @@ y pruebas unitarias con mock/archivos temporales.
 
 | Métrica                                                        | Baseline Inicial | Meta del Plan |        Estado Actual         |
 |:---------------------------------------------------------------|:----------------:|:-------------:|:----------------------------:|
-| **Tests Unitarios Pasando**                                    |       238        | 100% pasando  |         🟢 358 / 358         |
+| **Tests Unitarios Pasando**                                    |       238        | 100% pasando  |         🟢 376 / 376         |
 | **Cobertura en `domain/model`**                                |      94.8%       |  $\ge 90\%$   |           🟢 98.6%           |
 | **Cobertura en `model.spec`**                                  |       N/A        |  $\ge 90\%$   |           🟢 100%            |
 | **Cobertura en `model.planning`**                              |       N/A        |  $\ge 90\%$   |           🟢 100%            |
+| **Cobertura en `:spec-storage`**                               |       N/A        |  $\ge 90\%$   |           🟢 98.0%           |
 | **Cobertura en `domain/usecase`**                              |      98.9%       |  $\ge 90\%$   |           🟢 98.9%           |
 | **Violaciones de Arquitectura (ArchUnit / validateStructure)** |        0         |       0       |             🟢 0             |
 | **Estado del Build (`./gradlew test`)**                        |        OK        |      OK       | 🟢 Limpio (BUILD SUCCESSFUL) |
@@ -64,8 +69,9 @@ y pruebas unitarias con mock/archivos temporales.
 
 ## 5. Bitácora del Plan
 
-|     Fecha      | Evento                                                                                                                                                                                                                                                                                                                          |
-|:--------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **2026-09-06** | Cierre exitoso de la **Fase 02**: Modelos inmutables de Program Planning (`ActivityType`, `SprintAllocation`, `ProgramPlanRequest`, `ProgramPlanResult`, `ProgramPlanningCommand`) en `domain/model` con 111 pruebas unitarias y 100% de cobertura. Suite total sube a 358 tests pasando al 100%. Activación de la **Fase 03**. |
-| **2026-09-06** | Cierre exitoso de la **Fase 01**: Modelos y puerto documental (`SpecDocument`, `SpecNotFoundException`, `SpecStoragePort`) incorporados en `domain/model` con 9 pruebas unitarias y 100% de cobertura. Suite total sube a 247 tests pasando al 100%. Activación de la **Fase 02**.                                              |
-| **2026-09-06** | Inicialización del Plan Maestro de Integración de Program Planning y Almacenamiento Documental en el BFF (`azure-devops-backend`). Resguardo histórico del plan anterior en `docs/historico/plan_refactorizacion_bff/`. Fase 01 lista para ejecución.                                                                           |
+|     Fecha      | Evento                                                                                                                                                                                                                                                                                                                             |
+|:--------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-09-06** | Cierre exitoso de la **Fase 03**: Submódulo `:spec-storage` y adaptador reactivo `FileSystemSpecAdapter` con operaciones no bloqueantes (`Schedulers.boundedElastic()`), protección contra Path Traversal y 18 pruebas unitarias pasando al 100% con 98% de cobertura. Suite total sube a 376 tests. Activación de la **Fase 04**. |
+| **2026-09-06** | Cierre exitoso de la **Fase 02**: Modelos inmutables de Program Planning (`ActivityType`, `SprintAllocation`, `ProgramPlanRequest`, `ProgramPlanResult`, `ProgramPlanningCommand`) en `domain/model` con 111 pruebas unitarias y 100% de cobertura. Suite total sube a 358 tests pasando al 100%. Activación de la **Fase 03**.    |
+| **2026-09-06** | Cierre exitoso de la **Fase 01**: Modelos y puerto documental (`SpecDocument`, `SpecNotFoundException`, `SpecStoragePort`) incorporados en `domain/model` con 9 pruebas unitarias y 100% de cobertura. Suite total sube a 247 tests pasando al 100%. Activación de la **Fase 02**.                                                 |
+| **2026-09-06** | Inicialización del Plan Maestro de Integración de Program Planning y Almacenamiento Documental en el BFF (`azure-devops-backend`). Resguardo histórico del plan anterior en `docs/historico/plan_refactorizacion_bff/`. Fase 01 lista para ejecución.                                                                              |
