@@ -3,24 +3,24 @@
 > **ÚNICA FUENTE DE VERDAD DEL PROGRESO.**  
 > Punto de entrada obligatorio antes de iniciar cualquier sesión de desarrollo o ejecutar código.
 >
-> **Última actualización:** 2026-09-05 · **Fase activa:**
-> `Fase 01 — Modelos y Puerto de Almacenamiento Documental`
+> **Última actualización:** 2026-09-06 · **Fase activa:**
+> `Fase 02 — Adaptador FileSystemSpecAdapter (infrastructure)`
 
 ---
 
 ## 1. Tablero de Fases
 
-|   #    | Fase                                                           | Archivo de Especificación                          | Resultado / Cierre                |      Estado      | Fecha de Cierre |
-|:------:|:---------------------------------------------------------------|:---------------------------------------------------|:----------------------------------|:----------------:|:---------------:|
-| **01** | Modelos y Puerto de Almacenamiento Documental (`domain/model`) | `fases/FASE-01-modelos-y-puerto-spec-storage.md`   | `resultados/RESULTADO-FASE-01.md` | 🟡 **PENDIENTE** |        —        |
-| **02** | Adaptador `FileSystemSpecAdapter` (`infrastructure`)           | `fases/FASE-02-adaptador-filesystem-spec.md`       | `resultados/RESULTADO-FASE-02.md` |  ⚪ NO GENERADA  |        —        |
-| **03** | Migración de `PlanningDraftFlowHandler` a `SpecStoragePort`    | `fases/FASE-03-migracion-draft-handler.md`         | `resultados/RESULTADO-FASE-03.md` |  ⚪ NO GENERADA  |        —        |
-| **04** | Modelos de Dominio para Program Planning                       | `fases/FASE-04-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-04.md` |  ⚪ NO GENERADA  |        —        |
-| **05** | Prompt Externalizado de Planeación (`roadmap`)                 | `fases/FASE-05-prompt-externalizado-planeacion.md` | `resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA  |        —        |
-| **06** | Caso de Uso y Handler del Planner Agent                        | `fases/FASE-06-handler-planner-agent.md`           | `resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA  |        —        |
-| **07** | Especialización de Prompts Story Creator con Regla HyMS        | `fases/FASE-07-prompts-story-creator-hyms.md`      | `resultados/RESULTADO-FASE-07.md` |  ⚪ NO GENERADA  |        —        |
-| **08** | Orquestación y Despacho del Harness                            | `fases/FASE-08-orquestacion-despacho-harness.md`   | `resultados/RESULTADO-FASE-08.md` |  ⚪ NO GENERADA  |        —        |
-| **09** | Validación E2E con Caso Real Q3-2026 y Cierre                  | `fases/FASE-09-validacion-e2e-cierre.md`           | `resultados/RESULTADO-FASE-09.md` |  ⚪ NO GENERADA  |        —        |
+|   #    | Fase                                                           | Archivo de Especificación                          | Resultado / Cierre                |      Estado       | Fecha de Cierre |
+|:------:|:---------------------------------------------------------------|:---------------------------------------------------|:----------------------------------|:-----------------:|:---------------:|
+| **01** | Modelos y Puerto de Almacenamiento Documental (`domain/model`) | `fases/FASE-01-modelos-y-puerto-spec-storage.md`   | `resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-06    |
+| **02** | Adaptador `FileSystemSpecAdapter` (`infrastructure`)           | `fases/FASE-02-adaptador-filesystem-spec.md`       | `resultados/RESULTADO-FASE-02.md` | 🟡 **PENDIENTE**  |        —        |
+| **03** | Migración de `PlanningDraftFlowHandler` a `SpecStoragePort`    | `fases/FASE-03-migracion-draft-handler.md`         | `resultados/RESULTADO-FASE-03.md` |  ⚪ NO GENERADA   |        —        |
+| **04** | Modelos de Dominio para Program Planning                       | `fases/FASE-04-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-04.md` |  ⚪ NO GENERADA   |        —        |
+| **05** | Prompt Externalizado de Planeación (`roadmap`)                 | `fases/FASE-05-prompt-externalizado-planeacion.md` | `resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA   |        —        |
+| **06** | Caso de Uso y Handler del Planner Agent                        | `fases/FASE-06-handler-planner-agent.md`           | `resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA   |        —        |
+| **07** | Especialización de Prompts Story Creator con Regla HyMS        | `fases/FASE-07-prompts-story-creator-hyms.md`      | `resultados/RESULTADO-FASE-07.md` |  ⚪ NO GENERADA   |        —        |
+| **08** | Orquestación y Despacho del Harness                            | `fases/FASE-08-orquestacion-despacho-harness.md`   | `resultados/RESULTADO-FASE-08.md` |  ⚪ NO GENERADA   |        —        |
+| **09** | Validación E2E con Caso Real Q3-2026 y Cierre                  | `fases/FASE-09-validacion-e2e-cierre.md`           | `resultados/RESULTADO-FASE-09.md` |  ⚪ NO GENERADA   |        —        |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
 
@@ -28,11 +28,13 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 01 Lista para Ejecución:**  
+> 🎯 **Fase 02 Lista para Ejecución:**
 >
-Abrir [FASE-01-modelos-y-puerto-spec-storage.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-01-modelos-y-puerto-spec-storage.md)
-y ejecutar las instrucciones para crear `SpecDocument`, `SpecStoragePort` y `SpecNotFoundException`
-en `domain/model` con sus respectivas pruebas unitarias.
+Abrir [FASE-02-adaptador-filesystem-spec.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-02-adaptador-filesystem-spec.md)
+y ejecutar las instrucciones para crear el adaptador `FileSystemSpecAdapter` en
+`infrastructure/driven-adapters`
+implementando `SpecStoragePort` con lectura y escritura de archivos Markdown y su suite de tests
+reactivos.
 
 ---
 
@@ -53,8 +55,8 @@ en `domain/model` con sus respectivas pruebas unitarias.
 
 | Métrica                                 | Baseline Actual | Meta del Plan | Estado Actual |
 |:----------------------------------------|:---------------:|:-------------:|:-------------:|
-| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 305 / 305  |
-| **Cobertura en `domain/model`**         |      99.7%      |  $\ge 90\%$   |   🟢 99.7%    |
+| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 314 / 314  |
+| **Cobertura en `domain/model`**         |      99.7%      |  $\ge 90\%$   |   🟢 93.2%    |
 | **Cobertura en `domain/usecase`**       |      99.2%      |  $\ge 90\%$   |   🟢 99.2%    |
 | **Violaciones ArchUnit**                |        0        |     **0**     |     🟢 0      |
 | **Clases con $> 300$ líneas de código** |        0        |     **0**     |     🟢 0      |
@@ -65,4 +67,5 @@ en `domain/model` con sus respectivas pruebas unitarias.
 
 |     Fecha      | Evento                                                                                                                                                                                                                                  |
 |:--------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-09-06** | Cierre exitoso de la Fase 01: creación de `SpecDocument`, `SpecNotFoundException` y `SpecStoragePort` en `domain/model` con 100% de cobertura y 9 pruebas nuevas (314 totales). Se genera la especificación y prompt de la Fase 02.     |
 | **2026-09-05** | Inicialización del Plan Maestro del Harness de Agentes (9 fases atómicas). Resguardo histórico del plan anterior en `docs/historico/` y estandarización del repositorio maestro de plantillas en `docs/`. Fase 01 lista para ejecución. |
