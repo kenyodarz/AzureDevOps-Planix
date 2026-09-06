@@ -2,7 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { PlanningApiService } from './planning-api.service';
-import { IngestPayload, Initiative, PlanningChunk } from '../../models/devops-agent.model';
+import {
+  IngestPayload,
+  Initiative,
+  PlanningChunk,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
+  SpecDocumentDTO,
+  SpecListDTO,
+} from '../../models/devops-agent.model';
 
 describe('GIVEN PlanningApiService', () => {
   let service: PlanningApiService;
@@ -95,6 +103,79 @@ describe('GIVEN PlanningApiService', () => {
       const req = httpMock.expectOne('/api/planning/initiatives/i1/chunks');
       expect(req.request.method).toBe('GET');
       req.flush(mockChunks);
+    });
+  });
+
+  describe('WHEN triggerProgramPlanning is called', () => {
+    it('THEN performs a POST request to /api/planning/program', () => {
+      const request: ProgramPlanRequestDTO = {
+        quarter: 'Q3',
+        sprintCount: 6,
+        maxCapacityPerSprint: 45,
+        targetFronts: ['Canales', 'Core'],
+        objectives: 'Objetivos Q3',
+      };
+
+      const mockResponse: ProgramPlanResponseDTO = {
+        summary: 'Plan encolado',
+        quarter: 'Q3',
+        sprintCount: 6,
+        maxCapacityPerSprint: 45,
+        targetFronts: ['Canales', 'Core'],
+        contextId: 'ctx-123',
+        task: {
+          id: 'task-q3',
+          contextId: 'ctx-123',
+          status: { state: 'submitted' },
+        },
+      };
+
+      service.triggerProgramPlanning(request).subscribe((res) => {
+        expect(res).toEqual(mockResponse);
+        expect(res.task.id).toBe('task-q3');
+      });
+
+      const req = httpMock.expectOne('/api/planning/program');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(request);
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('WHEN getAvailableSpecs is called', () => {
+    it('THEN performs a GET request to /api/planning/specs', () => {
+      const mockSpecs: SpecListDTO = {
+        specs: ['ideas_planning_Q3.md', 'frente_canales.md'],
+        total: 2,
+      };
+
+      service.getAvailableSpecs().subscribe((res) => {
+        expect(res).toEqual(mockSpecs);
+        expect(res.total).toBe(2);
+      });
+
+      const req = httpMock.expectOne('/api/planning/specs');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockSpecs);
+    });
+  });
+
+  describe('WHEN getSpecDocument is called', () => {
+    it('THEN performs a GET request to /api/planning/specs/:name with URI encoding', () => {
+      const mockDoc: SpecDocumentDTO = {
+        name: 'ideas_planning_Q3.md',
+        content: '# Ideas Q3\nContenido',
+        path: 'specs/ideas_planning_Q3.md',
+      };
+
+      service.getSpecDocument('ideas_planning_Q3.md').subscribe((res) => {
+        expect(res).toEqual(mockDoc);
+        expect(res.content).toContain('# Ideas Q3');
+      });
+
+      const req = httpMock.expectOne('/api/planning/specs/ideas_planning_Q3.md');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockDoc);
     });
   });
 });

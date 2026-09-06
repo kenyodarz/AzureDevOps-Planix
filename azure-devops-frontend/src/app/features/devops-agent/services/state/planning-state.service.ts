@@ -1,15 +1,26 @@
-import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { inject, Injectable, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { extractErrorMessage, NotificationService } from '../../../../core';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
-import { Initiative, PlanningChunk } from '../../models/devops-agent.model';
+import { TasksStateService } from './tasks-state.service';
+import {
+  Initiative,
+  PlanningChunk,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
+  SpecDocumentDTO,
+} from '../../models/devops-agent.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlanningStateService {
   private readonly api = inject(DevopsAgentApiService);
+  public readonly availableSpecsSignal: Signal<string[]> = toSignal(this.availableSpecs, {
+    initialValue: [] as string[],
+  });
   private readonly notifications = inject(NotificationService);
 
   private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
@@ -23,6 +34,26 @@ export class PlanningStateService {
 
   private readonly uploadStatus$ = new BehaviorSubject<string | null>(null);
   public readonly uploadStatus: Observable<string | null> = this.uploadStatus$.asObservable();
+  public readonly selectedSpecSignal: Signal<SpecDocumentDTO | null> = toSignal(this.selectedSpec, {
+    initialValue: null,
+  });
+  public readonly loadingSpecsSignal: Signal<boolean> = toSignal(this.loadingSpecs, {
+    initialValue: false,
+  });
+  public readonly planningRunningSignal: Signal<boolean> = toSignal(this.planningRunning, {
+    initialValue: false,
+  });
+  private readonly tasksState = inject(TasksStateService);
+  // Estado reactivo para Especificaciones Documentales y Program Planning
+  private readonly availableSpecs$ = new BehaviorSubject<string[]>([]);
+  public readonly availableSpecs: Observable<string[]> = this.availableSpecs$.asObservable();
+  private readonly selectedSpec$ = new BehaviorSubject<SpecDocumentDTO | null>(null);
+  public readonly selectedSpec: Observable<SpecDocumentDTO | null> =
+    this.selectedSpec$.asObservable();
+  private readonly loadingSpecs$ = new BehaviorSubject<boolean>(false);
+  public readonly loadingSpecs: Observable<boolean> = this.loadingSpecs$.asObservable();
+  private readonly planningRunning$ = new BehaviorSubject<boolean>(false);
+  public readonly planningRunning: Observable<boolean> = this.planningRunning$.asObservable();
 
   public loadInitiatives(): void {
     this.loading$.next(true);
@@ -99,5 +130,61 @@ export class PlanningStateService {
 
   public getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
     return this.api.getInitiativeChunks(id);
+  }
+
+  public loadAvailableSpecs(): void {
+    this.loadingSpecs$.next(true);
+    this.api
+      .getAvailableSpecs()
+      .pipe(finalize(() => this.loadingSpecs$.next(false)))
+      .subscribe({
+        next: (res) => {
+          this.availableSpecs$.next([...res.specs]);
+        },
+        error: () => {
+          this.notifications.error('Error al cargar especificaciones documentales');
+        },
+      });
+  }
+
+  public selectSpec(name: string): void {
+    const trimmed = name?.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    this.loadingSpecs$.next(true);
+    this.api
+      .getSpecDocument(trimmed)
+      .pipe(finalize(() => this.loadingSpecs$.next(false)))
+      .subscribe({
+        next: (doc) => {
+          this.selectedSpec$.next(doc);
+        },
+        error: () => {
+          this.notifications.error(`Error al cargar el documento ${trimmed}`);
+        },
+      });
+  }
+
+  public clearSelectedSpec(): void {
+    this.selectedSpec$.next(null);
+  }
+
+  public triggerProgramPlanning(
+    request: ProgramPlanRequestDTO,
+  ): Observable<ProgramPlanResponseDTO> {
+    this.planningRunning$.next(true);
+    return this.api.triggerProgramPlanning(request).pipe(
+      tap((response) => {
+        this.notifications.success(`Planeación para ${response.quarter} encolada exitosamente`);
+        this.tasksState.triggerImmediatePoll();
+      }),
+      catchError((error: unknown) => {
+        this.notifications.error('Error al solicitar planeación de programa');
+        return throwError(() => error);
+      }),
+      finalize(() => this.planningRunning$.next(false)),
+    );
   }
 }

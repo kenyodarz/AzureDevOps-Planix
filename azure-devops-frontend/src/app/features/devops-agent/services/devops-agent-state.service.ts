@@ -17,7 +17,10 @@ import {
   Initiative,
   Message,
   PlanningChunk,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
   SendMessageResponse,
+  SpecDocumentDTO,
 } from '../models/devops-agent.model';
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +39,10 @@ export class DevopsAgentStateService {
   public readonly uploading: Observable<boolean> = this.planning.uploading;
   public readonly uploadStatus: Observable<string | null> = this.planning.uploadStatus;
   public readonly initiatives: Observable<Initiative[]> = this.planning.initiatives;
+  public readonly availableSpecs: Observable<string[]> = this.planning.availableSpecs;
+  public readonly selectedSpec: Observable<SpecDocumentDTO | null> = this.planning.selectedSpec;
+  public readonly loadingSpecs: Observable<boolean> = this.planning.loadingSpecs;
+  public readonly planningRunning: Observable<boolean> = this.planning.planningRunning;
   private readonly dashboard = inject(DashboardStateService);
   public readonly dashboardData: Observable<DashboardData | null> = this.dashboard.dashboardData;
   public readonly dashboardError: Observable<string | null> = this.dashboard.dashboardError;
@@ -120,4 +127,19 @@ export class DevopsAgentStateService {
   public getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
     return this.planning.getInitiativeChunks(id);
   }
+  public loadAvailableSpecs(): void {
+    this.planning.loadAvailableSpecs();
+  }
+  public selectSpec(name: string): void {
+    this.planning.selectSpec(name);
+  }
+  public clearSelectedSpec(): void {
+    this.planning.clearSelectedSpec();
+  }
+  public triggerProgramPlanning(
+    request: ProgramPlanRequestDTO,
+  ): Observable<ProgramPlanResponseDTO> {
+    return this.planning.triggerProgramPlanning(request);
+  }
 }
+

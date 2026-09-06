@@ -2,7 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { DevopsAgentApiService } from './devops-agent-api.service';
-import { AgentCard, IngestPayload, SendMessageRequest } from '../models/devops-agent.model';
+import {
+  AgentCard,
+  IngestPayload,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
+  SendMessageRequest,
+  SpecDocumentDTO,
+  SpecListDTO,
+} from '../models/devops-agent.model';
 
 describe('GIVEN DevopsAgentApiService', () => {
   let service: DevopsAgentApiService;
@@ -169,6 +177,76 @@ describe('GIVEN DevopsAgentApiService', () => {
         id: 'cancel-t1',
       });
       req.flush({});
+    });
+  });
+
+  describe('WHEN triggerProgramPlanning is called', () => {
+    it('THEN posts to /api/planning/program via PlanningApiService', () => {
+      const request: ProgramPlanRequestDTO = {
+        quarter: 'Q4',
+        sprintCount: 5,
+        maxCapacityPerSprint: 40,
+        targetFronts: ['Canales'],
+        objectives: 'Objetivos Q4',
+      };
+
+      const mockResponse: ProgramPlanResponseDTO = {
+        summary: 'Encolado',
+        quarter: 'Q4',
+        sprintCount: 5,
+        maxCapacityPerSprint: 40,
+        targetFronts: ['Canales'],
+        contextId: 'ctx-q4',
+        task: {
+          id: 'task-q4',
+          contextId: 'ctx-q4',
+          status: { state: 'submitted' },
+        },
+      };
+
+      service.triggerProgramPlanning(request).subscribe((res) => {
+        expect(res).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne('/api/planning/program');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(request);
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('WHEN getAvailableSpecs is called', () => {
+    it('THEN performs GET /api/planning/specs via PlanningApiService', () => {
+      const mockSpecs: SpecListDTO = {
+        specs: ['ideas_planning_Q4.md'],
+        total: 1,
+      };
+
+      service.getAvailableSpecs().subscribe((res) => {
+        expect(res).toEqual(mockSpecs);
+      });
+
+      const req = httpMock.expectOne('/api/planning/specs');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockSpecs);
+    });
+  });
+
+  describe('WHEN getSpecDocument is called', () => {
+    it('THEN performs GET /api/planning/specs/:name via PlanningApiService', () => {
+      const mockDoc: SpecDocumentDTO = {
+        name: 'ideas_planning_Q4.md',
+        content: '# Q4 Roadmap',
+        path: 'specs/ideas_planning_Q4.md',
+      };
+
+      service.getSpecDocument('ideas_planning_Q4.md').subscribe((res) => {
+        expect(res).toEqual(mockDoc);
+      });
+
+      const req = httpMock.expectOne('/api/planning/specs/ideas_planning_Q4.md');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockDoc);
     });
   });
 

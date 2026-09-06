@@ -10,8 +10,12 @@ import {
   IngestResponse,
   Initiative,
   PlanningChunk,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
   SendMessageRequest,
   SendMessageResponse,
+  SpecDocumentDTO,
+  SpecListDTO,
 } from '../models/devops-agent.model';
 import {
   AgentChatApiService,
@@ -72,6 +76,19 @@ export class DevopsAgentApiService {
   cancelTask(id: string): Observable<CancelTaskResponse> {
     return this.tasksApi.cancelTask(id);
   }
+
+  triggerProgramPlanning(request: ProgramPlanRequestDTO): Observable<ProgramPlanResponseDTO> {
+    return this.planningApi.triggerProgramPlanning(request);
+  }
+
+  getAvailableSpecs(): Observable<SpecListDTO> {
+    return this.planningApi.getAvailableSpecs();
+  }
+
+  getSpecDocument(name: string): Observable<SpecDocumentDTO> {
+    return this.planningApi.getSpecDocument(name);
+  }
 }
+
 
 

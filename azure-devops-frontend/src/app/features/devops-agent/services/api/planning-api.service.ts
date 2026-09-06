@@ -6,12 +6,17 @@ import {
   initiativeCellUrl,
   initiativeChunksUrl,
   initiativeUrl,
+  specUrl,
 } from '../../../../core';
 import {
   IngestPayload,
   IngestResponse,
   Initiative,
   PlanningChunk,
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
+  SpecDocumentDTO,
+  SpecListDTO,
 } from '../../models/devops-agent.model';
 
 @Injectable({
@@ -39,4 +44,17 @@ export class PlanningApiService {
   getInitiativeChunks(id: string): Observable<PlanningChunk[]> {
     return this.http.get<PlanningChunk[]>(initiativeChunksUrl(id));
   }
+
+  triggerProgramPlanning(request: ProgramPlanRequestDTO): Observable<ProgramPlanResponseDTO> {
+    return this.http.post<ProgramPlanResponseDTO>(API_ENDPOINTS.PLANNING_PROGRAM, request);
+  }
+
+  getAvailableSpecs(): Observable<SpecListDTO> {
+    return this.http.get<SpecListDTO>(API_ENDPOINTS.PLANNING_SPECS);
+  }
+
+  getSpecDocument(name: string): Observable<SpecDocumentDTO> {
+    return this.http.get<SpecDocumentDTO>(specUrl(name));
+  }
 }
+
