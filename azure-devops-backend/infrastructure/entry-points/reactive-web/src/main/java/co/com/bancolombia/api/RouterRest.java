@@ -18,7 +18,11 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 public class RouterRest {
 
     @Bean
-    public RouterFunction<ServerResponse> routerFunction(Handler handler, TaskHandler taskHandler) {
+    public RouterFunction<ServerResponse> routerFunction(
+            Handler handler,
+            TaskHandler taskHandler,
+            SpecHandler specHandler,
+            ProgramPlanningHandler programPlanningHandler) {
         RouterFunction<ServerResponse> routes = route(POST("/api/planning/ingest"), handler::handleIngestPlanning)
                 .andRoute(GET("/api/planning/search"), handler::handleSearchPlanning)
                 .andRoute(GET("/api/planning/initiatives"),
@@ -39,6 +43,13 @@ public class RouterRest {
                 .andRoute(GET("/api/tasks/{id}"), taskHandler::handleGetTask)
                 .andRoute(POST("/api/tasks/{id}/cancel"), taskHandler::handleCancelTask)
                 .andRoute(GET("/api/agent/card"), request -> taskHandler.handleAgentCard());
+
+        // Gestión documental y planeación macro (Fase 05, DP-BFF-02)
+        routes = routes
+                .andRoute(GET("/api/planning/specs"), specHandler::listSpecs)
+                .andRoute(GET("/api/planning/specs/{specName}"), specHandler::getSpec)
+                .andRoute(POST("/api/planning/program"),
+                        programPlanningHandler::triggerProgramPlanning);
 
         // SPA (Single Page Application) fallback for Angular router
         RequestPredicate isSpaRoute = request -> {

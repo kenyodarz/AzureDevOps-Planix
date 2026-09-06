@@ -6,6 +6,7 @@ import co.com.bancolombia.model.agent.exceptions.AgentExecutionException;
 import co.com.bancolombia.model.agent.exceptions.AgentUnavailableException;
 import co.com.bancolombia.model.agent.exceptions.InvalidAgentRequestException;
 import co.com.bancolombia.model.agent.exceptions.TaskNotFoundException;
+import co.com.bancolombia.model.spec.SpecNotFoundException;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,13 @@ class ApiErrorTranslatorTest {
     @DisplayName("GIVEN una tarea inexistente WHEN se traduce THEN 404")
     void givenTaskNotFound_whenTranslated_then404() {
         assertThat(ApiErrorTranslator.toStatus(new TaskNotFoundException("task-1")))
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("GIVEN un spec inexistente WHEN se traduce THEN 404")
+    void givenSpecNotFound_whenTranslated_then404() {
+        assertThat(ApiErrorTranslator.toStatus(new SpecNotFoundException("spec-1")))
                 .isEqualTo(HttpStatus.NOT_FOUND);
     }
 

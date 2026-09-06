@@ -22,7 +22,10 @@ import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import co.com.bancolombia.usecase.dashboard.DevOpsDashboardUseCase;
 import co.com.bancolombia.usecase.ingestplanning.IngestPlanningSpecUseCase;
 import co.com.bancolombia.usecase.manageplanning.ManagePlanningUseCase;
+import co.com.bancolombia.usecase.planning.TriggerProgramPlanningUseCase;
 import co.com.bancolombia.usecase.searchplanning.SearchPlanningSpecUseCase;
+import co.com.bancolombia.usecase.spec.GetSpecDocumentUseCase;
+import co.com.bancolombia.usecase.spec.ListAvailableSpecsUseCase;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +103,7 @@ import reactor.test.StepVerifier;
  */
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
+        SpecHandler.class, ProgramPlanningHandler.class,
         DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
 class DashboardRoutesCharacterizationTest {
 
@@ -133,6 +137,15 @@ class DashboardRoutesCharacterizationTest {
 
     @MockitoBean
     private TaskStoreGateway taskStoreGateway;
+
+    @MockitoBean
+    private GetSpecDocumentUseCase getSpecDocumentUseCase;
+
+    @MockitoBean
+    private ListAvailableSpecsUseCase listAvailableSpecsUseCase;
+
+    @MockitoBean
+    private TriggerProgramPlanningUseCase triggerProgramPlanningUseCase;
 
     @BeforeEach
     void setUp() {

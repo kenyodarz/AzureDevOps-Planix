@@ -17,7 +17,10 @@ import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import co.com.bancolombia.usecase.dashboard.DevOpsDashboardUseCase;
 import co.com.bancolombia.usecase.ingestplanning.IngestPlanningSpecUseCase;
 import co.com.bancolombia.usecase.manageplanning.ManagePlanningUseCase;
+import co.com.bancolombia.usecase.planning.TriggerProgramPlanningUseCase;
 import co.com.bancolombia.usecase.searchplanning.SearchPlanningSpecUseCase;
+import co.com.bancolombia.usecase.spec.GetSpecDocumentUseCase;
+import co.com.bancolombia.usecase.spec.ListAvailableSpecsUseCase;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,6 +62,7 @@ import reactor.core.publisher.Mono;
  */
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
+        SpecHandler.class, ProgramPlanningHandler.class,
         DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
 class PlanningRoutesCharacterizationTest {
 
@@ -85,6 +89,15 @@ class PlanningRoutesCharacterizationTest {
 
     @MockitoBean
     private TrackAgentTaskUseCase trackAgentTaskUseCase;
+
+    @MockitoBean
+    private GetSpecDocumentUseCase getSpecDocumentUseCase;
+
+    @MockitoBean
+    private ListAvailableSpecsUseCase listAvailableSpecsUseCase;
+
+    @MockitoBean
+    private TriggerProgramPlanningUseCase triggerProgramPlanningUseCase;
 
     private PlanningChunk chunk(String id) {
         return PlanningChunk.builder()

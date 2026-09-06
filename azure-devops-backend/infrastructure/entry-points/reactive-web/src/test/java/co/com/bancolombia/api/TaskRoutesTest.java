@@ -26,7 +26,10 @@ import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import co.com.bancolombia.usecase.dashboard.DevOpsDashboardUseCase;
 import co.com.bancolombia.usecase.ingestplanning.IngestPlanningSpecUseCase;
 import co.com.bancolombia.usecase.manageplanning.ManagePlanningUseCase;
+import co.com.bancolombia.usecase.planning.TriggerProgramPlanningUseCase;
 import co.com.bancolombia.usecase.searchplanning.SearchPlanningSpecUseCase;
+import co.com.bancolombia.usecase.spec.GetSpecDocumentUseCase;
+import co.com.bancolombia.usecase.spec.ListAvailableSpecsUseCase;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,7 @@ import reactor.core.publisher.Mono;
  */
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
+        SpecHandler.class, ProgramPlanningHandler.class,
         DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
 class TaskRoutesTest {
 
@@ -64,7 +68,7 @@ class TaskRoutesTest {
     @MockitoBean
     private TrackAgentTaskUseCase trackAgentTaskUseCase;
 
-    // Dependencias de Handler: necesarias solo para levantar el RouterRest completo.
+    // Dependencias de Handler y nuevos Handlers: necesarias solo para levantar el RouterRest completo.
     @MockitoBean
     private IngestPlanningSpecUseCase ingestPlanningSpecUseCase;
     @MockitoBean
@@ -75,6 +79,12 @@ class TaskRoutesTest {
     private DevOpsDashboardUseCase devOpsDashboardUseCase;
     @MockitoBean
     private TaskStoreGateway taskStoreGateway;
+    @MockitoBean
+    private GetSpecDocumentUseCase getSpecDocumentUseCase;
+    @MockitoBean
+    private ListAvailableSpecsUseCase listAvailableSpecsUseCase;
+    @MockitoBean
+    private TriggerProgramPlanningUseCase triggerProgramPlanningUseCase;
 
     private Task task(String id, TaskState state, String text) {
         return Task.builder()

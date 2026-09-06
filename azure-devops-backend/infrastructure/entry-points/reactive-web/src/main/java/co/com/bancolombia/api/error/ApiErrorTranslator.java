@@ -4,6 +4,7 @@ import co.com.bancolombia.model.agent.exceptions.AgentExecutionException;
 import co.com.bancolombia.model.agent.exceptions.AgentUnavailableException;
 import co.com.bancolombia.model.agent.exceptions.InvalidAgentRequestException;
 import co.com.bancolombia.model.agent.exceptions.TaskNotFoundException;
+import co.com.bancolombia.model.spec.SpecNotFoundException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +78,7 @@ public final class ApiErrorTranslator {
      * @return código HTTP según el mapa de DP-06
      */
     public static HttpStatus toStatus(Throwable error) {
-        if (error instanceof TaskNotFoundException) {
+        if (error instanceof TaskNotFoundException || error instanceof SpecNotFoundException) {
             return HttpStatus.NOT_FOUND;
         }
         if (error instanceof InvalidAgentRequestException
