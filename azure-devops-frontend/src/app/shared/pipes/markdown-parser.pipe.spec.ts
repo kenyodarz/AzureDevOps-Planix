@@ -12,10 +12,10 @@ describe('GIVEN MarkdownParserPipe', () => {
         {
           provide: DomSanitizer,
           useValue: {
-            bypassSecurityTrustHtml: (val: string) => val
-          }
-        }
-      ]
+            bypassSecurityTrustHtml: (val: string) => val,
+          },
+        },
+      ],
     });
     pipe = TestBed.inject(MarkdownParserPipe);
   });
@@ -35,7 +35,9 @@ describe('GIVEN MarkdownParserPipe', () => {
 
     it('THEN converts bold text to strong tags with custom styles', () => {
       const result = pipe.transform('este es **texto en negrita** mas texto').toString();
-      expect(result).toContain('<strong style="font-weight: 700; color: #f3f4f6;">texto en negrita</strong>');
+      expect(result).toContain(
+        '<strong style="font-weight: 700; color: #f3f4f6;">texto en negrita</strong>',
+      );
     });
 
     it('THEN converts italic text to em tags', () => {
@@ -48,7 +50,9 @@ describe('GIVEN MarkdownParserPipe', () => {
 
     it('THEN converts headings with custom styles', () => {
       const heading3 = pipe.transform('### Mi Titulo').toString();
-      expect(heading3).toContain('<h4 style="margin:12px 0 6px 0; color:var(--primary); font-weight:600;">Mi Titulo</h4>');
+      expect(heading3).toContain(
+        '<h4 style="margin:12px 0 6px 0; color:var(--primary); font-weight:600;">Mi Titulo</h4>',
+      );
     });
 
     it('THEN converts lists with custom bullets', () => {
@@ -59,8 +63,12 @@ describe('GIVEN MarkdownParserPipe', () => {
 
     it('THEN converts checkbox lists', () => {
       const checkboxes = pipe.transform('[ ] Pendiente\n[x] Completado').toString();
-      expect(checkboxes).toContain('<input type="checkbox" disabled style="margin-right: 6px; transform: scale(1.1);">');
-      expect(checkboxes).toContain('<input type="checkbox" checked disabled style="margin-right: 6px; transform: scale(1.1);">');
+      expect(checkboxes).toContain(
+        '<input type="checkbox" disabled style="margin-right: 6px; transform: scale(1.1);">',
+      );
+      expect(checkboxes).toContain(
+        '<input type="checkbox" checked disabled style="margin-right: 6px; transform: scale(1.1);">',
+      );
     });
   });
 
@@ -68,7 +76,36 @@ describe('GIVEN MarkdownParserPipe', () => {
     it('THEN isolates them from markdown processing and renders pre/code tags', () => {
       const markdown = '```\nconst a = 1;\nif (a < 2) { console.log(a); }\n```';
       const result = pipe.transform(markdown).toString();
-      expect(result).toContain('<pre><code>const a = 1;\nif (a &lt; 2) { console.log(a); }</code></pre>');
+      expect(result).toContain(
+        '<pre><code>const a = 1;\nif (a &lt; 2) { console.log(a); }</code></pre>',
+      );
+    });
+  });
+
+  describe('WHEN transform is invoked with markdown tables', () => {
+    it('THEN converts markdown table syntax into styled HTML tables', () => {
+      const markdown =
+        '| Frente | Capacidad |\n| :--- | :---: |\n| Canales | 34 SP |\n| Core | 40 SP |';
+      const result = pipe.transform(markdown).toString();
+
+      expect(result).toContain(
+        '<table class="w-full text-left text-xs border-collapse text-slate-200">',
+      );
+      expect(result).toContain(
+        '<th class="px-4 py-2.5 border-r border-slate-800 last:border-r-0">Frente</th>',
+      );
+      expect(result).toContain(
+        '<th class="px-4 py-2.5 border-r border-slate-800 last:border-r-0">Capacidad</th>',
+      );
+      expect(result).toContain(
+        '<td class="px-4 py-2.5 border-r border-slate-800/60 last:border-r-0 text-slate-300">Canales</td>',
+      );
+      expect(result).toContain(
+        '<td class="px-4 py-2.5 border-r border-slate-800/60 last:border-r-0 text-slate-300">34 SP</td>',
+      );
+      expect(result).toContain(
+        '<td class="px-4 py-2.5 border-r border-slate-800/60 last:border-r-0 text-slate-300">Core</td>',
+      );
     });
   });
 });

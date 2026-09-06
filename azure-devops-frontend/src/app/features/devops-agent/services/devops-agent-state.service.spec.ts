@@ -661,6 +661,18 @@ describe('GIVEN DevopsAgentStateService (caracterizacion de los 5 flujos)', () =
 
       expect(vi.getTimerCount()).toBeGreaterThan(0);
     });
+
+    it('THEN prefillPrompt and consumePrefilledPrompt delegate to refinement chat state', () => {
+      buildService();
+      expect(latest(service.prefilledPrompt)).toBeNull();
+
+      service.prefillPrompt('Prompt para frente canales');
+      expect(latest(service.prefilledPrompt)).toBe('Prompt para frente canales');
+
+      const consumed = service.consumePrefilledPrompt();
+      expect(consumed).toBe('Prompt para frente canales');
+      expect(latest(service.prefilledPrompt)).toBeNull();
+    });
   });
 });
 

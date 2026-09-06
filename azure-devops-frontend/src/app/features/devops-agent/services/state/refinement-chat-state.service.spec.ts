@@ -129,4 +129,17 @@ describe('GIVEN RefinementChatStateService', () => {
       expect(payload.message.parts[0].text).toContain('US-202');
     });
   });
+
+  describe('WHEN prefillPrompt or consumePrefilledPrompt is called', () => {
+    it('THEN sets prefilled prompt and clears it when consumed', () => {
+      expect(latest(service.prefilledPrompt)).toBeNull();
+
+      service.prefillPrompt('Prompt de refinamiento precargado');
+      expect(latest(service.prefilledPrompt)).toBe('Prompt de refinamiento precargado');
+
+      const consumed = service.consumePrefilledPrompt();
+      expect(consumed).toBe('Prompt de refinamiento precargado');
+      expect(latest(service.prefilledPrompt)).toBeNull();
+    });
+  });
 });

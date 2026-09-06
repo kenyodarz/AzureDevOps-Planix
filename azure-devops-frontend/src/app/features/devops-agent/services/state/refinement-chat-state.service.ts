@@ -26,6 +26,18 @@ export class RefinementChatStateService {
   public readonly messages: Observable<Message[]> = this.refinementMessages;
   private readonly loading$ = new BehaviorSubject<boolean>(false);
   public readonly loading: Observable<boolean> = this.loading$.asObservable();
+  private readonly prefilledPrompt$ = new BehaviorSubject<string | null>(null);
+  public readonly prefilledPrompt: Observable<string | null> = this.prefilledPrompt$.asObservable();
+
+  public prefillPrompt(prompt: string): void {
+    this.prefilledPrompt$.next(prompt);
+  }
+
+  public consumePrefilledPrompt(): string | null {
+    const prompt = this.prefilledPrompt$.value;
+    this.prefilledPrompt$.next(null);
+    return prompt;
+  }
 
   public clearRefinementChat(): void {
     this.refinementContextId = `refinement-${crypto.randomUUID()}`;

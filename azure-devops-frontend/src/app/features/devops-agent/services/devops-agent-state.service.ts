@@ -32,6 +32,7 @@ export class DevopsAgentStateService {
   private readonly refinement = inject(RefinementChatStateService);
   public readonly refinementMessages: Observable<Message[]> = this.refinement.refinementMessages;
   public readonly messages: Observable<Message[]> = this.refinement.messages;
+  public readonly prefilledPrompt: Observable<string | null> = this.refinement.prefilledPrompt;
   private readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
 
   public readonly agentCard: Observable<AgentCard | null> = this.agentCard$.asObservable();
@@ -114,6 +115,12 @@ export class DevopsAgentStateService {
   }
   public refineStoryInChat(id: string, title: string): void {
     this.refinement.refineStoryInChat(id, title);
+  }
+  public prefillPrompt(prompt: string): void {
+    this.refinement.prefillPrompt(prompt);
+  }
+  public consumePrefilledPrompt(): string | null {
+    return this.refinement.consumePrefilledPrompt();
   }
   public clearUploadStatus(): void {
     this.planning.clearUploadStatus();

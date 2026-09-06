@@ -18,10 +18,10 @@ import {
 })
 export class PlanningStateService {
   private readonly api = inject(DevopsAgentApiService);
+  private readonly notifications = inject(NotificationService);
   public readonly availableSpecsSignal: Signal<string[]> = toSignal(this.availableSpecs, {
     initialValue: [] as string[],
   });
-  private readonly notifications = inject(NotificationService);
 
   private readonly initiatives$ = new BehaviorSubject<Initiative[]>([]);
   public readonly initiatives: Observable<Initiative[]> = this.initiatives$.asObservable();
@@ -34,6 +34,20 @@ export class PlanningStateService {
 
   private readonly uploadStatus$ = new BehaviorSubject<string | null>(null);
   public readonly uploadStatus: Observable<string | null> = this.uploadStatus$.asObservable();
+
+  // Estado reactivo para Especificaciones Documentales y Program Planning
+  private readonly availableSpecs$ = new BehaviorSubject<string[]>([]);
+  public readonly availableSpecs: Observable<string[]> = this.availableSpecs$.asObservable();
+
+  private readonly selectedSpec$ = new BehaviorSubject<SpecDocumentDTO | null>(null);
+  public readonly selectedSpec: Observable<SpecDocumentDTO | null> =
+    this.selectedSpec$.asObservable();
+
+  private readonly loadingSpecs$ = new BehaviorSubject<boolean>(false);
+  public readonly loadingSpecs: Observable<boolean> = this.loadingSpecs$.asObservable();
+
+  private readonly planningRunning$ = new BehaviorSubject<boolean>(false);
+  public readonly planningRunning: Observable<boolean> = this.planningRunning$.asObservable();
   public readonly selectedSpecSignal: Signal<SpecDocumentDTO | null> = toSignal(this.selectedSpec, {
     initialValue: null,
   });
@@ -44,16 +58,6 @@ export class PlanningStateService {
     initialValue: false,
   });
   private readonly tasksState = inject(TasksStateService);
-  // Estado reactivo para Especificaciones Documentales y Program Planning
-  private readonly availableSpecs$ = new BehaviorSubject<string[]>([]);
-  public readonly availableSpecs: Observable<string[]> = this.availableSpecs$.asObservable();
-  private readonly selectedSpec$ = new BehaviorSubject<SpecDocumentDTO | null>(null);
-  public readonly selectedSpec: Observable<SpecDocumentDTO | null> =
-    this.selectedSpec$.asObservable();
-  private readonly loadingSpecs$ = new BehaviorSubject<boolean>(false);
-  public readonly loadingSpecs: Observable<boolean> = this.loadingSpecs$.asObservable();
-  private readonly planningRunning$ = new BehaviorSubject<boolean>(false);
-  public readonly planningRunning: Observable<boolean> = this.planningRunning$.asObservable();
 
   public loadInitiatives(): void {
     this.loading$.next(true);

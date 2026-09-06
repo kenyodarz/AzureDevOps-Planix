@@ -4,4 +4,5 @@ export * from './info-cards/info-cards.component';
 export * from './chat-messages/chat-messages.component';
 export * from './chat-input/chat-input.component';
 export * from './planning-management/planning-management.component';
+export * from './planning-specs-explorer/planning-specs-explorer.component';
 export * from './planning-dashboard';
