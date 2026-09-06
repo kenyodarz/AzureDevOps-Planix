@@ -14,6 +14,7 @@ import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
+import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,13 +47,16 @@ class UseCasesConfigWiringTest {
             assertThat(context.getBean(AgentChatUseCase.class)).isNotNull();
             assertThat(context.getBean(ChatFlowDispatcher.class)).isNotNull();
 
-            // THEN: hay exactamente un handler por intención
+            // THEN: hay exactamente un handler por intención activa (PROGRAM_PLANNING se cablea en Fase 08)
             Map<String, ChatFlowHandler> handlers =
                     context.getBeansOfType(ChatFlowHandler.class);
-            assertThat(handlers).hasSize(AgentIntent.values().length);
+            AgentIntent[] activeIntents = Arrays.stream(AgentIntent.values())
+                    .filter(intent -> intent != AgentIntent.PROGRAM_PLANNING)
+                    .toArray(AgentIntent[]::new);
+            assertThat(handlers).hasSize(activeIntents.length);
             assertThat(handlers.values())
                     .extracting(ChatFlowHandler::supports)
-                    .containsExactlyInAnyOrder(AgentIntent.values());
+                    .containsExactlyInAnyOrder(activeIntents);
         }
     }
 

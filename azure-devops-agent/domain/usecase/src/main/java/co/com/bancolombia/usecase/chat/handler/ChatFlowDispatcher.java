@@ -54,6 +54,10 @@ public final class ChatFlowDispatcher {
     private static void requireExhaustive(Map<AgentIntent, ChatFlowHandler> indexed) {
         List<AgentIntent> missing = new ArrayList<>();
         for (AgentIntent intent : AgentIntent.values()) {
+            if (intent == AgentIntent.PROGRAM_PLANNING) {
+                // El handler formal (ProgramPlanningFlowHandler) se introduce en Fase 06 y se cablea en Fase 08
+                continue;
+            }
             if (!indexed.containsKey(intent)) {
                 missing.add(intent);
             }

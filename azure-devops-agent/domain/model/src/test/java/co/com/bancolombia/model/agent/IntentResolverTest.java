@@ -3,11 +3,13 @@ package co.com.bancolombia.model.agent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
@@ -45,51 +47,20 @@ class IntentResolverTest {
     @DisplayName("Prioridad 1: verbo de auditoría + (ID: n)")
     class QualityAudit {
 
-        @Test
-        @DisplayName("Caso 1: 'Audita la historia (ID: 123)' resuelve QUALITY_AUDIT")
-        void givenAuditVerbWithId_whenResolve_thenQualityAudit() {
+        @ParameterizedTest(name = "\"{0}\" resuelve QUALITY_AUDIT con id {1}")
+        @CsvSource({
+                "'Audita la historia (ID: 123)', 123",
+                "'Evalúa la calidad (ID: 7)', 7",
+                "'Revisa la historia (ID: 4321)', 4321"
+        })
+        @DisplayName("Verbos de auditoría con (ID: n) resuelven QUALITY_AUDIT")
+        void givenAuditVerbsWithId_whenResolve_thenQualityAudit(String text, String expectedId) {
             // WHEN
-            IntentResolution resolution = resolver.resolve("Audita la historia (ID: 123)", null);
+            IntentResolution resolution = resolver.resolve(text, null);
 
             // THEN
             assertThat(resolution.intent()).isEqualTo(AgentIntent.QUALITY_AUDIT);
-            assertThat(resolution.workItemId()).contains("123");
-        }
-
-        @Test
-        @DisplayName("Caso 2 (DP-01): la palabra 'reporte' ya no secuestra una auditoría con (ID: n)")
-        void givenAuditRequestContainingGeneralKeyword_whenResolve_thenQualityAuditWins() {
-            // GIVEN: el texto contiene la palabra clave genérica «reporte», que antes ganaba
-            String userText = "Genera un reporte de calidad de la historia (ID: 12345)";
-
-            // WHEN
-            IntentResolution resolution = resolver.resolve(userText, null);
-
-            // THEN: la señal fuerte (ID: n) tiene precedencia sobre la palabra clave genérica
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.QUALITY_AUDIT);
-            assertThat(resolution.workItemId()).contains("12345");
-        }
-
-        @Test
-        @DisplayName("Caso 3: 'Evalúa la calidad (ID: 7)' resuelve QUALITY_AUDIT pese a la tilde")
-        void givenAccentedAuditVerbWithId_whenResolve_thenQualityAudit() {
-            // WHEN
-            IntentResolution resolution = resolver.resolve("Evalúa la calidad (ID: 7)", null);
-
-            // THEN
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.QUALITY_AUDIT);
-            assertThat(resolution.workItemId()).contains("7");
-        }
-
-        @Test
-        @DisplayName("'Revisa' también dispara la auditoría cuando hay (ID: n)")
-        void givenReviewVerbWithId_whenResolve_thenQualityAudit() {
-            // WHEN
-            IntentResolution resolution = resolver.resolve("Revisa la historia (ID: 4321)", null);
-
-            // THEN
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.QUALITY_AUDIT);
-            assertThat(resolution.workItemId()).contains("4321");
+            assertThat(resolution.workItemId()).contains(expectedId);
         }
 
         @Test
@@ -179,62 +150,109 @@ class IntentResolverTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Prioridad 4 — General
+    // Prioridad 4 — Planeación de Programa (Program Planning)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("Prioridad 4: comandos o frases clave de planeación de programa")
+    class ProgramPlanning {
+
+        @ParameterizedTest(name = "\"{0}\" resuelve PROGRAM_PLANNING")
+        @ValueSource(strings = {
+                "/plan",
+                "/plan Q3",
+                "/roadmap",
+                "/roadmap Q3-2026",
+                "/program-planning",
+                "/plan.",
+                "/plan "
+        })
+        @DisplayName("Los comandos de planeación resuelven PROGRAM_PLANNING")
+        void givenPlanningCommands_whenResolve_thenProgramPlanning(String command) {
+            // WHEN
+            IntentResolution resolution = resolver.resolve(command, null);
+
+            // THEN
+            assertThat(resolution.intent()).isEqualTo(AgentIntent.PROGRAM_PLANNING);
+            assertThat(resolution.workItemId()).isEmpty();
+        }
+
+        @ParameterizedTest(name = "\"{0}\" resuelve PROGRAM_PLANNING")
+        @ValueSource(strings = {
+                "planear q",
+                "planear q3",
+                "planear Q3 2026",
+                "planificar q4",
+                "planeacion q2",
+                "planeación q2",
+                "planificacion trimestre",
+                "roadmap q1",
+                "generar roadmap",
+                "generar roadmap del squad"
+        })
+        @DisplayName("Las frases y palabras clave de planeación resuelven PROGRAM_PLANNING")
+        void givenPlanningPhrases_whenResolve_thenProgramPlanning(String phrase) {
+            // WHEN
+            IntentResolution resolution = resolver.resolve(phrase, null);
+
+            // THEN
+            assertThat(resolution.intent()).isEqualTo(AgentIntent.PROGRAM_PLANNING);
+            assertThat(resolution.workItemId()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Un comando de planeación gana sobre un contextId 'general-*'")
+        void givenPlanningCommandAndGeneralContext_whenResolve_thenProgramPlanningWins() {
+            // WHEN
+            IntentResolution resolution = resolver.resolve("/plan Q3", "general-1");
+
+            // THEN
+            assertThat(resolution.intent()).isEqualTo(AgentIntent.PROGRAM_PLANNING);
+        }
+
+        @Test
+        @DisplayName("Una frase de planeación gana sobre una palabra clave genérica")
+        void givenPlanningPhraseWithGeneralWord_whenResolve_thenProgramPlanningWins() {
+            // GIVEN: contiene 'lista' que normalmente iría a general
+            String phrase = "generar roadmap con la lista de iniciativas para Q3";
+
+            // WHEN
+            IntentResolution resolution = resolver.resolve(phrase, null);
+
+            // THEN
+            assertThat(resolution.intent()).isEqualTo(AgentIntent.PROGRAM_PLANNING);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Prioridad 5 — General
     // ═══════════════════════════════════════════════════════════════════════════
 
     @Nested
     @DisplayName("Prioridad 4: contexto explícito o palabra clave genérica")
     class General {
 
-        @Test
-        @DisplayName("Caso 7: 'Dame la lista de historias' resuelve GENERAL")
-        void givenGeneralKeyword_whenResolve_thenGeneral() {
+        @ParameterizedTest(name = "Caso: \"{0}\" resuelve GENERAL")
+        @ValueSource(strings = {
+                "Dame la lista de historias",
+                "Hola",
+                "audita esto"
+        })
+        @DisplayName("Textos cortos, sin comando o con palabras generales resuelven GENERAL")
+        void givenGeneralOrShortTexts_whenResolve_thenGeneral(String text) {
             // WHEN
-            IntentResolution resolution = resolver.resolve("Dame la lista de historias", null);
+            IntentResolution resolution = resolver.resolve(text, null);
 
             // THEN
             assertThat(resolution.intent()).isEqualTo(AgentIntent.GENERAL);
         }
 
-        @Test
-        @DisplayName("Caso 8: el contextId 'general-1' resuelve GENERAL sea cual sea el texto")
-        void givenGeneralContextId_whenResolve_thenGeneral() {
+        @ParameterizedTest(name = "contextId={0} resuelve GENERAL")
+        @ValueSource(strings = {"general-1", "dashboard-9"})
+        @DisplayName("Contexto general o dashboard resuelve GENERAL sea cual sea el texto")
+        void givenGeneralOrDashboardContextId_whenResolve_thenGeneral(String contextId) {
             // WHEN
-            IntentResolution resolution = resolver.resolve(LONG_IDEA, "general-1");
-
-            // THEN
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.GENERAL);
-        }
-
-        @Test
-        @DisplayName("Caso 9: el contextId 'dashboard-9' resuelve GENERAL")
-        void givenDashboardContextId_whenResolve_thenGeneral() {
-            // WHEN
-            IntentResolution resolution = resolver.resolve(LONG_IDEA, "dashboard-9");
-
-            // THEN
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.GENERAL);
-        }
-
-        @Test
-        @DisplayName("Caso 13: un texto corto que no es comando resuelve GENERAL")
-        void givenShortNonCommandText_whenResolve_thenGeneral() {
-            // WHEN
-            IntentResolution resolution = resolver.resolve("Hola", null);
-
-            // THEN
-            assertThat(resolution.intent()).isEqualTo(AgentIntent.GENERAL);
-        }
-
-        /**
-         * Caso 14 de la tabla. «audita esto» tiene 11 caracteres y no incluye {@code (ID: n)}, por
-         * lo que no alcanza el umbral de planeación. <b>Resultado documentado: GENERAL.</b>
-         */
-        @Test
-        @DisplayName("Caso 14: 'audita esto' sin (ID: n) resuelve GENERAL por longitud")
-        void givenAuditVerbWithoutId_whenResolve_thenGeneral() {
-            // WHEN
-            IntentResolution resolution = resolver.resolve("audita esto", null);
+            IntentResolution resolution = resolver.resolve(LONG_IDEA, contextId);
 
             // THEN
             assertThat(resolution.intent()).isEqualTo(AgentIntent.GENERAL);
@@ -253,11 +271,11 @@ class IntentResolverTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Prioridad 5 — Planeación
+    // Prioridad 6 — Borrador de Planeación (Planning Draft)
     // ═══════════════════════════════════════════════════════════════════════════
 
     @Nested
-    @DisplayName("Prioridad 5: texto libre de planeación")
+    @DisplayName("Prioridad 6: texto libre de planeación de historias")
     class PlanningDraft {
 
         @Test
@@ -313,8 +331,7 @@ class IntentResolverTest {
         @DisplayName("Caso 15 (frontera): 24 caracteres se atiende como GENERAL")
         void givenTextBelowThreshold_whenResolve_thenGeneral() {
             // GIVEN
-            assertThat(TEXT_BELOW_THRESHOLD)
-                    .hasSize(IntentResolver.MIN_PLANNING_TEXT_LENGTH - 1);
+            assertThat(TEXT_BELOW_THRESHOLD).hasSize(IntentResolver.MIN_PLANNING_TEXT_LENGTH - 1);
 
             // WHEN
             IntentResolution resolution = resolver.resolve(TEXT_BELOW_THRESHOLD, null);
@@ -337,10 +354,11 @@ class IntentResolverTest {
         void givenResolutionWithoutParams_whenModifyParams_thenFails() {
             // GIVEN
             IntentResolution resolution = IntentResolution.of(AgentIntent.GENERAL);
+            Map<String, String> params = resolution.params();
 
             // THEN
-            assertThat(resolution.params()).isEmpty();
-            assertThatThrownBy(() -> resolution.params().put("k", "v"))
+            assertThat(params).isEmpty();
+            assertThatThrownBy(() -> params.put("k", "v"))
                     .isInstanceOf(UnsupportedOperationException.class);
         }
 

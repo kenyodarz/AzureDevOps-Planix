@@ -28,6 +28,11 @@ public enum AgentIntent {
     GENERAL,
 
     /** Idea de desarrollo en texto libre que alimenta el borrador de planeación con RAG. */
-    PLANNING_DRAFT
+    PLANNING_DRAFT,
+
+    /**
+     * Planeación macro de programa / roadmap trimestral y distribución en sprints.
+     */
+    PROGRAM_PLANNING
 }
 

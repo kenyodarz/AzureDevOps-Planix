@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  *   <li>{@link AgentIntent#QUALITY_AUDIT}: verbo de auditoría <b>+</b> {@code (ID: n)}</li>
  *   <li>{@link AgentIntent#REFINEMENT}: marcador «analicemos y refinemos» <b>+</b> {@code (ID: n)}</li>
  *   <li>{@link AgentIntent#APPROVAL} / {@link AgentIntent#DIVISION}: comando corto exacto</li>
+ *   <li>{@link AgentIntent#PROGRAM_PLANNING}: comando o frase clave de planeación de programa</li>
  *   <li>{@link AgentIntent#GENERAL}: {@code contextId} general/dashboard, o palabra clave genérica</li>
  *   <li>{@link AgentIntent#PLANNING_DRAFT}: texto libre suficientemente largo</li>
  * </ol>
@@ -50,6 +51,15 @@ public final class IntentResolver {
             "(?:audita|evalua|revisa|calidad).*?\\(ID:\\s*(\\d+)\\)", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern WORK_ITEM_ID_PATTERN = Pattern.compile("\\(ID:\\s*(\\d+)\\)",
+            Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern PROGRAM_PLANNING_COMMAND_PATTERN = Pattern.compile(
+            "^/(?:plan|roadmap|program-planning)(?:\\s.*)?$", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern PROGRAM_PLANNING_PHRASE_PATTERN = Pattern.compile(
+            "\\b(?:planear|planificar|planeacion|planificacion)\\s+(?:q\\d*|trimestre)\\b"
+                    + "|\\broadmap\\s+q\\d*\\b"
+                    + "|\\bgenerar\\s+roadmap\\b",
             Pattern.CASE_INSENSITIVE);
 
     /**
@@ -86,9 +96,11 @@ public final class IntentResolver {
      */
     public IntentResolution resolve(String userText, String contextId) {
         String sanitized = sanitize(userText);
+        String command = asCommand(sanitized);
         return asQualityAudit(sanitized)
                 .or(() -> asRefinement(sanitized))
-                .or(() -> asShortCommand(asCommand(sanitized)))
+                .or(() -> asShortCommand(command))
+                .or(() -> asProgramPlanning(sanitized, command))
                 .or(() -> asGeneral(sanitized, contextId))
                 .orElseGet(() -> IntentResolution.of(planningOrGeneral(sanitized)));
     }
@@ -120,6 +132,15 @@ public final class IntentResolver {
         }
         if (DIVISION_COMMANDS.contains(command)) {
             return Optional.of(IntentResolution.of(AgentIntent.DIVISION));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<IntentResolution> asProgramPlanning(String sanitized, String command) {
+        if (PROGRAM_PLANNING_COMMAND_PATTERN.matcher(command).matches()
+                || PROGRAM_PLANNING_COMMAND_PATTERN.matcher(sanitized).matches()
+                || PROGRAM_PLANNING_PHRASE_PATTERN.matcher(sanitized).find()) {
+            return Optional.of(IntentResolution.of(AgentIntent.PROGRAM_PLANNING));
         }
         return Optional.empty();
     }
