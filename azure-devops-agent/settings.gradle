@@ -22,6 +22,7 @@ include ':pgvector-store'
 include ':prompt-template'
 include ':reactive-web'
 include ':metrics'
+include ':spec-storage'
 
 project(':app-service').projectDir = file('./applications/app-service')
 project(':model').projectDir = file('./domain/model')
@@ -30,6 +31,7 @@ project(':mcp-client').projectDir = file('./infrastructure/driven-adapters/mcp-c
 project(':task-store-inmemory').projectDir = file('./infrastructure/driven-adapters/task-store-inmemory')
 project(':pgvector-store').projectDir = file('./infrastructure/driven-adapters/pgvector-store')
 project(':prompt-template').projectDir = file('./infrastructure/driven-adapters/prompt-template')
+project(':spec-storage').projectDir = file('./infrastructure/driven-adapters/spec-storage')
 project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
 project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
 
