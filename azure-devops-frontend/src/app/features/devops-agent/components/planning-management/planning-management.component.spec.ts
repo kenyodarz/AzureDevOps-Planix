@@ -1,19 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal, WritableSignal } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { PlanningManagementComponent } from './planning-management.component';
 import { DevopsAgentStateService } from '../../services/devops-agent-state.service';
 import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
-import { Initiative } from '../../models/devops-agent.model';
+import { PlanningStateService } from '../../services/state/planning-state.service';
+import { RefinementChatStateService } from '../../services/state/refinement-chat-state.service';
+import { NotificationService } from '../../../../core';
+import { Initiative, PlanningActiveView, SpecDocumentDTO } from '../../models/devops-agent.model';
 
 /**
- * Caracterización FASE 01 — Gestión de Planeaciones.
- *
- * D-26 (nueva) — Este componente vive en `components/` (capa de presentación) pero inyecta
- * DIRECTAMENTE `DevopsAgentApiService` además del servicio de estado. Es el único que se salta la
- * capa de estado para hablar con la red. La FASE 05 lo corregirá; aquí solo se congela.
+ * Caracterización FASE 01 y FASE 05 — Centro de Gestión de Planeaciones.
  */
 
 interface ManagementInternals {
+  activeView: WritableSignal<PlanningActiveView>;
+  showPlanningModal: WritableSignal<boolean>;
   editableInitiatives: {
     initiative_id: string;
     initiative_title: string;
@@ -47,6 +49,29 @@ class MockApiService {
   readonly getInitiativeChunks = vi.fn((_id: string): Observable<unknown[]> => this.chunksResult);
 }
 
+class MockPlanningStateService {
+  readonly availableSpecsSignal: WritableSignal<string[]> = signal<string[]>([]);
+  readonly selectedSpecSignal: WritableSignal<SpecDocumentDTO | null> =
+    signal<SpecDocumentDTO | null>(null);
+  readonly loadingSpecsSignal: WritableSignal<boolean> = signal<boolean>(false);
+  readonly planningRunningSignal: WritableSignal<boolean> = signal<boolean>(false);
+
+  readonly loadAvailableSpecs = vi.fn((): void => undefined);
+  readonly selectSpec = vi.fn((_name: string): void => undefined);
+  readonly triggerProgramPlanning = vi.fn(() => of({}));
+}
+
+class MockRefinementChatStateService {
+  readonly prefillPrompt = vi.fn((_prompt: string): void => undefined);
+}
+
+class MockNotificationService {
+  readonly info = vi.fn();
+  readonly success = vi.fn();
+  readonly error = vi.fn();
+  readonly warn = vi.fn();
+}
+
 const initiative = (id: string, cell?: string): Initiative => ({
   initiative_id: id,
   initiative_title: `Iniciativa ${id}`,
@@ -58,23 +83,14 @@ describe('GIVEN PlanningManagementComponent', () => {
   let internals: ManagementInternals;
   let state: MockStateService;
   let api: MockApiService;
+  let mockPlanningState: MockPlanningStateService;
+  let mockRefinementChatState: MockRefinementChatStateService;
+  let mockNotifications: MockNotificationService;
 
   const rows = (): HTMLElement[] => Array.from(fixture.nativeElement.querySelectorAll('tbody tr'));
 
-  /**
-   * D-27 — La app corre en modo ZONELESS (`app.config.ts` no declara zona) y este componente guarda
-   * la tabla en `editableInitiatives`, un CAMPO PLANO mutado desde una suscripción RxJS. Publicar
-   * iniciativas NO marca la vista como sucia, así que el `@if/@else if` no se reevalúa y la tabla
-   * no se repinta (ver la prueba «THEN publishing initiatives alone does NOT repaint»).
-   *
-   * En producción la tabla sí aparece, pero POR ACCIDENTE: `loadInitiatives()` conmuta el
-   * BehaviorSubject `loading$`, que alimenta el signal `loading()` del componente, y ese cambio
-   * reactivo es el único que fuerza el repintado. Este helper reproduce esa secuencia real.
-   *
-   * La FASE 05 debe migrar `editableInitiatives` a un signal ANTES de separar el `loading` por
-   * flujo (D-16), o la tabla dejará de pintarse.
-   */
   const publishAndRepaint = (initiatives: Initiative[]): void => {
+    fixture.componentInstance.activeView.set('legacy-vector');
     state.loading$.next(true);
     state.initiatives$.next(initiatives);
     state.loading$.next(false);
@@ -85,12 +101,18 @@ describe('GIVEN PlanningManagementComponent', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     state = new MockStateService();
     api = new MockApiService();
+    mockPlanningState = new MockPlanningStateService();
+    mockRefinementChatState = new MockRefinementChatStateService();
+    mockNotifications = new MockNotificationService();
 
     await TestBed.configureTestingModule({
       imports: [PlanningManagementComponent],
       providers: [
         { provide: DevopsAgentStateService, useValue: state as unknown as DevopsAgentStateService },
         { provide: DevopsAgentApiService, useValue: api as unknown as DevopsAgentApiService },
+        { provide: PlanningStateService, useValue: mockPlanningState },
+        { provide: RefinementChatStateService, useValue: mockRefinementChatState },
+        { provide: NotificationService, useValue: mockNotifications },
       ],
     }).compileComponents();
 
@@ -108,11 +130,24 @@ describe('GIVEN PlanningManagementComponent', () => {
       expect(state.loadInitiatives).toHaveBeenCalledTimes(1);
     });
 
-    it('THEN shows the empty state when there are no initiatives', () => {
+    it('THEN defaults to the specs explorer view (DP-FE-01)', () => {
+      expect(fixture.componentInstance.activeView()).toBe('explorer');
+      expect(fixture.nativeElement.querySelector('app-planning-specs-explorer')).toBeTruthy();
+    });
+
+    it('THEN allows switching to the legacy vectorized initiatives view', () => {
+      const legacyBtn = fixture.nativeElement.querySelector(
+        '[aria-label="Ver iniciativas vectorizadas legadas"]',
+      ) as HTMLButtonElement;
+      legacyBtn.click();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.activeView()).toBe('legacy-vector');
       expect(fixture.nativeElement.textContent).toContain('No hay iniciativas indexadas');
     });
 
-    it('THEN shows the spinner while the state reports loading', () => {
+    it('THEN shows the spinner while the state reports loading in legacy view', () => {
+      fixture.componentInstance.activeView.set('legacy-vector');
       state.loading$.next(true);
 
       fixture.detectChanges();
@@ -121,8 +156,38 @@ describe('GIVEN PlanningManagementComponent', () => {
     });
   });
 
-  // D-27 — Defecto vivo del modo zoneless. Esta prueba lo deja registrado con toda claridad.
+  describe('WHEN launching program planning', () => {
+    it('THEN opens the program planning modal', () => {
+      const launchBtn = fixture.nativeElement.querySelector(
+        '[aria-label="Abrir modal para lanzar nueva planeación de programa"]',
+      ) as HTMLButtonElement;
+      launchBtn.click();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.showPlanningModal()).toBe(true);
+    });
+  });
+
+  describe('WHEN specs explorer requests refinement', () => {
+    it('THEN forwards the refineRequested event to parent container', () => {
+      const spy = vi.fn();
+      fixture.componentInstance.refineRequested.subscribe(spy);
+
+      const explorer = fixture.debugElement.query(
+        (node) => node.name === 'app-planning-specs-explorer',
+      );
+      explorer.componentInstance.refineRequested.emit('Prompt para refinar frente');
+
+      expect(spy).toHaveBeenCalledWith('Prompt para refinar frente');
+    });
+  });
+
   describe('WHEN initiatives arrive without any reactive signal changing (D-27, corregir en fase 05)', () => {
+    beforeEach(() => {
+      fixture.componentInstance.activeView.set('legacy-vector');
+      fixture.detectChanges();
+    });
+
     it('THEN publishing initiatives alone does NOT repaint the table', () => {
       state.initiatives$.next([initiative('i1', 'Celula Core')]);
       fixture.detectChanges();

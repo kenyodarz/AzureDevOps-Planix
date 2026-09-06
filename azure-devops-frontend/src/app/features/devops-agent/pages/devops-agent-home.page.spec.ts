@@ -1,11 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { signal, WritableSignal } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { DevopsAgentHomePage } from './devops-agent-home.page';
 import { DevopsAgentStateService } from '../services/devops-agent-state.service';
 import { DevopsAgentApiService } from '../services/devops-agent-api.service';
-import { AgentCard, AgentTask, DashboardData, Initiative, Message } from '../models/devops-agent.model';
+import { PlanningStateService } from '../services/state/planning-state.service';
+import { RefinementChatStateService } from '../services/state/refinement-chat-state.service';
+import { NotificationService } from '../../../core';
+import {
+  AgentCard,
+  AgentTask,
+  DashboardData,
+  Initiative,
+  Message,
+  SpecDocumentDTO
+} from '../models/devops-agent.model';
 
-/** Caracterización FASE 01 — layout, pestañas y panel de tareas de la página principal. */
+/** Caracterización FASE 01 y FASE 05 — layout, pestañas y transición a refinamiento en la página principal. */
 
 interface HomeInternals {
   activeTab: string;
@@ -15,6 +26,29 @@ interface HomeInternals {
 }
 
 const greeting = (text: string): Message => ({ role: 'agent', parts: [{ text }] });
+
+class MockPlanningStateService {
+  readonly availableSpecsSignal: WritableSignal<string[]> = signal<string[]>([]);
+  readonly selectedSpecSignal: WritableSignal<SpecDocumentDTO | null> =
+    signal<SpecDocumentDTO | null>(null);
+  readonly loadingSpecsSignal: WritableSignal<boolean> = signal<boolean>(false);
+  readonly planningRunningSignal: WritableSignal<boolean> = signal<boolean>(false);
+
+  readonly loadAvailableSpecs = vi.fn((): void => undefined);
+  readonly selectSpec = vi.fn((_name: string): void => undefined);
+  readonly triggerProgramPlanning = vi.fn(() => of({}));
+}
+
+class MockRefinementChatStateService {
+  readonly prefillPrompt = vi.fn((_prompt: string): void => undefined);
+}
+
+class MockNotificationService {
+  readonly info = vi.fn();
+  readonly success = vi.fn();
+  readonly error = vi.fn();
+  readonly warn = vi.fn();
+}
 
 class MockStateService {
   readonly agentCard$ = new BehaviorSubject<AgentCard | null>(null);
@@ -61,6 +95,9 @@ describe('GIVEN DevopsAgentHomePage', () => {
   let fixture: ComponentFixture<DevopsAgentHomePage>;
   let internals: HomeInternals;
   let state: MockStateService;
+  let mockPlanningState: MockPlanningStateService;
+  let mockRefinementChatState: MockRefinementChatStateService;
+  let mockNotifications: MockNotificationService;
 
   const textOf = (): string => fixture.nativeElement.textContent as string;
 
@@ -89,6 +126,9 @@ describe('GIVEN DevopsAgentHomePage', () => {
   beforeEach(async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     state = new MockStateService();
+    mockPlanningState = new MockPlanningStateService();
+    mockRefinementChatState = new MockRefinementChatStateService();
+    mockNotifications = new MockNotificationService();
 
     await TestBed.configureTestingModule({
       imports: [DevopsAgentHomePage],
@@ -98,6 +138,9 @@ describe('GIVEN DevopsAgentHomePage', () => {
           provide: DevopsAgentApiService,
           useValue: new MockApiService() as unknown as DevopsAgentApiService,
         },
+        { provide: PlanningStateService, useValue: mockPlanningState },
+        { provide: RefinementChatStateService, useValue: mockRefinementChatState },
+        { provide: NotificationService, useValue: mockNotifications },
       ],
     }).compileComponents();
 
@@ -285,6 +328,20 @@ describe('GIVEN DevopsAgentHomePage', () => {
         (node) => node.name === 'app-planning-dashboard',
       );
       dashboard.componentInstance.refineRequested.emit();
+      fixture.detectChanges();
+
+      expect(internals.activeTab).toBe('refinement');
+    });
+  });
+
+  describe('WHEN planning management asks to refine a story (DP-FE-02)', () => {
+    it('THEN the page switches to the refinement tab', () => {
+      activateTab(TAB_MANAGEMENT);
+
+      const management = fixture.debugElement.query(
+        (node) => node.name === 'app-planning-management',
+      );
+      management.componentInstance.refineRequested.emit('Prompt para refinar frente');
       fixture.detectChanges();
 
       expect(internals.activeTab).toBe('refinement');

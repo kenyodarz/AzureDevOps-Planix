@@ -4,6 +4,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,209 +13,300 @@ import { Subscription } from 'rxjs';
 import { NotificationService } from '../../../../core';
 import { DevopsAgentStateService } from '../../services/devops-agent-state.service';
 import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
-import { PlanningChunk } from '../../models/devops-agent.model';
+import { PlanningActiveView, PlanningChunk } from '../../models/devops-agent.model';
+import { PlanningSpecsExplorerComponent } from '../planning-specs-explorer/planning-specs-explorer.component';
+import { ProgramPlanningModalComponent } from '../program-planning-modal/program-planning-modal.component';
 
 @Component({
   selector: 'app-planning-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PlanningSpecsExplorerComponent,
+    ProgramPlanningModalComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex-1 flex flex-col p-8 overflow-y-auto">
-      <div class="mb-6">
-        <h2 class="text-xl font-bold text-[#f2c94c] flex items-center gap-2">
-          <span class="pi pi-list" style="font-size: 1.2rem"></span>
-          Gestión de Planeaciones Vectorizadas
-        </h2>
-        <p class="text-sm text-[#9ca3af] mt-1">
-          Administra las iniciativas cargadas en la base de datos vectorial de PostgreSQL. Asocia
-          cada iniciativa a una célula o elimina su indexación por completo.
-        </p>
-      </div>
-
-      @if (loading()) {
-        <div class="flex-1 flex flex-col items-center justify-center gap-3">
-          <div
-            class="w-8 h-8 border-4 border-[#f2c94c] border-t-transparent rounded-full animate-spin"
-          ></div>
-          <span class="text-sm text-[#9ca3af]">Cargando iniciativas...</span>
-        </div>
-      } @else if (editableInitiatives.length === 0) {
+    <div class="flex-1 flex flex-col h-full overflow-hidden bg-transparent font-sans">
+      <!-- BARRA SUPERIOR DE CONTROL: SELECTOR DE VISTAS Y ACCIÓN DE LANZAMIENTO -->
+      <header
+        class="h-16 px-6 border-b border-[rgba(255,255,255,0.08)] bg-[rgba(11,15,25,0.7)] backdrop-blur-md flex items-center justify-between gap-4 shrink-0 z-10"
+      >
+        <!-- SELECTOR DE VISTAS (DP-FE-01) -->
         <div
-          class="flex-1 border border-dashed border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.01)] rounded-xl flex flex-col items-center justify-center p-12 text-center"
+          class="flex items-center gap-1.5 p-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-xl"
         >
-          <div
-            class="w-12 h-12 rounded-full bg-[rgba(242,201,76,0.1)] flex items-center justify-center text-[#f2c94c] mb-4"
+          <button
+            type="button"
+            aria-label="Ver especificaciones documentales"
+            (click)="activeView.set('explorer')"
+            [class.bg-[#f2c94c]]="activeView() === 'explorer'"
+            [class.text-[#0b0f19]]="activeView() === 'explorer'"
+            [class.font-bold]="activeView() === 'explorer'"
+            [class.shadow-md]="activeView() === 'explorer'"
+            [class.text-[#9ca3af]]="activeView() !== 'explorer'"
+            [class.hover:text-[#f3f4f6]]="activeView() !== 'explorer'"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all flex items-center gap-2 border-none"
           >
-            <span class="pi pi-folder-open" style="font-size: 1.5rem"></span>
+            <span class="pi pi-file-edit text-xs"></span>
+            <span>Especificaciones Documentales</span>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Ver iniciativas vectorizadas legadas"
+            (click)="activeView.set('legacy-vector')"
+            [class.bg-[#f2c94c]]="activeView() === 'legacy-vector'"
+            [class.text-[#0b0f19]]="activeView() === 'legacy-vector'"
+            [class.font-bold]="activeView() === 'legacy-vector'"
+            [class.shadow-md]="activeView() === 'legacy-vector'"
+            [class.text-[#9ca3af]]="activeView() !== 'legacy-vector'"
+            [class.hover:text-[#f3f4f6]]="activeView() !== 'legacy-vector'"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all flex items-center gap-2 border-none"
+          >
+            <span class="pi pi-database text-xs"></span>
+            <span>Iniciativas Vectorizadas (Legado)</span>
+          </button>
+        </div>
+
+        <!-- ACCIÓN DE LANZAMIENTO RÁPIDO -->
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Abrir modal para lanzar nueva planeación de programa"
+            (click)="showPlanningModal.set(true)"
+            class="bg-[#f2c94c] hover:bg-[#e0b83b] text-[#0b0f19] font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_15px_rgba(242,201,76,0.25)] hover:shadow-[0_0_20px_rgba(242,201,76,0.4)] border-none"
+          >
+            <span class="pi pi-compass text-xs"></span>
+            <span>Lanzar Program Planning</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- CUERPO PRINCIPAL CONDICIONAL -->
+      @if (activeView() === 'explorer') {
+        <app-planning-specs-explorer
+          class="flex-1 w-full h-full min-h-0 overflow-hidden"
+          (refineRequested)="refineRequested.emit($event)"
+        ></app-planning-specs-explorer>
+      } @else if (activeView() === 'legacy-vector') {
+        <!-- VISTA LEGADA DE INICIATIVAS VECTORIZADAS -->
+        <div class="flex-1 flex flex-col p-8 overflow-y-auto">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-[#f2c94c] flex items-center gap-2">
+              <span class="pi pi-list" style="font-size: 1.2rem"></span>
+              Gestión de Planeaciones Vectorizadas
+            </h2>
+            <p class="text-sm text-[#9ca3af] mt-1">
+              Administra las iniciativas cargadas en la base de datos vectorial de PostgreSQL.
+              Asocia cada iniciativa a una célula o elimina su indexación por completo.
+            </p>
           </div>
-          <h3 class="text-base font-semibold text-[#f3f4f6]">No hay iniciativas indexadas</h3>
-          <p class="text-sm text-[#9ca3af] max-w-sm mt-1">
-            Usa el panel de "Cargar Planeación" a la izquierda para subir y vectorizar tus primeros
-            archivos de planeación.
-          </p>
-        </div>
-      } @else {
-        <div
-          class="overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[rgba(17,24,39,0.3)] backdrop-blur-md rounded-xl"
-        >
-          <table class="w-full text-left border-collapse text-[0.85rem]">
-            <thead>
-              <tr class="border-b border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
-                <th class="p-4 font-semibold text-[#f2c94c] w-[20%]">ID Iniciativa</th>
-                <th class="p-4 font-semibold text-[#f2c94c] w-[35%]">Título de la Iniciativa</th>
-                <th class="p-4 font-semibold text-[#f2c94c] w-[30%]">Célula / Equipo Asociado</th>
-                <th class="p-4 font-semibold text-[#f2c94c] text-right w-[15%]">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (init of editableInitiatives; track init.initiative_id) {
-                <tr
-                  class="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.01)] transition-colors"
-                >
-                  <td class="p-4 font-mono text-[#2563eb] text-[0.8rem] truncate">
-                    {{ init.initiative_id }}
-                  </td>
-                  <td class="p-4 text-[#f3f4f6] font-medium">{{ init.initiative_title }}</td>
-                  <td class="p-4">
-                    <div class="flex items-center gap-2">
-                      <input
-                        [aria-label]="'Célula para ' + init.initiative_title"
-                        placeholder="Ej: Célula Core, Canal App..."
-                        class="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-1.5 text-[0.8rem] text-[#f3f4f6] outline-none focus:border-[#f2c94c] w-full max-w-[240px] transition-all"
-                        type="text"
-                        [(ngModel)]="init.tempCell"
-                      />
-                    </div>
-                  </td>
-                  <td class="p-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button
-                        [aria-label]="'Previsualizar iniciativa ' + init.initiative_title"
-                        class="flex items-center justify-center bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
-                        (click)="previewInitiative(init)"
-                      >
-                        <span class="pi pi-eye"></span>
-                      </button>
-                      <button
-                        [aria-label]="'Guardar célula de ' + init.initiative_title"
-                        [disabled]="init.cell === init.tempCell"
-                        [style.opacity]="init.cell === init.tempCell ? 0.4 : 1"
-                        class="flex items-center justify-center bg-[#10b981] hover:bg-[#059669] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
-                        (click)="saveCell(init)"
-                      >
-                        <span class="pi pi-save"></span>
-                      </button>
-                      <button
-                        [aria-label]="'Eliminar iniciativa ' + init.initiative_title"
-                        class="flex items-center justify-center bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
-                        (click)="deleteInitiative(init)"
-                      >
-                        <span class="pi pi-trash"></span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
 
-      <!-- PREVIEW MODAL -->
-      @if (isModalOpen()) {
-        <div
-          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(0,0,0,0.8)] backdrop-blur-md"
-        >
-          <div
-            class="bg-[#0b0f19] border border-[rgba(255,255,255,0.08)] rounded-xl max-w-3xl w-full max-h-[80vh] flex flex-col shadow-2xl"
-          >
-            <!-- Modal Header -->
-            <div
-              class="p-5 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center bg-[rgba(17,24,39,0.5)]"
-            >
-              <div>
-                <h3 class="text-base font-bold text-[#f2c94c] flex items-center gap-2">
-                  <span class="pi pi-eye"></span>
-                  Previsualización de Fragmentos Vectorizados
-                </h3>
-                <p class="text-xs text-[#9ca3af] mt-1 leading-snug truncate max-w-[500px]">
-                  Iniciativa:
-                  <span class="text-[#f3f4f6] font-medium">{{ selectedInitiativeTitle() }}</span>
-                </p>
-              </div>
-              <button
-                [aria-label]="'Cerrar modal'"
-                class="bg-transparent border-none text-[#9ca3af] hover:text-[#f3f4f6]"
-                (click)="closeModal()"
-              >
-                <span class="pi pi-times text-lg"></span>
-              </button>
+          @if (loading()) {
+            <div class="flex-1 flex flex-col items-center justify-center gap-3">
+              <div
+                class="w-8 h-8 border-4 border-[#f2c94c] border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span class="text-sm text-[#9ca3af]">Cargando iniciativas...</span>
             </div>
-
-            <!-- Modal Content Chunks list -->
-            <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-4">
-              @if (loadingChunks()) {
-                <div class="flex-1 flex flex-col items-center justify-center gap-2 py-12">
-                  <div
-                    class="w-8 h-8 border-4 border-[#f2c94c] border-t-transparent rounded-full animate-spin"
-                  ></div>
-                  <span class="text-xs text-[#9ca3af]"
-                    >Cargando fragmentos vectorizados de base de datos...</span
-                  >
-                </div>
-              } @else if (selectedChunks().length === 0) {
-                <div class="text-center py-12 text-[#9ca3af] text-sm">
-                  No se encontraron fragmentos vectorizados para esta iniciativa.
-                </div>
-              } @else {
-                <div class="flex flex-col gap-4">
-                  @for (chunk of selectedChunks(); track chunk.id; let idx = $index) {
-                    <div
-                      class="bg-[rgba(17,24,39,0.4)] border border-[rgba(255,255,255,0.06)] rounded-lg p-4 flex flex-col gap-2"
+          } @else if (editableInitiatives.length === 0) {
+            <div
+              class="flex-1 border border-dashed border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.01)] rounded-xl flex flex-col items-center justify-center p-12 text-center"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-[rgba(242,201,76,0.1)] flex items-center justify-center text-[#f2c94c] mb-4"
+              >
+                <span class="pi pi-folder-open" style="font-size: 1.5rem"></span>
+              </div>
+              <h3 class="text-base font-semibold text-[#f3f4f6]">No hay iniciativas indexadas</h3>
+              <p class="text-sm text-[#9ca3af] max-w-sm mt-1">
+                Usa el panel de "Cargar Planeación" a la izquierda para subir y vectorizar tus
+                primeros archivos de planeación.
+              </p>
+            </div>
+          } @else {
+            <div
+              class="overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[rgba(17,24,39,0.3)] backdrop-blur-md rounded-xl"
+            >
+              <table class="w-full text-left border-collapse text-[0.85rem]">
+                <thead>
+                  <tr class="border-b border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
+                    <th class="p-4 font-semibold text-[#f2c94c] w-[20%]">ID Iniciativa</th>
+                    <th class="p-4 font-semibold text-[#f2c94c] w-[35%]">
+                      Título de la Iniciativa
+                    </th>
+                    <th class="p-4 font-semibold text-[#f2c94c] w-[30%]">
+                      Célula / Equipo Asociado
+                    </th>
+                    <th class="p-4 font-semibold text-[#f2c94c] text-right w-[15%]">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (init of editableInitiatives; track init.initiative_id) {
+                    <tr
+                      class="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.01)] transition-colors"
                     >
+                      <td class="p-4 font-mono text-[#2563eb] text-[0.8rem] truncate">
+                        {{ init.initiative_id }}
+                      </td>
+                      <td class="p-4 text-[#f3f4f6] font-medium">{{ init.initiative_title }}</td>
+                      <td class="p-4">
+                        <div class="flex items-center gap-2">
+                          <input
+                            [aria-label]="'Célula para ' + init.initiative_title"
+                            placeholder="Ej: Célula Core, Canal App..."
+                            class="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-1.5 text-[0.8rem] text-[#f3f4f6] outline-none focus:border-[#f2c94c] w-full max-w-[240px] transition-all"
+                            type="text"
+                            [(ngModel)]="init.tempCell"
+                          />
+                        </div>
+                      </td>
+                      <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                          <button
+                            [aria-label]="'Previsualizar iniciativa ' + init.initiative_title"
+                            class="flex items-center justify-center bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
+                            (click)="previewInitiative(init)"
+                          >
+                            <span class="pi pi-eye"></span>
+                          </button>
+                          <button
+                            [aria-label]="'Guardar célula de ' + init.initiative_title"
+                            [disabled]="init.cell === init.tempCell"
+                            [style.opacity]="init.cell === init.tempCell ? 0.4 : 1"
+                            class="flex items-center justify-center bg-[#10b981] hover:bg-[#059669] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
+                            (click)="saveCell(init)"
+                          >
+                            <span class="pi pi-save"></span>
+                          </button>
+                          <button
+                            [aria-label]="'Eliminar iniciativa ' + init.initiative_title"
+                            class="flex items-center justify-center bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-md w-8 h-8 border-none cursor-pointer transition-all shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
+                            (click)="deleteInitiative(init)"
+                          >
+                            <span class="pi pi-trash"></span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+          <!-- PREVIEW MODAL -->
+          @if (isModalOpen()) {
+            <div
+              class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(0,0,0,0.8)] backdrop-blur-md"
+            >
+              <div
+                class="bg-[#0b0f19] border border-[rgba(255,255,255,0.08)] rounded-xl max-w-3xl w-full max-h-[80vh] flex flex-col shadow-2xl"
+              >
+                <!-- Modal Header -->
+                <div
+                  class="p-5 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center bg-[rgba(17,24,39,0.5)]"
+                >
+                  <div>
+                    <h3 class="text-base font-bold text-[#f2c94c] flex items-center gap-2">
+                      <span class="pi pi-eye"></span>
+                      Previsualización de Fragmentos Vectorizados
+                    </h3>
+                    <p class="text-xs text-[#9ca3af] mt-1 leading-snug truncate max-w-[500px]">
+                      Iniciativa:
+                      <span class="text-[#f3f4f6] font-medium">{{
+                        selectedInitiativeTitle()
+                      }}</span>
+                    </p>
+                  </div>
+                  <button
+                    [aria-label]="'Cerrar modal'"
+                    class="bg-transparent border-none text-[#9ca3af] hover:text-[#f3f4f6]"
+                    (click)="closeModal()"
+                  >
+                    <span class="pi pi-times text-lg"></span>
+                  </button>
+                </div>
+
+                <!-- Modal Content Chunks list -->
+                <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-4">
+                  @if (loadingChunks()) {
+                    <div class="flex-1 flex flex-col items-center justify-center gap-2 py-12">
                       <div
-                        class="flex justify-between items-center border-b border-[rgba(255,255,255,0.04)] pb-2 mb-1"
+                        class="w-8 h-8 border-4 border-[#f2c94c] border-t-transparent rounded-full animate-spin"
+                      ></div>
+                      <span class="text-xs text-[#9ca3af]"
+                        >Cargando fragmentos vectorizados de base de datos...</span
                       >
-                        <span class="text-xs font-bold text-[#f2c94c] flex items-center gap-1.5">
-                          <span class="pi pi-paperclip"></span> Bloque {{ idx + 1 }}
-                        </span>
-                        <span
-                          class="text-[0.65rem] text-[#9ca3af] px-2 py-0.5 rounded-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]"
+                    </div>
+                  } @else if (selectedChunks().length === 0) {
+                    <div class="text-center py-12 text-[#9ca3af] text-sm">
+                      No se encontraron fragmentos vectorizados para esta iniciativa.
+                    </div>
+                  } @else {
+                    <div class="flex flex-col gap-4">
+                      @for (chunk of selectedChunks(); track chunk.id; let idx = $index) {
+                        <div
+                          class="bg-[rgba(17,24,39,0.4)] border border-[rgba(255,255,255,0.06)] rounded-lg p-4 flex flex-col gap-2"
                         >
-                          Sección: {{ chunk.sectionName || 'N/A' }}
-                        </span>
-                      </div>
-                      <p
-                        class="text-xs text-[#d1d5db] leading-relaxed whitespace-pre-line text-left"
-                      >
-                        {{ chunk.content }}
-                      </p>
+                          <div
+                            class="flex justify-between items-center border-b border-[rgba(255,255,255,0.04)] pb-2 mb-1"
+                          >
+                            <span
+                              class="text-xs font-bold text-[#f2c94c] flex items-center gap-1.5"
+                            >
+                              <span class="pi pi-paperclip"></span> Bloque {{ idx + 1 }}
+                            </span>
+                            <span
+                              class="text-[0.65rem] text-[#9ca3af] px-2 py-0.5 rounded-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]"
+                            >
+                              Sección: {{ chunk.sectionName || 'N/A' }}
+                            </span>
+                          </div>
+                          <p
+                            class="text-xs text-[#d1d5db] leading-relaxed whitespace-pre-line text-left"
+                          >
+                            {{ chunk.content }}
+                          </p>
+                        </div>
+                      }
                     </div>
                   }
                 </div>
-              }
-            </div>
 
-            <!-- Modal Footer -->
-            <div
-              class="p-4 border-t border-[rgba(255,255,255,0.08)] flex justify-end bg-[rgba(17,24,39,0.5)]"
-            >
-              <button
-                [aria-label]="'Cerrar previsualización'"
-                class="px-5 py-2 rounded-lg bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.08)] text-[#f3f4f6] text-xs font-bold transition-all cursor-pointer"
-                (click)="closeModal()"
-              >
-                Cerrar Previsualización
-              </button>
+                <!-- Modal Footer -->
+                <div
+                  class="p-4 border-t border-[rgba(255,255,255,0.08)] flex justify-end bg-[rgba(17,24,39,0.5)]"
+                >
+                  <button
+                    [aria-label]="'Cerrar previsualización'"
+                    class="px-5 py-2 rounded-lg bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.08)] text-[#f3f4f6] text-xs font-bold transition-all cursor-pointer"
+                    (click)="closeModal()"
+                  >
+                    Cerrar Previsualización
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          }
         </div>
       }
+
+      <!-- MODAL LANZADOR DE PROGRAM PLANNING -->
+      <app-program-planning-modal
+        [visible]="showPlanningModal()"
+        (visibleChange)="showPlanningModal.set($event)"
+      ></app-program-planning-modal>
     </div>
   `,
 })
 export class PlanningManagementComponent implements OnInit, OnDestroy {
+  public readonly refineRequested = output<string>();
+  public readonly activeView = signal<PlanningActiveView>('explorer');
+  public readonly showPlanningModal = signal<boolean>(false);
+
   protected readonly state = inject(DevopsAgentStateService);
   private readonly notifications = inject(NotificationService);
   protected isModalOpen = signal<boolean>(false);

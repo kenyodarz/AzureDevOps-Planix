@@ -284,6 +284,7 @@ import {
           ></app-planning-dashboard>
         } @else {
           <app-planning-management
+            (refineRequested)="onRefineRequested($event)"
             class="flex-1 flex flex-col overflow-hidden min-h-0"
           ></app-planning-management>
         }
@@ -298,6 +299,10 @@ export class DevopsAgentHomePage implements OnInit, OnDestroy {
   protected isTasksPanelOpen = signal<boolean>(true);
   protected workingTasksCount = signal<number>(0);
   private tasksSub: Subscription | null = null;
+
+  protected onRefineRequested(_prompt?: string): void {
+    this.activeTab = 'refinement';
+  }
 
   public ngOnInit(): void {
     this.tasksSub = this.state.tasks.subscribe((tasks) => {
