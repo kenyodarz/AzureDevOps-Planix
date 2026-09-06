@@ -1,0 +1,34 @@
+{
+  "name": "sdd-workflow",
+  "version": "1.0.0",
+  "description": "Universal Spec-Driven Development (SDD) Agent Skill for AI Coding Assistants. Compatible with skills.sh and Antigravity.",
+  "main": "bin/cli.js",
+  "bin": {
+    "sdd-workflow": "./bin/cli.js"
+  },
+  "keywords": [
+    "skills",
+    "skills.sh",
+    "agent-skill",
+    "sdd",
+    "spec-driven-development",
+    "ai-agent",
+    "antigravity",
+    "cursor",
+    "claude-code"
+  ],
+  "author": "Bancolombia / Open Source",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node bin/cli.js --help"
+  },
+  "files": [
+    "SKILL.md",
+    "bin/",
+    "templates/",
+    "README.md"
+  ]
+}
