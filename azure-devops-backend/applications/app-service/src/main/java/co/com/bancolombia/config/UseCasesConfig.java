@@ -6,11 +6,15 @@ import co.com.bancolombia.model.dashboard.gateways.DashboardFallbackPort;
 import co.com.bancolombia.model.dashboard.gateways.ReportStoragePort;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import co.com.bancolombia.usecase.dashboard.DevOpsDashboardUseCase;
 import co.com.bancolombia.usecase.ingestplanning.IngestPlanningSpecUseCase;
 import co.com.bancolombia.usecase.manageplanning.ManagePlanningUseCase;
+import co.com.bancolombia.usecase.planning.TriggerProgramPlanningUseCase;
 import co.com.bancolombia.usecase.searchplanning.SearchPlanningSpecUseCase;
+import co.com.bancolombia.usecase.spec.GetSpecDocumentUseCase;
+import co.com.bancolombia.usecase.spec.ListAvailableSpecsUseCase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -102,5 +106,27 @@ public class UseCasesConfig {
     public TrackAgentTaskUseCase trackAgentTaskUseCase(AgentGateway agentGateway,
             TaskStoreGateway taskStoreGateway) {
         return new TrackAgentTaskUseCase(agentGateway, taskStoreGateway);
+    }
+
+    /**
+     * Casos de uso de gestión documental de especificaciones (Fase 04, DP-BFF-01).
+     */
+    @Bean
+    public GetSpecDocumentUseCase getSpecDocumentUseCase(SpecStoragePort specStoragePort) {
+        return new GetSpecDocumentUseCase(specStoragePort);
+    }
+
+    @Bean
+    public ListAvailableSpecsUseCase listAvailableSpecsUseCase(SpecStoragePort specStoragePort) {
+        return new ListAvailableSpecsUseCase(specStoragePort);
+    }
+
+    /**
+     * Activación de planeación macro trimestral vía comando canónico A2A (Fase 04, DP-BFF-03).
+     */
+    @Bean
+    public TriggerProgramPlanningUseCase triggerProgramPlanningUseCase(
+            TrackAgentTaskUseCase trackAgentTaskUseCase) {
+        return new TriggerProgramPlanningUseCase(trackAgentTaskUseCase);
     }
 }

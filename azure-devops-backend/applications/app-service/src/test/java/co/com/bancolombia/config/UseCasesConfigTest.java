@@ -15,13 +15,20 @@ import co.com.bancolombia.model.agent.gateways.AgentGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.dashboard.gateways.DashboardFallbackPort;
 import co.com.bancolombia.model.dashboard.gateways.ReportStoragePort;
+import co.com.bancolombia.model.planning.ProgramPlanRequest;
 import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.SpecDocument;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import co.com.bancolombia.usecase.dashboard.DevOpsDashboardUseCase;
 import co.com.bancolombia.usecase.ingestplanning.IngestPlanningSpecUseCase;
 import co.com.bancolombia.usecase.manageplanning.ManagePlanningUseCase;
+import co.com.bancolombia.usecase.planning.TriggerProgramPlanningUseCase;
 import co.com.bancolombia.usecase.searchplanning.SearchPlanningSpecUseCase;
+import co.com.bancolombia.usecase.spec.GetSpecDocumentUseCase;
+import co.com.bancolombia.usecase.spec.ListAvailableSpecsUseCase;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +66,7 @@ class UseCasesConfigTest {
             .withUserConfiguration(FailingAgentConfig.class, UseCasesConfig.class);
 
     @Test
-    @DisplayName("GIVEN los gateways disponibles WHEN arranca el contexto THEN se registran los cinco casos de uso")
+    @DisplayName("GIVEN los gateways disponibles WHEN arranca el contexto THEN se registran los ocho casos de uso")
     void givenGatewaysAvailable_whenContextStarts_thenAllUseCasesAreRegistered() {
         contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
@@ -68,7 +75,18 @@ class UseCasesConfigTest {
             assertThat(context).hasSingleBean(ManagePlanningUseCase.class);
             assertThat(context).hasSingleBean(DevOpsDashboardUseCase.class);
             assertThat(context).hasSingleBean(TrackAgentTaskUseCase.class);
+            assertThat(context).hasSingleBean(GetSpecDocumentUseCase.class);
+            assertThat(context).hasSingleBean(ListAvailableSpecsUseCase.class);
+            assertThat(context).hasSingleBean(TriggerProgramPlanningUseCase.class);
         });
+    }
+
+    @Test
+    @DisplayName("GIVEN falta SpecStoragePort WHEN arranca el contexto THEN el arranque falla")
+    void givenMissingSpecStoragePort_whenContextStarts_thenStartupFails() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(MissingSpecStoragePortConfig.class, UseCasesConfig.class)
+                .run(context -> assertThat(context).hasFailed());
     }
 
     @Test
@@ -158,6 +176,54 @@ class UseCasesConfigTest {
                         .verify());
     }
 
+    @Test
+    @DisplayName("GIVEN el contexto WHEN se invoca GetSpecDocumentUseCase THEN delega a SpecStoragePort")
+    void givenContext_whenGetSpecDocumentUseCaseInvoked_thenDelegatesToPort() {
+        contextRunner.run(context -> {
+            GetSpecDocumentUseCase useCase = context.getBean(GetSpecDocumentUseCase.class);
+            SpecStoragePort port = context.getBean(SpecStoragePort.class);
+            SpecDocument doc = new SpecDocument("ideas.md", "# Ideas", "/path/ideas.md");
+            when(port.getSpec("ideas.md")).thenReturn(Mono.just(doc));
+
+            StepVerifier.create(useCase.execute("ideas.md"))
+                    .expectNext(doc)
+                    .verifyComplete();
+        });
+    }
+
+    @Test
+    @DisplayName("GIVEN el contexto WHEN se invoca ListAvailableSpecsUseCase THEN delega a SpecStoragePort")
+    void givenContext_whenListAvailableSpecsUseCaseInvoked_thenDelegatesToPort() {
+        contextRunner.run(context -> {
+            ListAvailableSpecsUseCase useCase = context.getBean(ListAvailableSpecsUseCase.class);
+            SpecStoragePort port = context.getBean(SpecStoragePort.class);
+            when(port.listAvailableSpecs()).thenReturn(Flux.just("frente_1.md", "frente_2.md"));
+
+            StepVerifier.create(useCase.execute())
+                    .expectNext("frente_1.md", "frente_2.md")
+                    .verifyComplete();
+        });
+    }
+
+    @Test
+    @DisplayName("GIVEN el contexto WHEN se invoca TriggerProgramPlanningUseCase THEN envía comando canónico")
+    void givenContext_whenTriggerProgramPlanningUseCaseInvoked_thenDispatchesCommand() {
+        contextRunner.run(context -> {
+            TriggerProgramPlanningUseCase useCase = context.getBean(
+                    TriggerProgramPlanningUseCase.class);
+            ProgramPlanRequest request = new ProgramPlanRequest(
+                    "Q3-2026",
+                    "Objetivos estratégicos",
+                    List.of("FrenteA"),
+                    4,
+                    80);
+
+            StepVerifier.create(useCase.execute(request, "ctx-123"))
+                    .assertNext(interaction -> assertThat(interaction).isNotNull())
+                    .verifyComplete();
+        });
+    }
+
     /**
      * La organización y el proyecto son campos privados sin getter: la única forma de comprobar que
      * el valor inyectado llegó al bean es observarlo en el prompt que el caso de uso construye.
@@ -210,6 +276,11 @@ class UseCasesConfigTest {
         ReportStoragePort reportStoragePort() {
             return (reportName, content) -> Mono.empty();
         }
+
+        @Bean
+        SpecStoragePort specStoragePort() {
+            return mock(SpecStoragePort.class);
+        }
     }
 
     /**
@@ -251,6 +322,11 @@ class UseCasesConfigTest {
         ReportStoragePort reportStoragePort() {
             return (reportName, content) -> Mono.empty();
         }
+
+        @Bean
+        SpecStoragePort specStoragePort() {
+            return mock(SpecStoragePort.class);
+        }
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -278,6 +354,40 @@ class UseCasesConfigTest {
         @Bean
         TaskStoreGateway taskStoreGateway() {
             return mock(TaskStoreGateway.class);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class MissingSpecStoragePortConfig {
+
+        @Bean
+        PlanningVectorStorePort planningVectorStorePort() {
+            return mock(PlanningVectorStorePort.class);
+        }
+
+        @Bean
+        TaskStoreGateway taskStoreGateway() {
+            return mock(TaskStoreGateway.class);
+        }
+
+        @Bean
+        CapturingAgentGateway agentGateway() {
+            return new CapturingAgentGateway();
+        }
+
+        @Bean
+        PromptTemplatePort promptTemplatePort() {
+            return new ClasspathPromptTemplateAdapter();
+        }
+
+        @Bean
+        DashboardFallbackPort dashboardFallbackPort() {
+            return new ClasspathDashboardFallbackAdapter();
+        }
+
+        @Bean
+        ReportStoragePort reportStoragePort() {
+            return (reportName, content) -> Mono.empty();
         }
     }
 

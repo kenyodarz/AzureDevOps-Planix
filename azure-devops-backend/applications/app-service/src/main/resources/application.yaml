@@ -30,6 +30,10 @@ dashboard:
 report:
   storage:
     directory: "${REPORT_STORAGE_DIRECTORY:reports}"
+# Repositorio de especificaciones funcionales y de planeación (Fase 06, DP-BFF-01).
+specs:
+  storage:
+    path: "${SPECS_STORAGE_PATH:docs/specs}"
 spring:
   application:
     name: "AgentAzureDevOps"
