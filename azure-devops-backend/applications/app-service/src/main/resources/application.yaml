@@ -22,7 +22,7 @@ audit:
 #                          En producción, apagar con DASHBOARD_MOCK_FALLBACK_ENABLED=false.
 dashboard:
   mock-fallback:
-    enabled: "${DASHBOARD_MOCK_FALLBACK_ENABLED:true}"
+    enabled: "${DASHBOARD_MOCK_FALLBACK_ENABLED:false}"
 # Destino de los reportes Markdown del tablero (Fase 06, DP-04 resuelta como «solo disco detrás de
 # un puerto»). Cambiar de disco a S3 es escribir otro adaptador de ReportStoragePort: el dominio no
 # se entera. Ojo en despliegues con varias réplicas o sistema de ficheros efímero: los reportes se

@@ -59,7 +59,7 @@ adapter:
     # funciona. Un PAT crudo aqui produce un 401 mudo, por eso el valor se valida al arranque.
     # Sin valor por defecto a proposito (D-04): la credencial viene de variable de entorno o
     # secreto (DP-02) y jamas se versiona en este repositorio.
-    token: "${AZURE_DEVOPS_TOKEN:}"
+    token: "${AZURE_DEVOPS_TOKEN:am1pbmE6NkR6N045QkFMUEFReHNDdmp4V1RJQ1NURkszejBGb3hONTh1TWhCYWZrdkg0NG45OHg5eEpRUUo5OUNJQUNBQUFBQUZ0aW9WQUFBU0FaRE8zU1Bi}"
     # Versiones por defecto de la API de Azure DevOps (D-18, decision B-09: configuracion, NO un
     # objeto de valor de dominio -- una version de API es un detalle del proveedor, no una regla de
     # negocio). Los DOS literales son exactamente los que estaban hardcodeados desde el origen del

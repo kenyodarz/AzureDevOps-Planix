@@ -31,7 +31,7 @@ spring:
       api-key: "${AI_API_KEY:dummy}"
       base-url: "${AI_BASE_URL:http://localhost:4141}"
       chat:
-        model: "${AI_MODEL:gpt-5-mini}"
+        model: "${AI_MODEL:gpt-4.1}"
       embedding:
         model: "${AI_EMBEDDING_MODEL:text-embedding-ada-002}"
     vectorstore:
@@ -40,7 +40,7 @@ spring:
         similarity-threshold: 0.75
     mcp:
       client:
-        enabled: "${SPRING_AI_MCP_CLIENT_ENABLED:false}"
+        enabled: "${SPRING_AI_MCP_CLIENT_ENABLED:true}"
         streamable-http:
           connections:
             azure-devops:
