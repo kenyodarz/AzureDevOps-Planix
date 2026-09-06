@@ -4,7 +4,7 @@
 > Punto de entrada obligatorio antes de iniciar cualquier sesión de desarrollo o ejecutar código.
 >
 > **Última actualización:** 2026-09-06 · **Fase activa:**
-> `Fase 03 — Migración de PlanningDraftFlowHandler a SpecStoragePort`
+> `Fase 04 — Modelos de Dominio para Program Planning`
 
 ---
 
@@ -14,8 +14,8 @@
 |:------:|:---------------------------------------------------------------|:---------------------------------------------------|:----------------------------------|:-----------------:|:---------------:|
 | **01** | Modelos y Puerto de Almacenamiento Documental (`domain/model`) | `fases/FASE-01-modelos-y-puerto-spec-storage.md`   | `resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-06    |
 | **02** | Adaptador `FileSystemSpecAdapter` (`infrastructure`)           | `fases/FASE-02-adaptador-filesystem-spec.md`       | `resultados/RESULTADO-FASE-02.md` | 🟢 **COMPLETADA** |   2026-09-06    |
-| **03** | Migración de `PlanningDraftFlowHandler` a `SpecStoragePort`    | `fases/FASE-03-migracion-draft-handler.md`         | `resultados/RESULTADO-FASE-03.md` | 🟡 **PENDIENTE**  |        —        |
-| **04** | Modelos de Dominio para Program Planning                       | `fases/FASE-04-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-04.md` |  ⚪ NO GENERADA   |        —        |
+| **03** | Migración de `PlanningDraftFlowHandler` a `SpecStoragePort`    | `fases/FASE-03-migracion-draft-handler.md`         | `resultados/RESULTADO-FASE-03.md` | 🟢 **COMPLETADA** |   2026-09-06    |
+| **04** | Modelos de Dominio para Program Planning                       | `fases/FASE-04-modelos-dominio-planeacion.md`      | `resultados/RESULTADO-FASE-04.md` | 🟡 **PENDIENTE**  |        —        |
 | **05** | Prompt Externalizado de Planeación (`roadmap`)                 | `fases/FASE-05-prompt-externalizado-planeacion.md` | `resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA   |        —        |
 | **06** | Caso de Uso y Handler del Planner Agent                        | `fases/FASE-06-handler-planner-agent.md`           | `resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA   |        —        |
 | **07** | Especialización de Prompts Story Creator con Regla HyMS        | `fases/FASE-07-prompts-story-creator-hyms.md`      | `resultados/RESULTADO-FASE-07.md` |  ⚪ NO GENERADA   |        —        |
@@ -28,13 +28,12 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 03 Lista para Ejecución:**
+> 🎯 **Fase 04 Lista para Ejecución:**
 >
 >
-Abrir [FASE-03-migracion-draft-handler.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-03-migracion-draft-handler.md)
-> y ejecutar la migración de `PlanningDraftFlowHandler` para reemplazar la dependencia de
-> `PlanningVectorStorePort` por `SpecStoragePort`, inyectando el documento Markdown completo en el
-> prompt de refinamiento de tareas.
+Abrir [FASE-04-modelos-dominio-planeacion.md](file:///c:/Users/minaj/Work/GitHub/Labs/AzureDevOps/azure-devops-agent/docs/fases/FASE-04-modelos-dominio-planeacion.md)
+> y modelar los conceptos macro de planeación en `domain/model`: `AgentIntent.PROGRAM_PLANNING`,
+> `ProgramPlanRequest`, `SprintAllocation`, `ActivityType` (HU vs HA) y actualizar `IntentResolver`.
 
 ---
 
@@ -55,9 +54,9 @@ Abrir [FASE-03-migracion-draft-handler.md](file:///c:/Users/minaj/Work/GitHub/La
 
 | Métrica                                 | Baseline Actual | Meta del Plan | Estado Actual |
 |:----------------------------------------|:---------------:|:-------------:|:-------------:|
-| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 332 / 332  |
+| **Pruebas Unitarias Pasando**           |       305       | 100% pasando  | 🟢 334 / 334  |
 | **Cobertura en `domain/model`**         |      99.7%      |  $\ge 90\%$   |   🟢 93.2%    |
-| **Cobertura en `domain/usecase`**       |      99.2%      |  $\ge 90\%$   |   🟢 99.2%    |
+| **Cobertura en `domain/usecase`**       |      99.2%      |  $\ge 90\%$   |   🟢 98.8%    |
 | **Cobertura en `:spec-storage`**        |       N/A       |  $\ge 90\%$   |   🟢 92.0%    |
 | **Violaciones ArchUnit**                |        0        |     **0**     |     🟢 0      |
 | **Clases con $> 300$ líneas de código** |        0        |     **0**     |     🟢 0      |
@@ -66,8 +65,9 @@ Abrir [FASE-03-migracion-draft-handler.md](file:///c:/Users/minaj/Work/GitHub/La
 
 ## 5. Bitácora del Plan
 
-|     Fecha      | Evento                                                                                                                                                                                                                                  |
-|:--------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **2026-09-06** | Cierre exitoso de la Fase 02: implementación de `FileSystemSpecAdapter` en el submódulo `:spec-storage` con 92% de cobertura de líneas, 95.2% de fuerza en mutación PIT y 18 pruebas nuevas (332 totales). Se genera la Fase 03.        |
-| **2026-09-06** | Cierre exitoso de la Fase 01: creación de `SpecDocument`, `SpecNotFoundException` y `SpecStoragePort` en `domain/model` con 100% de cobertura y 9 pruebas nuevas (314 totales). Se genera la especificación y prompt de la Fase 02.     |
-| **2026-09-05** | Inicialización del Plan Maestro del Harness de Agentes (9 fases atómicas). Resguardo histórico del plan anterior en `docs/historico/` y estandarización del repositorio maestro de plantillas en `docs/`. Fase 01 lista para ejecución. |
+|     Fecha      | Evento                                                                                                                                                                                                                                     |
+|:--------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-09-06** | Cierre exitoso de la Fase 03: migración de `PlanningDraftFlowHandler` a `SpecStoragePort`, resolución de frente con prefijo y fallback resiliente. 334 pruebas pasando al 100%, 98.8% de cobertura en `domain/usecase`. Se genera Fase 04. |
+| **2026-09-06** | Cierre exitoso de la Fase 02: implementación de `FileSystemSpecAdapter` en el submódulo `:spec-storage` con 92% de cobertura de líneas, 95.2% de fuerza en mutación PIT y 18 pruebas nuevas (332 totales). Se genera la Fase 03.           |
+| **2026-09-06** | Cierre exitoso de la Fase 01: creación de `SpecDocument`, `SpecNotFoundException` y `SpecStoragePort` en `domain/model` con 100% de cobertura y 9 pruebas nuevas (314 totales). Se genera la especificación y prompt de la Fase 02.        |
+| **2026-09-05** | Inicialización del Plan Maestro del Harness de Agentes (9 fases atómicas). Resguardo histórico del plan anterior en `docs/historico/` y estandarización del repositorio maestro de plantillas en `docs/`. Fase 01 lista para ejecución.    |

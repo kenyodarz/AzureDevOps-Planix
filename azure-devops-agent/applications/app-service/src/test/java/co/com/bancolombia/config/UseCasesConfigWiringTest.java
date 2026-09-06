@@ -9,8 +9,8 @@ import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
-import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
@@ -98,8 +98,8 @@ class UseCasesConfigWiringTest {
         }
 
         @Bean
-        PlanningVectorStorePort planningVectorStorePort() {
-            return mock(PlanningVectorStorePort.class);
+        SpecStoragePort specStoragePort() {
+            return mock(SpecStoragePort.class);
         }
 
         @Bean

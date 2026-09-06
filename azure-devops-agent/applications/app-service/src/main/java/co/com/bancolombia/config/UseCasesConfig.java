@@ -6,8 +6,8 @@ import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
-import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import co.com.bancolombia.usecase.chat.handler.ApprovalFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
@@ -109,9 +109,9 @@ public class UseCasesConfig {
 
     @Bean
     public PlanningDraftFlowHandler planningDraftFlowHandler(ChatGateway chatGateway,
-            PromptTemplatePort promptTemplatePort, PlanningVectorStorePort planningVectorStorePort) {
+            PromptTemplatePort promptTemplatePort, SpecStoragePort specStoragePort) {
         return new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
-                planningVectorStorePort);
+                specStoragePort);
     }
 
     /**

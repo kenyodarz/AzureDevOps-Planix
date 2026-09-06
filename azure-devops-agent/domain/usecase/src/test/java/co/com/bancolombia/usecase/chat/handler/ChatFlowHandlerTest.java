@@ -3,7 +3,6 @@ package co.com.bancolombia.usecase.chat.handler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -14,10 +13,11 @@ import co.com.bancolombia.model.agent.AzureDevOpsScope;
 import co.com.bancolombia.model.agent.CorporateKnowledge;
 import co.com.bancolombia.model.agent.IntentResolution;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
-import co.com.bancolombia.model.planning.PlanningChunk;
-import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.PromptTemplateId;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.SpecDocument;
+import co.com.bancolombia.model.spec.SpecNotFoundException;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -67,8 +66,6 @@ class ChatFlowHandlerTest {
     private static final String VAR_RAG_CONTEXT = "contextoRag";
     private static final String VAR_CORPORATE_TEMPLATE = "plantillaCorporativa";
 
-    private static final int EXPECTED_RAG_RESULTS = 3;
-
     @Mock
     private ChatGateway chatGateway;
 
@@ -76,7 +73,7 @@ class ChatFlowHandlerTest {
     private PromptTemplatePort promptTemplatePort;
 
     @Mock
-    private PlanningVectorStorePort vectorStorePort;
+    private SpecStoragePort specStoragePort;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // General
@@ -175,8 +172,11 @@ class ChatFlowHandlerTest {
         @Test
         @DisplayName("Falla si la resolución no trae identificador de Work Item")
         void givenResolutionWithoutWorkItem_whenHandle_thenThrows() {
+            // GIVEN
+            ChatFlowContext context = contextOf(AgentIntent.QUALITY_AUDIT);
+
             // WHEN / THEN
-            assertThatThrownBy(() -> handler.handle(contextOf(AgentIntent.QUALITY_AUDIT)))
+            assertThatThrownBy(() -> handler.handle(context))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("identificador de Work Item");
         }
@@ -340,7 +340,8 @@ class ChatFlowHandlerTest {
 
         @BeforeEach
         void setUp() {
-            handler = new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, vectorStorePort);
+            handler = new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
+                    specStoragePort);
         }
 
         @Test
@@ -350,18 +351,36 @@ class ChatFlowHandlerTest {
         }
 
         @Test
-        @DisplayName("Inyecta en el prompt los fragmentos recuperados del vector store")
-        void givenChunks_whenHandle_thenIncludesRagContext() {
+        @DisplayName("Carga el spec correspondiente al prefijo de frente y lo inyecta íntegro")
+        void givenIdeaWithFrontPrefix_whenHandle_thenLoadsMatchingSpecAndInjectsContent() {
             // GIVEN
-            PlanningChunk chunk = PlanningChunk.builder()
-                    .id("chunk-1")
-                    .initiativeId("init-1")
-                    .sectionName("Objetivo")
-                    .content("Contenido de planeación relevante")
-                    .metadata(Map.of())
-                    .build();
-            when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                    .thenReturn(Flux.just(chunk));
+            String ideaWithPrefix = "[Aegis Engine] Desarrollar nuevo motor de reglas reactivo";
+            ChatFlowContext context = new ChatFlowContext(ideaWithPrefix, CONTEXT_ID,
+                    IntentResolution.of(AgentIntent.PLANNING_DRAFT));
+            SpecDocument spec = new SpecDocument("aegis_engine.md",
+                    "## Documento Completo de Aegis Engine",
+                    "/specs/aegis_engine.md");
+            when(specStoragePort.getSpec("aegis_engine.md")).thenReturn(Mono.just(spec));
+            givenTemplateAndGatewayRespond();
+
+            // WHEN
+            handler.handle(context).block();
+
+            // THEN
+            assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
+            Map<String, Object> variables = captureTemplateVariables();
+            assertThat(variables).containsEntry(VAR_ORIGINAL_IDEA, ideaWithPrefix)
+                    .containsEntry(VAR_RAG_CONTEXT, "## Documento Completo de Aegis Engine");
+            verify(specStoragePort).getSpec("aegis_engine.md");
+        }
+
+        @Test
+        @DisplayName("Carga el spec por defecto cuando la idea no contiene prefijo")
+        void givenIdeaWithoutPrefix_whenHandle_thenLoadsDefaultSpec() {
+            // GIVEN
+            SpecDocument spec = new SpecDocument("ideas_planning_q3.md", "## Plan Maestro Q3",
+                    "/specs/ideas_planning_q3.md");
+            when(specStoragePort.getSpec("ideas_planning_q3.md")).thenReturn(Mono.just(spec));
             givenTemplateAndGatewayRespond();
 
             // WHEN
@@ -370,27 +389,43 @@ class ChatFlowHandlerTest {
             // THEN
             assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
             Map<String, Object> variables = captureTemplateVariables();
-            assertThat(variables).containsEntry(VAR_ORIGINAL_IDEA, USER_TEXT);
-            assertThat(variables.get(VAR_RAG_CONTEXT).toString())
-                    .contains("Contenido de planeación relevante");
-            verify(vectorStorePort).searchSimilarity(USER_TEXT, null, EXPECTED_RAG_RESULTS);
+            assertThat(variables).containsEntry(VAR_ORIGINAL_IDEA, USER_TEXT)
+                    .containsEntry(VAR_RAG_CONTEXT, "## Plan Maestro Q3");
+            verify(specStoragePort).getSpec("ideas_planning_q3.md");
         }
 
         @Test
-        @DisplayName("Un fallo del vector store no interrumpe el flujo")
-        void givenVectorStoreError_whenHandle_thenContinuesWithoutContext() {
+        @DisplayName("Un spec no encontrado no interrumpe el flujo y aplica contingencia")
+        void givenSpecNotFound_whenHandle_thenContinuesWithoutContext() {
             // GIVEN
-            when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                    .thenReturn(Flux.error(new IllegalStateException("vector store caído")));
+            when(specStoragePort.getSpec(anyString()))
+                    .thenReturn(Mono.error(new SpecNotFoundException("Spec no encontrado")));
             givenTemplateAndGatewayRespond();
 
             // WHEN
             String result = handler.handle(contextOf(AgentIntent.PLANNING_DRAFT)).block();
 
             // THEN
-            assertThat(captureTemplateVariables().get(VAR_RAG_CONTEXT))
-                    .isEqualTo("No hay contexto de planeación adicional.");
+            assertThat(captureTemplateVariables())
+                    .containsEntry(VAR_RAG_CONTEXT, "No hay contexto de planeación adicional.");
             assertThat(result).isEqualTo(LLM_RESPONSE);
+        }
+
+        @Test
+        @DisplayName("Un spec con contenido en blanco usa el texto de contingencia")
+        void givenSpecWithBlankContent_whenHandle_thenUsesFallbackContext() {
+            // GIVEN
+            SpecDocument spec = new SpecDocument("ideas_planning_q3.md", "   ",
+                    "/specs/ideas_planning_q3.md");
+            when(specStoragePort.getSpec("ideas_planning_q3.md")).thenReturn(Mono.just(spec));
+            givenTemplateAndGatewayRespond();
+
+            // WHEN
+            handler.handle(contextOf(AgentIntent.PLANNING_DRAFT)).block();
+
+            // THEN
+            assertThat(captureTemplateVariables())
+                    .containsEntry(VAR_RAG_CONTEXT, "No hay contexto de planeación adicional.");
         }
     }
 

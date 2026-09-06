@@ -16,8 +16,8 @@ import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
-import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.handler.ApprovalFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
@@ -82,7 +82,7 @@ class AgentChatUseCaseParsingTest {
     private TaskStoreGateway taskStoreGateway;
 
     @Mock
-    private PlanningVectorStorePort vectorStorePort;
+    private SpecStoragePort specStoragePort;
 
     @Mock
     private PromptTemplatePort promptTemplatePort;
@@ -107,7 +107,7 @@ class AgentChatUseCaseParsingTest {
                         new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
                         new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
                         new PlanningDraftFlowHandler(chatGateway, promptTemplatePort,
-                                vectorStorePort))));
+                                specStoragePort))));
     }
 
     @Test

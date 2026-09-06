@@ -2,7 +2,6 @@ package co.com.bancolombia.usecase.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -20,10 +19,11 @@ import co.com.bancolombia.model.agent.IntentResolver;
 import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
-import co.com.bancolombia.model.planning.PlanningChunk;
-import co.com.bancolombia.model.planning.gateways.PlanningVectorStorePort;
 import co.com.bancolombia.model.prompt.PromptTemplateId;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.spec.SpecDocument;
+import co.com.bancolombia.model.spec.SpecNotFoundException;
+import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.handler.ApprovalFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.DivisionFlowHandler;
@@ -40,7 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -81,7 +80,6 @@ class AgentChatUseCaseCharacterizationTest {
     private static final String LLM_RESPONSE = "Respuesta simulada del modelo";
     private static final String NO_CONTENT = "No content provided";
     private static final String WORK_ITEM_ID = "12345";
-    private static final int EXPECTED_RAG_RESULTS = 3;
 
     private static final String VAR_WORK_ITEM_ID = "workItemId";
     private static final String VAR_ORGANIZATION = "organizacion";
@@ -105,7 +103,7 @@ class AgentChatUseCaseCharacterizationTest {
     private TaskStoreGateway taskStoreGateway;
 
     @Mock
-    private PlanningVectorStorePort vectorStorePort;
+    private SpecStoragePort specStoragePort;
 
     @Mock
     private PromptTemplatePort promptTemplatePort;
@@ -135,7 +133,7 @@ class AgentChatUseCaseCharacterizationTest {
                 new RefinementFlowHandler(chatGateway, promptTemplatePort, scope, knowledge),
                 new ApprovalFlowHandler(chatGateway, promptTemplatePort, knowledge),
                 new DivisionFlowHandler(chatGateway, promptTemplatePort, knowledge),
-                new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, vectorStorePort)));
+                new PlanningDraftFlowHandler(chatGateway, promptTemplatePort, specStoragePort)));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -233,22 +231,17 @@ class AgentChatUseCaseCharacterizationTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Flujo Planificación (RAG)
+    // Flujo Planificación (Spec Storage)
     // ═══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("Texto libre largo enruta al flujo de Planificación con contexto RAG")
-    void givenLongIdeaText_whenChatAndRespond_thenExecutesPlanningSimilarityFlow() {
+    @DisplayName("Texto libre largo enruta al flujo de Planificación con contexto de spec")
+    void givenLongIdeaText_whenChatAndRespond_thenExecutesPlanningFlowWithSpec() {
         // GIVEN
-        PlanningChunk chunk = PlanningChunk.builder()
-                .id("chunk-1")
-                .initiativeId("init-1")
-                .sectionName("Objetivo")
-                .content("Contenido de planeación relevante")
-                .metadata(Map.of())
-                .build();
-        when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                .thenReturn(Flux.just(chunk));
+        SpecDocument spec = new SpecDocument("ideas_planning_q3.md",
+                "Contenido de planeación relevante",
+                "/specs/ideas_planning_q3.md");
+        when(specStoragePort.getSpec("ideas_planning_q3.md")).thenReturn(Mono.just(spec));
         givenTemplateAndGatewayRespond();
 
         // WHEN
@@ -260,15 +253,15 @@ class AgentChatUseCaseCharacterizationTest {
         assertThat(variables).containsEntry(VAR_ORIGINAL_IDEA, LONG_IDEA_TEXT);
         assertThat(variables.get(VAR_RAG_CONTEXT).toString())
                 .contains("Contenido de planeación relevante");
-        verify(vectorStorePort).searchSimilarity(LONG_IDEA_TEXT, null, EXPECTED_RAG_RESULTS);
+        verify(specStoragePort).getSpec("ideas_planning_q3.md");
     }
 
     @Test
-    @DisplayName("Un fallo del vector store no interrumpe el flujo de Planificación")
-    void givenVectorStoreError_whenPlanningFlow_thenContinuesWithoutContext() {
+    @DisplayName("Un fallo del spec storage no interrumpe el flujo de Planificación")
+    void givenSpecStorageError_whenPlanningFlow_thenContinuesWithoutContext() {
         // GIVEN
-        when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                .thenReturn(Flux.error(new IllegalStateException("vector store caído")));
+        when(specStoragePort.getSpec(anyString()))
+                .thenReturn(Mono.error(new SpecNotFoundException("spec no encontrado")));
         givenTemplateAndGatewayRespond();
 
         // WHEN
@@ -276,8 +269,8 @@ class AgentChatUseCaseCharacterizationTest {
 
         // THEN
         assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
-        assertThat(captureTemplateVariables().get(VAR_RAG_CONTEXT))
-                .isEqualTo("No hay contexto de planeación adicional.");
+        assertThat(captureTemplateVariables())
+                .containsEntry(VAR_RAG_CONTEXT, "No hay contexto de planeación adicional.");
         assertThat(response.getTask().getStatus().getState()).isEqualTo(TaskState.COMPLETED);
     }
 
@@ -448,8 +441,9 @@ class AgentChatUseCaseCharacterizationTest {
     void givenLongIdeaContainingKeywordConsulta_whenChatAndRespond_thenExecutesPlanningSimilarityFlow() {
         // GIVEN
         String userText = "Necesito un servicio que consulta el saldo del cliente desde el core";
-        when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                .thenReturn(Flux.empty());
+        when(specStoragePort.getSpec("ideas_planning_q3.md"))
+                .thenReturn(Mono.just(new SpecDocument("ideas_planning_q3.md", "",
+                        "/specs/ideas_planning_q3.md")));
         givenTemplateAndGatewayRespond();
 
         // WHEN
@@ -458,7 +452,7 @@ class AgentChatUseCaseCharacterizationTest {
         // THEN
         assertThat(captureTemplateId()).isEqualTo(PromptTemplateId.PLANNING_DRAFT);
         assertThat(captureTemplateVariables()).containsEntry(VAR_ORIGINAL_IDEA, userText);
-        verify(vectorStorePort).searchSimilarity(userText, null, EXPECTED_RAG_RESULTS);
+        verify(specStoragePort).getSpec("ideas_planning_q3.md");
     }
 
     /**
@@ -477,8 +471,9 @@ class AgentChatUseCaseCharacterizationTest {
     @DisplayName("DP-07: el marcador de creación estructurada se trata como texto libre")
     void givenStructuredCreationMarker_whenChatAndRespond_thenPlanningFlowWins() {
         // GIVEN
-        when(vectorStorePort.searchSimilarity(anyString(), any(), anyInt()))
-                .thenReturn(Flux.empty());
+        when(specStoragePort.getSpec(anyString()))
+                .thenReturn(Mono.just(new SpecDocument("ideas_planning_q3.md", "",
+                        "/specs/ideas_planning_q3.md")));
         givenTemplateAndGatewayRespond();
 
         // WHEN
