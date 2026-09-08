@@ -7,8 +7,13 @@ import {
   ProgramPlanningWizardComponent,
 } from './program-planning-wizard.component';
 import { PlanningStateService } from '../../services/state/planning-state.service';
+import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
 import { NotificationService } from '../../../../core';
-import { ProgramPlanRequestDTO, ProgramPlanResponseDTO } from '../../models/devops-agent.model';
+import {
+  ProgramPlanRequestDTO,
+  ProgramPlanResponseDTO,
+  SendMessageResponse,
+} from '../../models/devops-agent.model';
 
 class MockPlanningStateService {
   readonly planningRunningSignal: WritableSignal<boolean> = signal<boolean>(false);
@@ -31,6 +36,19 @@ class MockPlanningStateService {
   );
 }
 
+class MockDevopsAgentApiService {
+  readonly sendMessage = vi.fn(() =>
+    of<SendMessageResponse>({
+      message: {
+        role: 'agent',
+        messageId: 'reply-123',
+        contextId: 'ctx-123',
+        parts: [{ text: 'Ajusté el frente de Kafka para adelantar sus contratos.' }],
+      },
+    }),
+  );
+}
+
 class MockNotificationService {
   readonly success = vi.fn();
   readonly error = vi.fn();
@@ -42,16 +60,19 @@ describe('GIVEN ProgramPlanningWizardComponent', () => {
   let component: ProgramPlanningWizardComponent;
   let fixture: ComponentFixture<ProgramPlanningWizardComponent>;
   let mockPlanningState: MockPlanningStateService;
+  let mockDevopsApi: MockDevopsAgentApiService;
   let mockNotifications: MockNotificationService;
 
   beforeEach(async () => {
     mockPlanningState = new MockPlanningStateService();
+    mockDevopsApi = new MockDevopsAgentApiService();
     mockNotifications = new MockNotificationService();
 
     await TestBed.configureTestingModule({
       imports: [ProgramPlanningWizardComponent],
       providers: [
         { provide: PlanningStateService, useValue: mockPlanningState },
+        { provide: DevopsAgentApiService, useValue: mockDevopsApi },
         { provide: NotificationService, useValue: mockNotifications },
       ],
     }).compileComponents();
@@ -187,9 +208,14 @@ describe('GIVEN ProgramPlanningWizardComponent', () => {
       }
     });
 
-    it('THEN renders the SPEC Markdown in Step 5 and enables Copilot chat', () => {
+    it('THEN renders the SPEC Markdown in Step 5 and enables Copilot chat via BFF', () => {
       vi.useFakeTimers();
       try {
+        component.initiativeForm.patchValue({
+          title: 'Guardián de la Experiencia',
+          problemAndValue: 'Solución para resolver incidentes transaccionales con reglas híbridas.',
+        });
+        component.selectedFronts.set(['Canales', 'BFF', 'Broker']);
         component.currentStep.set(4);
         component.runCapacityCalculation();
         vi.advanceTimersByTime(500);
@@ -201,6 +227,8 @@ describe('GIVEN ProgramPlanningWizardComponent', () => {
         expect(component.generatedSpec()).toContain('# Ideas de Planeación - Q3-2026');
         expect(component.generatedSpec()).toContain('## 1. Visión y Objetivos de Negocio');
         expect(component.generatedSpec()).toContain('## 4. Distribución del Roadmap por Sprints');
+        // Debe incluir Broker en la tabla
+        expect(component.generatedSpec()).toContain('Broker');
         expect(component.copilotMessages().length).toBeGreaterThanOrEqual(1);
 
         // Enviar mensaje a Copilot
@@ -208,10 +236,7 @@ describe('GIVEN ProgramPlanningWizardComponent', () => {
         component.sendCopilotMessage();
         fixture.detectChanges();
 
-        expect(component.copilotThinking()).toBe(true);
-        vi.advanceTimersByTime(700);
-        fixture.detectChanges();
-
+        expect(mockDevopsApi.sendMessage).toHaveBeenCalledTimes(1);
         expect(component.copilotThinking()).toBe(false);
         const lastMsg = component.copilotMessages()[component.copilotMessages().length - 1];
         expect(lastMsg.sender).toBe('agent');
@@ -250,7 +275,7 @@ describe('GIVEN ProgramPlanningWizardComponent', () => {
       expect(mockPlanningState.triggerProgramPlanning).toHaveBeenCalledTimes(1);
       expect(savedSpy).toHaveBeenCalled();
       expect(mockNotifications.success).toHaveBeenCalledWith(
-        expect.stringContaining('aprobada y persistida con éxito'),
+        expect.stringMatching(/aprobada.*(encolada en el agente|persistida con éxito)/),
       );
       expect(mockPlanningState.loadAvailableSpecs).toHaveBeenCalledTimes(1);
       expect(component.visible).toBe(false);

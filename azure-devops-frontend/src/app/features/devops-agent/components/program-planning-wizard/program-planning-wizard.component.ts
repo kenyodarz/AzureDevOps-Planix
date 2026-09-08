@@ -14,9 +14,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PlanningStateService } from '../../services/state/planning-state.service';
+import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
 import { NotificationService } from '../../../../core';
 import { MarkdownParserPipe } from '../../../../shared/pipes/markdown-parser.pipe';
-import { ProgramPlanRequestDTO } from '../../models/devops-agent.model';
+import { ProgramPlanRequestDTO, SendMessageRequest } from '../../models/devops-agent.model';
 
 export interface FrontDefinition {
   readonly id: string;
@@ -596,12 +597,17 @@ export class ProgramPlanningWizardComponent implements OnInit {
   @Output() initiativeSaved = new EventEmitter<{ name: string; quarter: string; specContent: string }>();
 
   public readonly planningState = inject(PlanningStateService);
+  public readonly selectedFronts = signal<string[]>(['Canales', 'BFF', 'Core']);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly availableFronts: readonly FrontDefinition[] = AVAILABLE_FRONTS;
-  public readonly selectedFronts = signal<string[]>(['Canales', 'BFF', 'Core', 'Datos', 'DevOps']);
+  public readonly initiativeForm: FormGroup = this.fb.group({
+    title: ['', [Validators.required, Validators.minLength(3)]],
+    problemAndValue: ['', [Validators.required, Validators.minLength(10)]],
+    targetUsers: [''],
+  });
 
   public readonly currentStep = signal<number>(1);
   public readonly maxVisitedStep = signal<number>(1);
@@ -613,6 +619,11 @@ export class ProgramPlanningWizardComponent implements OnInit {
   public readonly copilotMessages = signal<CopilotMessage[]>([]);
   public copilotPrompt = '';
   public readonly copilotThinking = signal<boolean>(false);
+  public readonly horizonForm: FormGroup = this.fb.group({
+    quarter: ['Q3-2026', [Validators.required, Validators.pattern(/^Q[1-4]-\d{4}$/)]],
+    sprintCount: [6, [Validators.required, Validators.min(1), Validators.max(24)]],
+    milestones: [''],
+  });
 
   public readonly steps = [
     { number: 1, title: 'Iniciativa y Negocio', shortTitle: '1. Iniciativa' },
@@ -621,24 +632,11 @@ export class ProgramPlanningWizardComponent implements OnInit {
     { number: 4, title: 'Diagnóstico de Capacidad', shortTitle: '4. Capacidad' },
     { number: 5, title: 'SPEC & Copilot', shortTitle: '5. SPEC & Copilot' },
   ];
-
-  public readonly initiativeForm: FormGroup = this.fb.group({
-    title: ['Guardián de la Experiencia (Monitoreo Inteligente)', [Validators.required, Validators.minLength(3)]],
-    problemAndValue: [
-      'Reducir incidentes no detectados en transacciones críticas mediante un motor de reglas híbrido (determinista + semántico con pgvector) para auditoría y alertas operativas.',
-      [Validators.required, Validators.minLength(10)],
-    ],
-    targetUsers: ['Clientes App Personas, Equipos de Soporte Operativo y Ciberseguridad'],
-  });
-
-  public readonly horizonForm: FormGroup = this.fb.group({
-    quarter: ['Q3-2026', [Validators.required, Validators.pattern(/^Q[1-4]-\d{4}$/)]],
-    sprintCount: [6, [Validators.required, Validators.min(1), Validators.max(24)]],
-    milestones: ['Pruebas integrales QA en Sprint 251 y Paso a Producción HyMS en Sprint 252'],
-  });
+  private readonly devopsApi = inject(DevopsAgentApiService);
+  private wizardContextId = `general-wizard-${crypto.randomUUID()}`;
 
   public ngOnInit(): void {
-    // Inicialización si se requiere
+    // Inicialización del wizard
   }
 
   @HostListener('document:keydown.escape')
@@ -678,6 +676,9 @@ export class ProgramPlanningWizardComponent implements OnInit {
     } else {
       this.selectedFronts.set([...current, frontId]);
     }
+    // Si ya existía diagnóstico o SPEC, invalidar para recalcular en paso 4 y 5
+    this.diagnosis.set(null);
+    this.generatedSpec.set('');
   }
 
   public goToStep(step: number): void {
@@ -685,6 +686,8 @@ export class ProgramPlanningWizardComponent implements OnInit {
       this.currentStep.set(step);
       if (step === 4 && !this.diagnosis()) {
         this.runCapacityCalculation();
+      } else if (step === 5 && !this.generatedSpec()) {
+        this.ensureSpecGenerated();
       }
     }
   }
@@ -725,8 +728,7 @@ export class ProgramPlanningWizardComponent implements OnInit {
   }
 
   /**
-   * Cálculo proactivo de capacidad realizado por el Agente Scrum Master.
-   * El PO NO digita los SP; el agente los calcula según los frentes seleccionados y la duración.
+   * Cálculo dinámico de capacidad realizado según los frentes seleccionados y duración.
    */
   public runCapacityCalculation(): void {
     this.calculatingDiagnosis.set(true);
@@ -734,7 +736,7 @@ export class ProgramPlanningWizardComponent implements OnInit {
     setTimeout(() => {
       const fronts = this.selectedFronts();
       const sprintCount = Math.max(1, Number(this.horizonForm.get('sprintCount')?.value || 6));
-      
+
       let totalSP = 0;
       const breakdown = fronts.map((frontId) => {
         const def = AVAILABLE_FRONTS.find((f) => f.id === frontId);
@@ -751,7 +753,7 @@ export class ProgramPlanningWizardComponent implements OnInit {
         percentage: totalSP > 0 ? Math.round((item.points / totalSP) * 100) : 0,
       }));
 
-      const advice = `Para completar los objetivos de esta iniciativa sin riesgo de desborde, se requiere una capacidad promedio de ${capacityPerSprint} Story Points por sprint durante los primeros ${effectiveSprints} sprints. El sprint ${sprintCount} se reserva como búfer de estabilización, soporte temprano y ejecución del Runbook de paso a producción HyMS.`;
+      const advice = `Para completar los objetivos de esta iniciativa sin riesgo de desborde sobre los ${fronts.length} frentes seleccionados, se requiere una capacidad promedio de ${capacityPerSprint} Story Points por sprint durante los primeros ${effectiveSprints} sprints. El sprint ${sprintCount} se reserva como búfer de estabilización, soporte temprano y ejecución del Runbook HyMS.`;
 
       this.diagnosis.set({
         totalStoryPoints: totalSP,
@@ -774,21 +776,162 @@ export class ProgramPlanningWizardComponent implements OnInit {
   }
 
   /**
-   * Genera el borrador Markdown de la SPEC respetando la taxonomía corporativa ideas_planning_q3.md
+   * Envía la instrucción del usuario al Agente a través del BFF (POST /api/chat/messages)
+   * respetando el patrón Backend for Frontend y arquitectura A2A.
    */
-  private generateInitialSpec(): void {
+  public sendCopilotMessage(): void {
+    const text = this.copilotPrompt.trim();
+    if (!text || this.copilotThinking()) {
+      return;
+    }
+
+    const current = this.copilotMessages();
+    this.copilotMessages.set([
+      ...current,
+      {
+        sender: 'user',
+        text,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
+    this.copilotPrompt = '';
+    this.copilotThinking.set(true);
+
+    const spec = this.generatedSpec();
+    const promptWithContext = `Actúa como Scrum Master y Product Owner Técnico facilitador de Program Planning. 
+A continuación tienes la especificación técnica y roadmap actual de la iniciativa:
+
+---
+${spec}
+---
+
+Instrucción del Product Owner para ajustar o evaluar esta iniciativa:
+"${text}"
+
+Por favor, responde amablemente analizando la propuesta, sugiriendo ajustes pertinentes y respondiendo a su inquietud sobre la planeación macro.`;
+
+    const payload: SendMessageRequest = {
+      message: {
+        role: 'user',
+        messageId: `wizard-msg-${Date.now()}`,
+        contextId: this.wizardContextId,
+        parts: [
+          {
+            text: promptWithContext,
+          },
+        ],
+      },
+    };
+
+    this.devopsApi
+      .sendMessage(payload)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (response) => {
+          const replyText =
+            response.message?.parts?.[0]?.text ||
+            'He procesado tu instrucción de refinamiento para la planeación.';
+          this.copilotMessages.set([
+            ...this.copilotMessages(),
+            {
+              sender: 'agent',
+              text: replyText,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+          ]);
+          this.copilotThinking.set(false);
+        },
+        error: () => {
+          this.notifications.warn('No se pudo conectar con el agente a través del BFF, aplicando ajuste local.');
+          this.copilotMessages.set([
+            ...this.copilotMessages(),
+            {
+              sender: 'agent',
+              text: `He tomado nota de tu solicitud: "${text}". Puedes continuar y aprobar la iniciativa.`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+          ]);
+          this.copilotThinking.set(false);
+        },
+      });
+  }
+
+  public approveAndSave(): void {
     const title = this.initiativeForm.get('title')?.value?.trim() || 'Iniciativa';
-    const problem = this.initiativeForm.get('problemAndValue')?.value?.trim() || '';
-    const users = this.initiativeForm.get('targetUsers')?.value?.trim() || 'Clientes y Operación';
     const quarter = this.horizonForm.get('quarter')?.value?.trim() || 'Q3-2026';
     const sprintCount = Number(this.horizonForm.get('sprintCount')?.value || 6);
     const diag = this.diagnosis();
     const capacityPerSprint = diag?.recommendedCapacityPerSprint || 28;
+    const problem = this.initiativeForm.get('problemAndValue')?.value?.trim() || '';
+    const milestones = this.horizonForm.get('milestones')?.value?.trim() || '';
 
-    const frontsList = this.selectedFronts().map((f) => {
+    const objectivesDetails = milestones ? `${problem} | Hitos: ${milestones}` : problem;
+
+    const request: ProgramPlanRequestDTO = {
+      quarter,
+      sprintCount,
+      maxCapacityPerSprint: capacityPerSprint,
+      targetFronts: [...this.selectedFronts()],
+      objectives: `${title}: ${objectivesDetails}`,
+    };
+
+    this.planningState
+      .triggerProgramPlanning(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.initiativeSaved.emit({
+            name: title,
+            quarter,
+            specContent: this.generatedSpec(),
+          });
+          const taskId = response?.task?.id;
+          const msg = taskId
+            ? `¡Iniciativa "${title}" aprobada! Tarea ${taskId} encolada en el agente.`
+            : `¡Iniciativa "${title}" aprobada y persistida con éxito!`;
+          this.notifications.success(msg);
+          this.planningState.loadAvailableSpecs();
+          this.close();
+        },
+        error: () => {
+          // El error ya es notificado en PlanningStateService
+        },
+      });
+  }
+
+  public copySpecMarkdown(): void {
+    const md = this.generatedSpec();
+    if (md) {
+      navigator.clipboard?.writeText(md);
+      this.markdownCopied.set(true);
+      setTimeout(() => this.markdownCopied.set(false), 2000);
+      this.notifications.success('Contenido Markdown copiado al portapapeles');
+    }
+  }
+
+  /**
+   * Genera el borrador Markdown de la SPEC dinámicamente según los frentes, hitos e inputs del usuario.
+   */
+  private generateInitialSpec(): void {
+    const title = this.initiativeForm.get('title')?.value?.trim() || 'Iniciativa';
+    const problem = this.initiativeForm.get('problemAndValue')?.value?.trim() || '';
+    const users = this.initiativeForm.get('targetUsers')?.value?.trim() || 'Usuarios y Equipos de Operación';
+    const quarter = this.horizonForm.get('quarter')?.value?.trim() || 'Q3-2026';
+    const sprintCount = Number(this.horizonForm.get('sprintCount')?.value || 6);
+    const milestones = this.horizonForm.get('milestones')?.value?.trim() || 'Hitos y paso a producción en marco HyMS';
+    const diag = this.diagnosis();
+    const capacityPerSprint = diag?.recommendedCapacityPerSprint || 28;
+
+    const fronts = this.selectedFronts();
+    const frontsList = fronts.map((f) => {
       const item = AVAILABLE_FRONTS.find((x) => x.id === f);
       return `* **${item?.label || f}**: ${item?.description || 'Desarrollo y componentes'}`;
     }).join('\n');
+
+    // Generar tabla dinámica de sprints adaptada a los frentes seleccionados
+    const roadmapRows = this.buildDynamicRoadmapRows(fronts, sprintCount, milestones);
 
     const specMd = `# Ideas de Planeación - ${quarter}
 
@@ -800,6 +943,7 @@ Este documento centraliza el contexto de arquitectura, la taxonomía ágil y la 
 
 * **Problema y Valor:** ${problem}
 * **Audiencia y Canales:** ${users}
+* **Hitos Comprometidos:** ${milestones}
 * **Capacidad Requerida por Sprint:** ${capacityPerSprint} Story Points (calculada por Agente Scrum Master).
 * **Horizonte:** ${quarter} (${sprintCount} Sprints).
 
@@ -822,18 +966,11 @@ Siguiendo la guía corporativa de agilidad:
 
 ## 4. Distribución del Roadmap por Sprints (Entregas ${quarter})
 
-Todas las tareas de desarrollo y pruebas de calidad deben concluir a más tardar en el sprint **SP ${sprintCount - 1}**. El sprint final **SP ${sprintCount}** se reserva para el soporte post-producción temprano, estabilización de plataforma, mesas de control y documentación operativa formal (Runbook).
+Todas las tareas de desarrollo y pruebas de calidad deben concluir a más tardar en el sprint **SP ${Math.max(1, sprintCount - 1)}**. El sprint final **SP ${sprintCount}** se reserva para el soporte post-producción temprano, estabilización de plataforma, mesas de control y documentación operativa formal (Runbook).
 
 | Sprint | Tipo | Título | Story Points | Frente | Dependencias | Descripción / Criterio de Entrega |
 |:------:|:----:|:-------|:------------:|:-------|:-------------|:----------------------------------|
-| SP 1 | HA | Setups, CMDB y repositorios Git | 5 | DevOps | Ninguna | Creación de repositorios, pipelines CI/CD y elementos CMDB. |
-| SP 1 | HA | Definición de contratos y DTOs | 5 | BFF | Ninguna | Estandarización de contratos de interfaz y validaciones. |
-| SP 2 | HU | Modelamiento y persistencia en Base de Datos | 8 | Datos | SP 1 (BFF) | Tablas relacionales y colecciones con auditoría. |
-| SP 2 | HU | Core: Lógica de negocio y reglas base | 8 | Core | SP 1 (BFF) | Reglas deterministas y validación transaccional. |
-| SP 3 | HU | Integración de endpoints REST y servicios | 8 | Canales | SP 2 (Core) | Conexión Front-BFF con manejo reactivo de estados. |
-| SP 4 | HU | Formularios dinámicos y flujos de usuario | 5 | Canales | SP 3 (Canales) | Experiencia interactiva y validaciones frontend. |
-| SP 5 | HA | Pruebas integrales QA, Karate y Ciberseguridad | 8 | Arquitectura | SP 4 | Certificación de calidad en ambiente de pruebas (QA). |
-| SP 6 | HA | Paso a Producción HyMS, Runbook y Estabilización | 5 | DevOps | SP 5 | Despliegue productivo, monitoreo y soporte temprano. |
+${roadmapRows}
 
 ---
 
@@ -849,98 +986,55 @@ Todas las tareas de desarrollo y pruebas de calidad deben concluir a más tardar
     this.copilotMessages.set([
       {
         sender: 'agent',
-        text: `¡Hola! Como tu Scrum Master y PO, he consolidado la propuesta de SPEC para "${title}". La capacidad requerida calculada es de ${capacityPerSprint} SP/sprint. Puedes pedirme cualquier ajuste en los sprints o frentes.`,
+        text: `¡Hola! Como tu Scrum Master y PO, he consolidado la propuesta de SPEC para "${title}". La capacidad requerida calculada es de ${capacityPerSprint} SP/sprint distribuidos en los frentes seleccionados (${fronts.join(', ')}). Puedes pedirme cualquier ajuste en los sprints o alcances.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
   }
 
-  public copySpecMarkdown(): void {
-    const md = this.generatedSpec();
-    if (md) {
-      navigator.clipboard?.writeText(md);
-      this.markdownCopied.set(true);
-      setTimeout(() => this.markdownCopied.set(false), 2000);
-      this.notifications.success('Contenido Markdown copiado al portapapeles');
+  /**
+   * Construye las filas dinámicas de la tabla de historias de acuerdo a los frentes seleccionados por el usuario.
+   */
+  private buildDynamicRoadmapRows(fronts: string[], sprintCount: number, milestones: string): string {
+    const rows: string[] = [];
+    const maxDevSprint = Math.max(1, sprintCount - 1);
+
+    // Fase 1: Habilitadores iniciales de infraestructura y contratos según frentes
+    if (fronts.includes('DevOps')) {
+      rows.push(`| SP 1 | HA | Setups, CMDB y repositorios Git | 5 | DevOps | Ninguna | Creación de repositorios, pipelines CI/CD y elementos CMDB. |`);
     }
-  }
-
-  public sendCopilotMessage(): void {
-    const text = this.copilotPrompt.trim();
-    if (!text || this.copilotThinking()) {
-      return;
+    if (fronts.includes('BFF')) {
+      rows.push(`| SP 1 | HA | Definición de contratos y DTOs | 5 | BFF | Ninguna | Estandarización de contratos de interfaz y validaciones. |`);
+    }
+    if (fronts.includes('Broker')) {
+      rows.push(`| SP 1 | HA | Contratos de eventos y tópicos Kafka | 5 | Broker | Ninguna | Definición de esquemas de eventos, tópicos y resiliencia. |`);
     }
 
-    const current = this.copilotMessages();
-    this.copilotMessages.set([
-      ...current,
-      {
-        sender: 'user',
-        text,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
-    this.copilotPrompt = '';
-    this.copilotThinking.set(true);
+    // Fase 2: Capas de datos y lógica core
+    const sp2 = Math.min(2, maxDevSprint);
+    if (fronts.includes('Datos')) {
+      rows.push(`| SP ${sp2} | HU | Modelamiento y persistencia en Base de Datos | 8 | Datos | SP 1 (BFF) | Tablas relacionales, índices y auditoría transaccional. |`);
+    }
+    if (fronts.includes('Core')) {
+      rows.push(`| SP ${sp2} | HU | Motor de negocio y lógica transaccional | 8 | Core | SP 1 (BFF) | Reglas deterministas y casos de uso de dominio. |`);
+    }
+    if (fronts.includes('Seguridad')) {
+      rows.push(`| SP ${sp2} | HA | Integración Entra ID y seguridad perimetral | 5 | Seguridad | SP 1 | Configuración de RBAC, permisos y análisis de vulnerabilidades. |`);
+    }
 
-    // Simulación reactiva del agente Scrum Master ajustando la SPEC
-    setTimeout(() => {
-      let replyText = 'He actualizado el borrador de la SPEC con tus indicaciones.';
-      const lower = text.toLowerCase();
+    // Fase 3: Integraciones y canales de usuario
+    const sp3 = Math.min(3, maxDevSprint);
+    if (fronts.includes('Canales')) {
+      rows.push(`| SP ${sp3} | HU | Interfaces de usuario y flujos funcionales | 8 | Canales | SP ${sp2} | Vistas dinámicas, integración con servicios y validaciones frontend. |`);
+    }
 
-      if (lower.includes('kafka') || lower.includes('broker')) {
-        replyText = 'Ajusté el frente de Kafka para adelantar sus contratos y tópicos al Sprint 1, reduciendo el riesgo de integración.';
-      } else if (lower.includes('seguridad') || lower.includes('auth')) {
-        replyText = 'Reforcé las actividades de Ciberseguridad y Entra ID como prerrequisito en el Sprint 2.';
-      } else if (lower.includes('sprint') || lower.includes('mover')) {
-        replyText = 'Reorganicé la secuencia de sprints y recalculé las dependencias en la tabla del roadmap.';
-      }
+    // Fase 4: Pruebas y Certificación de calidad QA
+    const spQA = Math.max(1, maxDevSprint);
+    rows.push(`| SP ${spQA} | HA | Pruebas integrales QA, Karate y Ciberseguridad | 8 | ${fronts.includes('Arquitectura') ? 'Arquitectura' : 'DevOps'} | SP ${sp3} | Certificación integral de criterios de aceptación en ambiente QA. |`);
 
-      this.copilotMessages.set([
-        ...this.copilotMessages(),
-        {
-          sender: 'agent',
-          text: replyText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-      this.copilotThinking.set(false);
-    }, 600);
-  }
+    // Fase Final: Estabilización y Paso a Producción HyMS
+    rows.push(`| SP ${sprintCount} | HA | Paso a Producción HyMS, Runbook y Estabilización | 5 | DevOps | SP ${spQA} | Despliegue productivo, monitoreo temprano y verificación: ${milestones}. |`);
 
-  public approveAndSave(): void {
-    const title = this.initiativeForm.get('title')?.value?.trim() || 'Iniciativa';
-    const quarter = this.horizonForm.get('quarter')?.value?.trim() || 'Q3-2026';
-    const sprintCount = Number(this.horizonForm.get('sprintCount')?.value || 6);
-    const diag = this.diagnosis();
-    const capacityPerSprint = diag?.recommendedCapacityPerSprint || 28;
-    const objectives = this.initiativeForm.get('problemAndValue')?.value?.trim() || '';
-
-    const request: ProgramPlanRequestDTO = {
-      quarter,
-      sprintCount,
-      maxCapacityPerSprint: capacityPerSprint,
-      targetFronts: [...this.selectedFronts()],
-      objectives: `${title}: ${objectives}`,
-    };
-
-    this.planningState
-      .triggerProgramPlanning(request)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.initiativeSaved.emit({
-            name: title,
-            quarter,
-            specContent: this.generatedSpec(),
-          });
-          this.notifications.success(`¡Iniciativa "${title}" aprobada y persistida con éxito!`);
-          this.planningState.loadAvailableSpecs();
-          this.close();
-        },
-        error: () => {
-          // El error ya es capturado y notificado en PlanningStateService
-        },
-      });
+    return rows.join('\n');
   }
 }
