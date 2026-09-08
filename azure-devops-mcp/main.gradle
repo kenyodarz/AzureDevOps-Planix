@@ -68,10 +68,10 @@ subprojects {
         targetClasses = ['co.com.bancolombia.*']
         excludedClasses = []
         excludedTestClasses = []
-        pitestVersion = '1.25.4'
+        pitestVersion = '1.25.9'
         verbose = false
         outputFormats = ['XML', 'HTML']
-        threads = 8
+        threads = Runtime.runtime.availableProcessors()
         exportLineCoverage = true
         useClasspathFile = true
         withHistory = true
@@ -140,5 +140,5 @@ pitestReportAggregate {
 }
 
 tasks.named('wrapper') {
-    gradleVersion = '9.5.1'
+    gradleVersion = '9.7.1'
 }

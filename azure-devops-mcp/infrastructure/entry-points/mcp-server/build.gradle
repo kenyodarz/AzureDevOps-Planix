@@ -7,7 +7,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
     // Spring AI BOM
-    implementation platform("org.springframework.ai:spring-ai-bom:2.0.0-RC1")
+    implementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
 
     // MCP Server WebFlux
     implementation "org.springframework.ai:spring-ai-mcp"
@@ -17,7 +17,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 
     // Security
-    implementation 'org.springaicommunity:mcp-server-security:0.1.12'
+    implementation 'org.springaicommunity:mcp-server-security:0.1.14'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
     
