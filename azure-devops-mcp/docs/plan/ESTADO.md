@@ -3,8 +3,8 @@
 > **ÚNICA FUENTE DE VERDAD DEL PROGRESO.**  
 > Punto de entrada obligatorio al iniciar cualquier sesión de desarrollo o antes de ejecutar código.
 >
-> **Última actualización:** 2026-09-08 · **Fase activa:** Fase 04 — Casos de Uso y Adaptador para
-> Feedback de PR
+> **Última actualización:** 2026-09-08 · **Fase activa:** Fase 06 — Orquestación y Prompt de
+> Evaluación en el Agente
 >
 
 ---
@@ -17,8 +17,8 @@
 | **02** | Casos de Uso de Consulta de PRs y Cambios          | `docs/fases/FASE-02-casos-uso-pull-request.md`         | `docs/resultados/RESULTADO-FASE-02.md` | 🟢 **COMPLETADA** |   2026-09-08    |
 | **03** | Adaptador REST para API Git de Azure DevOps        | `docs/fases/FASE-03-adaptador-rest-git.md`             | `docs/resultados/RESULTADO-FASE-03.md` | 🟢 **COMPLETADA** |   2026-09-08    |
 | **04** | Casos de Uso y Adaptador para Feedback de PR       | `docs/fases/FASE-04-feedback-comentarios-pr.md`        | `docs/resultados/RESULTADO-FASE-04.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **05** | Entry Points MCP Server (Tools @McpTool)           | `docs/fases/FASE-05-mcp-tools-git.md`                  | `docs/resultados/RESULTADO-FASE-05.md` |   🟡 PENDIENTE    |        —        |
-| **06** | Orquestación y Prompt de Evaluación en el Agente   | `docs/fases/FASE-06-orquestacion-evaluacion-agente.md` | `docs/resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA   |        —        |
+| **05** | Entry Points MCP Server (Tools @McpTool)           | `docs/fases/FASE-05-mcp-tools-git.md`                  | `docs/resultados/RESULTADO-FASE-05.md` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **06** | Orquestación y Prompt de Evaluación en el Agente   | `docs/fases/FASE-06-orquestacion-evaluacion-agente.md` | `docs/resultados/RESULTADO-FASE-06.md` |   🟡 PENDIENTE    |        —        |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
 
@@ -26,10 +26,10 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 05 Lista para Ejecución:**  
-> Abrir `docs/prompts/PROMPT-FASE-05.md` y ejecutar las tareas especificadas en
-> `docs/fases/FASE-05-mcp-tools-git.md` para implementar la clase `AzureDevOpsGitTools.java`
-> exponiendo las herramientas MCP de consulta de PR, cambios y publicación de comentarios.
+> 🎯 **Fase 06 Lista para Ejecución:**  
+> Abrir `docs/prompts/PROMPT-FASE-06.md` y ejecutar las tareas especificadas en
+> `docs/fases/FASE-06-orquestacion-evaluacion-agente.md` para configurar la orquestación del agente,
+> las herramientas cliente MCP y el prompt de sistema para evaluación automatizada de Pull Requests.
 
 ---
 
@@ -43,15 +43,17 @@
 
 ## 4. Métricas Vivas del Proyecto
 
-| Métrica                              | Baseline Inicial | Meta del Plan |                  Estado Actual                  |
-|:-------------------------------------|:----------------:|:-------------:|:-----------------------------------------------:|
-| **Tests Unitarios `:model`**         |        42        |     100%      |                   🟢 50 / 50                    |
-| **Tests Unitarios `:usecase`**       |        14        |     100%      |                   🟢 44 / 44                    |
-| **Tests Unitarios `:rest-consumer`** |        40        |     100%      |                   🟢 68 / 68                    |
-| **Cobertura de Código Dominio**      |       94%        |  $\ge 90\%$   |                     🟢 99%                      |
-| **Mutaciones Eliminadas (Pitest)**   |       98%        |  $\ge 60\%$   | 🟢 90% (consumer) / 99% (usecase) / 98% (model) |
-| **Violaciones de Arquitectura**      |        0         |       0       |                      🟢 0                       |
-| **Estado del Build**                 |        OK        |      OK       |                    🟢 Limpio                    |
+| Métrica                              | Baseline Inicial | Meta del Plan |                        Estado Actual                        |
+|:-------------------------------------|:----------------:|:-------------:|:-----------------------------------------------------------:|
+| **Tests Unitarios `:model`**         |        42        |     100%      |                         🟢 50 / 50                          |
+| **Tests Unitarios `:usecase`**       |        14        |     100%      |                         🟢 44 / 44                          |
+| **Tests Unitarios `:rest-consumer`** |        40        |     100%      |                         🟢 68 / 68                          |
+| **Tests Unitarios `:mcp-server`**    |        27        |     100%      |                         🟢 41 / 41                          |
+| **Tests Unitarios `:app-service`**   |        21        |     100%      |                         🟢 26 / 26                          |
+| **Cobertura de Código Dominio**      |       94%        |  $\ge 90\%$   |                           🟢 99%                            |
+| **Mutaciones Eliminadas (Pitest)**   |       98%        |  $\ge 60\%$   | 🟢 90% (consumer) / 99% (usecase) / 98% (model) / 62% (mcp) |
+| **Violaciones de Arquitectura**      |        0         |       0       |                            🟢 0                             |
+| **Estado del Build**                 |        OK        |      OK       |                          🟢 Limpio                          |
 
 ---
 
@@ -65,3 +67,4 @@
 | **2026-09-08** | **Cierre de la Fase 02:** Implementados los casos de uso puros `GetPullRequestUseCase`, `GetPullRequestChangesUseCase` y 22 pruebas unitarias en `:usecase` con 100% éxito.                   |
 | **2026-09-08** | **Cierre de la Fase 03:** Implementado el adaptador reactivo `GitPullRequestAdapter`, DTOs de Git, mapper y tests unitarios en `:rest-consumer` con 100% éxito (89% mutaciones eliminadas).   |
 | **2026-09-08** | **Cierre de la Fase 04:** Implementado `PullRequestComment`, `CreatePullRequestCommentUseCase`, publicación reactiva en `POST /threads` con 100% tests exitosos (99% usecase / 90% consumer). |
+| **2026-09-08** | **Cierre de la Fase 05:** Implementado `AzureDevOpsGitTools`, DTOs de respuesta MCP, seguridad RBAC y tests unitarios en `:mcp-server` y `:app-service` con 100% éxito.                       |

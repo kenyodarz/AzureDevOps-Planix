@@ -7,7 +7,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.mcp.security.McpRoles;
+import co.com.bancolombia.mcp.tools.AzureDevOpsGitTools;
 import co.com.bancolombia.mcp.tools.AzureDevOpsTools;
+import co.com.bancolombia.model.pullrequest.GitChange;
+import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import co.com.bancolombia.model.workitem.WiqlQuery;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
@@ -15,6 +19,9 @@ import co.com.bancolombia.usecase.createworkitem.CreateWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitem.GetWorkItemUseCase;
 import co.com.bancolombia.usecase.getworkitemsbatch.GetWorkItemsBatchUseCase;
 import co.com.bancolombia.usecase.listworkitems.ListWorkItemsByTeamAndSprintUseCase;
+import co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase;
+import co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase;
+import co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase;
 import co.com.bancolombia.usecase.querybywiql.QueryByWiqlUseCase;
 import co.com.bancolombia.usecase.updateworkitem.UpdateWorkItemUseCase;
 import java.util.List;
@@ -52,11 +59,13 @@ class McpToolsAuthorizationTest {
 
     private static AnnotationConfigApplicationContext context;
     private static AzureDevOpsTools tools;
+    private static AzureDevOpsGitTools gitTools;
 
     @BeforeAll
     static void setUp() {
         context = new AnnotationConfigApplicationContext(SecuredToolsConfig.class);
         tools = context.getBean(AzureDevOpsTools.class);
+        gitTools = context.getBean(AzureDevOpsGitTools.class);
     }
 
     @AfterAll
@@ -77,6 +86,9 @@ class McpToolsAuthorizationTest {
         verifyAllowed(tools.listWorkItemsByTeamAndSprint("org", "proj", "EQU1096 - EXODIA",
                 "Sprint 247", null, null), readerIdentity());
         verifyAllowed(tools.queryByWiql("org", "proj", "SELECT 1", null), readerIdentity());
+        verifyAllowed(gitTools.getPullRequest("org", "proj", "repo", 1, null), readerIdentity());
+        verifyAllowed(gitTools.getPullRequestChanges("org", "proj", "repo", 1, null),
+                readerIdentity());
     }
 
     @Test
@@ -85,6 +97,8 @@ class McpToolsAuthorizationTest {
         verifyDenied(tools.getWorkItem("org", "proj", 1, null));
         verifyDenied(tools.getWorkItemsBatch("org", "proj", List.of(1), null, null, null, null));
         verifyDenied(tools.queryByWiql("org", "proj", "SELECT 1", null));
+        verifyDenied(gitTools.getPullRequest("org", "proj", "repo", 1, null));
+        verifyDenied(gitTools.getPullRequestChanges("org", "proj", "repo", 1, null));
     }
 
     @Test
@@ -101,6 +115,16 @@ class McpToolsAuthorizationTest {
                         .contextWrite(identity(McpRoles.ROLE_WRITE)))
                 .expectError(AccessDeniedException.class)
                 .verify();
+
+        StepVerifier.create(gitTools.getPullRequest("org", "proj", "repo", 1, null)
+                        .contextWrite(identity(McpRoles.ROLE_WRITE)))
+                .expectError(AccessDeniedException.class)
+                .verify();
+
+        StepVerifier.create(gitTools.getPullRequestChanges("org", "proj", "repo", 1, null)
+                        .contextWrite(identity(McpRoles.ROLE_WRITE)))
+                .expectError(AccessDeniedException.class)
+                .verify();
     }
 
     // -------------------------------------------------------------- escritura
@@ -113,6 +137,9 @@ class McpToolsAuthorizationTest {
         verifyAllowed(tools.createWorkItem("org", "proj", "Task", List.of(), null),
                 writerIdentity());
         verifyAllowed(tools.updateWorkItem("org", "proj", 1, List.of(), null), writerIdentity());
+        verifyAllowed(
+                gitTools.createPullRequestComment("org", "proj", "repo", 1, "comment", null, null),
+                writerIdentity());
     }
 
     @Test
@@ -125,6 +152,12 @@ class McpToolsAuthorizationTest {
 
         StepVerifier.create(tools.updateWorkItem("org", "proj", 1, List.of(), null)
                         .contextWrite(readerIdentity()))
+                .expectError(AccessDeniedException.class)
+                .verify();
+
+        StepVerifier.create(
+                        gitTools.createPullRequestComment("org", "proj", "repo", 1, "comment", null, null)
+                                .contextWrite(readerIdentity()))
                 .expectError(AccessDeniedException.class)
                 .verify();
     }
@@ -170,6 +203,12 @@ class McpToolsAuthorizationTest {
         when(context.getBean(QueryByWiqlUseCase.class)
                 .queryByWiql(anyString(), anyString(), any(WiqlQuery.class), any()))
                 .thenReturn(Mono.just(WiqlResult.builder().build()));
+        when(context.getBean(GetPullRequestUseCase.class)
+                .getPullRequest(anyString(), anyString(), anyString(), anyInt(), any()))
+                .thenReturn(Mono.just(PullRequest.builder().build()));
+        when(context.getBean(GetPullRequestChangesUseCase.class)
+                .getChanges(anyString(), anyString(), anyString(), anyInt(), any()))
+                .thenReturn(reactor.core.publisher.Flux.just(GitChange.builder().build()));
     }
 
     private void stubWriteUseCases() {
@@ -179,6 +218,9 @@ class McpToolsAuthorizationTest {
         when(context.getBean(UpdateWorkItemUseCase.class)
                 .updateWorkItem(anyString(), anyString(), anyInt(), any(), any()))
                 .thenReturn(Mono.just(WorkItem.builder().build()));
+        when(context.getBean(CreatePullRequestCommentUseCase.class)
+                .createComment(anyString(), anyString(), anyString(), anyInt(), any(), any()))
+                .thenReturn(Mono.just(PullRequestComment.builder().build()));
     }
 
     /**
@@ -220,6 +262,21 @@ class McpToolsAuthorizationTest {
         }
 
         @Bean
+        GetPullRequestUseCase getPullRequestUseCase() {
+            return mock(GetPullRequestUseCase.class);
+        }
+
+        @Bean
+        GetPullRequestChangesUseCase getPullRequestChangesUseCase() {
+            return mock(GetPullRequestChangesUseCase.class);
+        }
+
+        @Bean
+        CreatePullRequestCommentUseCase createPullRequestCommentUseCase() {
+            return mock(CreatePullRequestCommentUseCase.class);
+        }
+
+        @Bean
         AzureDevOpsTools azureDevOpsTools(GetWorkItemUseCase getWorkItemUseCase,
                 CreateWorkItemUseCase createWorkItemUseCase,
                 UpdateWorkItemUseCase updateWorkItemUseCase,
@@ -229,6 +286,14 @@ class McpToolsAuthorizationTest {
             return new AzureDevOpsTools(getWorkItemUseCase, createWorkItemUseCase,
                     updateWorkItemUseCase, queryByWiqlUseCase, getWorkItemsBatchUseCase,
                     listWorkItemsByTeamAndSprintUseCase);
+        }
+
+        @Bean
+        AzureDevOpsGitTools azureDevOpsGitTools(GetPullRequestUseCase getPullRequestUseCase,
+                GetPullRequestChangesUseCase getPullRequestChangesUseCase,
+                CreatePullRequestCommentUseCase createPullRequestCommentUseCase) {
+            return new AzureDevOpsGitTools(getPullRequestUseCase, getPullRequestChangesUseCase,
+                    createPullRequestCommentUseCase);
         }
     }
 }

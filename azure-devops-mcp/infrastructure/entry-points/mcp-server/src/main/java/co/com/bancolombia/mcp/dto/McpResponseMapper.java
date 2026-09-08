@@ -1,5 +1,8 @@
 package co.com.bancolombia.mcp.dto;
 
+import co.com.bancolombia.model.pullrequest.GitChange;
+import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import co.com.bancolombia.model.workitem.WiqlResult;
 import co.com.bancolombia.model.workitem.WorkItem;
 import co.com.bancolombia.model.workitem.WorkItemReference;
@@ -26,6 +29,8 @@ import java.util.List;
  * sería más limpio, pero cambiaría el JSON que ve el cliente, y eso no lo decide un refactor
  * (mismo criterio que el javadoc de {@code TeamScope} aplicó a las cadenas en blanco).
  */
+@SuppressWarnings("java:S1168")
+// Se preserva deliberadamente el retorno nulo para respetar la serialización del contrato JSON congelado (DP-07)
 public final class McpResponseMapper {
 
     private McpResponseMapper() {
@@ -88,6 +93,52 @@ public final class McpResponseMapper {
             return null;
         }
         return references.stream().map(McpResponseMapper::toResponse).toList();
+    }
+
+    public static PullRequestResponse toResponse(PullRequest pullRequest) {
+        if (pullRequest == null) {
+            return null;
+        }
+        return new PullRequestResponse(
+                pullRequest.pullRequestId(),
+                pullRequest.title(),
+                pullRequest.description(),
+                pullRequest.status(),
+                pullRequest.sourceRefName(),
+                pullRequest.targetRefName(),
+                pullRequest.repositoryId(),
+                pullRequest.createdBy(),
+                pullRequest.creationDate(),
+                pullRequest.workItemIds());
+    }
+
+    public static GitChangeResponse toResponse(GitChange change) {
+        if (change == null) {
+            return null;
+        }
+        return new GitChangeResponse(
+                change.itemPath(),
+                change.changeType(),
+                change.originalObjectId(),
+                change.newObjectId());
+    }
+
+    public static List<GitChangeResponse> toGitChangeResponses(List<GitChange> changes) {
+        if (changes == null) {
+            return null;
+        }
+        return changes.stream().map(McpResponseMapper::toResponse).toList();
+    }
+
+    public static PullRequestCommentResponse toResponse(PullRequestComment comment) {
+        if (comment == null) {
+            return null;
+        }
+        return new PullRequestCommentResponse(
+                comment.id(),
+                comment.content(),
+                comment.status(),
+                comment.author());
     }
 }
 
