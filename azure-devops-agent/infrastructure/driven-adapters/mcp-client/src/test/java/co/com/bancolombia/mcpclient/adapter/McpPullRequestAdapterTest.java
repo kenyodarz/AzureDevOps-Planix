@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.Collections;
@@ -14,19 +13,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.json.JsonMapper;
 
 @DisplayName("McpPullRequestAdapter - Adaptador MCP de Pull Requests")
 class McpPullRequestAdapterTest {
 
     private McpSyncClient mcpClient;
-    private ObjectMapper objectMapper;
+    private JsonMapper jsonMapper;
     private McpPullRequestAdapter adapter;
 
     @BeforeEach
     void setUp() {
         mcpClient = mock(McpSyncClient.class);
-        objectMapper = new ObjectMapper();
-        adapter = new McpPullRequestAdapter(List.of(mcpClient), objectMapper);
+        jsonMapper = JsonMapper.builder().build();
+        adapter = new McpPullRequestAdapter(List.of(mcpClient), jsonMapper);
     }
 
     @Test
@@ -111,7 +111,7 @@ class McpPullRequestAdapterTest {
     @DisplayName("Falla con error reactivo si no hay clientes MCP disponibles")
     void givenNoMcpClients_whenCall_thenEmitsError() {
         McpPullRequestAdapter noClientsAdapter = new McpPullRequestAdapter(Collections.emptyList(),
-                objectMapper);
+                jsonMapper);
 
         StepVerifier.create(noClientsAdapter.getPullRequest("org", "proj", "repo", 1))
                 .expectErrorMatches(e -> e instanceof IllegalStateException && e.getMessage()

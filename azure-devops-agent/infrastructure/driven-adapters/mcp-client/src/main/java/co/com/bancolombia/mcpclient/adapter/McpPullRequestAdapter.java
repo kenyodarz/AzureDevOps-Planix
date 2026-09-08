@@ -3,8 +3,6 @@ package co.com.bancolombia.mcpclient.adapter;
 import co.com.bancolombia.model.pullrequest.PullRequestChangeInfo;
 import co.com.bancolombia.model.pullrequest.PullRequestInfo;
 import co.com.bancolombia.model.pullrequest.gateways.PullRequestMcpPort;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.ArrayList;
@@ -15,6 +13,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Adaptador reactivo que implementa {@link PullRequestMcpPort} delegando en {@link McpSyncClient}.
@@ -33,11 +33,11 @@ public class McpPullRequestAdapter implements PullRequestMcpPort {
     private static final String PARAM_PULL_REQUEST_ID = "pullRequestId";
 
     private final List<McpSyncClient> mcpClients;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
-    public McpPullRequestAdapter(List<McpSyncClient> mcpClients, ObjectMapper objectMapper) {
+    public McpPullRequestAdapter(List<McpSyncClient> mcpClients, JsonMapper jsonMapper) {
         this.mcpClients = mcpClients != null ? mcpClients : List.of();
-        this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
+        this.jsonMapper = jsonMapper != null ? jsonMapper : JsonMapper.builder().build();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class McpPullRequestAdapter implements PullRequestMcpPort {
                     PARAM_PULL_REQUEST_ID, pullRequestId
             );
             String rawJson = executeCallTool("getPullRequest", args);
-            JsonNode root = objectMapper.readTree(rawJson);
+            JsonNode root = jsonMapper.readTree(rawJson);
             return PullRequestInfo.builder()
                     .pullRequestId(root.path(PARAM_PULL_REQUEST_ID).asInt(pullRequestId))
                     .repositoryId(root.path(PARAM_REPOSITORY_ID).asText(repositoryId))
@@ -76,7 +76,7 @@ public class McpPullRequestAdapter implements PullRequestMcpPort {
                             PARAM_PULL_REQUEST_ID, pullRequestId
                     );
                     String rawJson = executeCallTool("getPullRequestChanges", args);
-                    JsonNode root = objectMapper.readTree(rawJson);
+                    JsonNode root = jsonMapper.readTree(rawJson);
                     List<PullRequestChangeInfo> changes = new ArrayList<>();
                     if (root.isArray()) {
                         for (JsonNode node : root) {
@@ -104,7 +104,7 @@ public class McpPullRequestAdapter implements PullRequestMcpPort {
                     "content", comment
             );
             String rawJson = executeCallTool("createPullRequestComment", args);
-            JsonNode root = objectMapper.readTree(rawJson);
+            JsonNode root = jsonMapper.readTree(rawJson);
             String commentId = root.path("id").asText();
             if (commentId.isBlank()) {
                 commentId = root.path("commentId").asText("created");
@@ -118,7 +118,7 @@ public class McpPullRequestAdapter implements PullRequestMcpPort {
             throw new IllegalStateException(
                     "No hay clientes MCP disponibles para ejecutar [" + toolName + "]");
         }
-        McpSyncClient client = mcpClients.get(0);
+        McpSyncClient client = mcpClients.getFirst();
         McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(toolName, args);
         McpSchema.CallToolResult result = client.callTool(request);
         if (result == null || result.content() == null || result.content().isEmpty()) {
