@@ -7,3 +7,4 @@ export * from './planning-management/planning-management.component';
 export * from './planning-specs-explorer/planning-specs-explorer.component';
 export * from './planning-dashboard';
 export * from './program-planning-modal/program-planning-modal.component';
+export * from './program-planning-wizard/program-planning-wizard.component';

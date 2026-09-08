@@ -28,12 +28,15 @@ spring:
     driver-class-name: "org.postgresql.Driver"
   ai:
     openai:
-      api-key: "${AI_API_KEY:dummy}"
-      base-url: "${AI_BASE_URL:http://localhost:4141}"
+      api-key: "${AI_API_KEY:NVIDIA-API-KEY}"
+      #      api-key: "${AI_API_KEY:GOOGLE_API_KEY}"
+      base-url: "${AI_BASE_URL:https://integrate.api.nvidia.com/v1}"
+#      base-url: "${AI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai/}"
       chat:
-        model: "${AI_MODEL:gpt-4.1}"
-      embedding:
-        model: "${AI_EMBEDDING_MODEL:text-embedding-ada-002}"
+        model: "${AI_MODEL:deepseek-ai/deepseek-v4-pro-0813}"
+#        model: "${AI_MODEL:gemini-3.5-flash-lite}"
+#      embedding:
+#        model: "${AI_EMBEDDING_MODEL:text-embedding-004}"
     vectorstore:
       pgvector:
         table-name: "planning_chunks"

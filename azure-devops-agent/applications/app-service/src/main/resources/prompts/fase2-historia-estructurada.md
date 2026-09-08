@@ -20,8 +20,8 @@ de aceptación y tareas:
       operativos de paso a producción.
 2. **Historia Habilitadora (HA - ENABLER):**
     - **Alcance técnico u operativo:** Comprende setups técnicos previos de
-      arquitectura/infraestructura, o la habilitación operativa formal bajo el **marco corporativo
-      HyMS** (construcción y validación de Runbook de operación,
+      arquitectura/infraestructura, o la habilitación operativa formal bajo el **marco corporativo HyMS**
+      (construcción y validación de Runbook de operación,
       observabilidad y telemetría, ciberseguridad, mesas de control y soporte post-producción
       inicial).
     - **Delimitación HyMS:** Si la HA corresponde a habilitación/paso a producción, todos los

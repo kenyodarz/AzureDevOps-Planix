@@ -16,6 +16,7 @@ import { DevopsAgentApiService } from '../../services/devops-agent-api.service';
 import { PlanningActiveView, PlanningChunk } from '../../models/devops-agent.model';
 import { PlanningSpecsExplorerComponent } from '../planning-specs-explorer/planning-specs-explorer.component';
 import { ProgramPlanningModalComponent } from '../program-planning-modal/program-planning-modal.component';
+import { ProgramPlanningWizardComponent } from '../program-planning-wizard/program-planning-wizard.component';
 
 @Component({
   selector: 'app-planning-management',
@@ -25,6 +26,7 @@ import { ProgramPlanningModalComponent } from '../program-planning-modal/program
     FormsModule,
     PlanningSpecsExplorerComponent,
     ProgramPlanningModalComponent,
+    ProgramPlanningWizardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -70,16 +72,26 @@ import { ProgramPlanningModalComponent } from '../program-planning-modal/program
           </button>
         </div>
 
-        <!-- ACCIÓN DE LANZAMIENTO RÁPIDO -->
-        <div class="flex items-center gap-3">
+        <!-- ACCIONES DE PLANEACIÓN -->
+        <div class="flex items-center gap-2.5">
+          <button
+            type="button"
+            aria-label="Abrir asistente para planear nueva iniciativa"
+            (click)="showPlanningWizard.set(true)"
+            class="bg-[#f2c94c] hover:bg-[#e0b83b] text-[#0b0f19] font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_15px_rgba(242,201,76,0.25)] hover:shadow-[0_0_20px_rgba(242,201,76,0.4)] border-none"
+          >
+            <span class="pi pi-sparkles text-xs"></span>
+            <span>Asistente de Planeación (Wizard)</span>
+          </button>
+
           <button
             type="button"
             aria-label="Abrir modal para lanzar nueva planeación de programa"
             (click)="showPlanningModal.set(true)"
-            class="bg-[#f2c94c] hover:bg-[#e0b83b] text-[#0b0f19] font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_15px_rgba(242,201,76,0.25)] hover:shadow-[0_0_20px_rgba(242,201,76,0.4)] border-none"
+            class="bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[#d1d5db] hover:text-[#f3f4f6] font-medium px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer transition-colors border border-[rgba(255,255,255,0.1)]"
           >
-            <span class="pi pi-compass text-xs"></span>
-            <span>Lanzar Program Planning</span>
+            <span class="pi pi-compass text-xs text-[#9ca3af]"></span>
+            <span>Lanzador Rápido</span>
           </button>
         </div>
       </header>
@@ -294,7 +306,13 @@ import { ProgramPlanningModalComponent } from '../program-planning-modal/program
         </div>
       }
 
-      <!-- MODAL LANZADOR DE PROGRAM PLANNING -->
+      <!-- ASISTENTE WIZARD DE PROGRAM PLANNING -->
+      <app-program-planning-wizard
+        [visible]="showPlanningWizard()"
+        (visibleChange)="showPlanningWizard.set($event)"
+      ></app-program-planning-wizard>
+
+      <!-- MODAL LANZADOR RÁPIDO DE PROGRAM PLANNING -->
       <app-program-planning-modal
         [visible]="showPlanningModal()"
         (visibleChange)="showPlanningModal.set($event)"
@@ -305,6 +323,7 @@ import { ProgramPlanningModalComponent } from '../program-planning-modal/program
 export class PlanningManagementComponent implements OnInit, OnDestroy {
   public readonly refineRequested = output<string>();
   public readonly activeView = signal<PlanningActiveView>('explorer');
+  public readonly showPlanningWizard = signal<boolean>(false);
   public readonly showPlanningModal = signal<boolean>(false);
 
   protected readonly state = inject(DevopsAgentStateService);
