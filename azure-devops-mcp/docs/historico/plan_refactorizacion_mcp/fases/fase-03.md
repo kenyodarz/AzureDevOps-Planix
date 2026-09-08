@@ -1,6 +1,7 @@
 # FASE 03 — Frontera de contrato: DTOs y mappers
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA** (2026-08-30)
+> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> (2026-08-30)
 > **Deudas que ataca:** D-11, D-17 · **Decisión bloqueante:** ✅ **DP-03 (RESUELTA)**
 > **Riesgo:** Medio · **Depende de:** Fases 01 y 02 (cerradas) · **Habilita:** Fases 04 a 08
 > **Regla de oro de esta fase:** **ningún nombre de campo del cable cambia.** La clase puede
@@ -12,25 +13,28 @@
 
 **No se escribió una sola línea de código antes de que el propietario respondiera.** Esta fase toca
 justamente los tipos que **Jackson deserializa desde el payload MCP**: equivocarse aquí **rompe al
-agente y al BFF en silencio**, porque MCP no valida esquemas al vuelo y el fallo no aparece hasta que
+agente y al BFF en silencio**, porque MCP no valida esquemas al vuelo y el fallo no aparece hasta
+que
 un campo llega vacío.
 
 **La pregunta de DP-03, en concreto:**
 
-> **¿Se permite renombrar tipos de `domain/model`?** Sacar `WorkItemsBatchRequest` del dominio cierra
+> **¿Se permite renombrar tipos de `domain/model`?** Sacar `WorkItemsBatchRequest` del dominio
+> cierra
 > **D-17** (la única violación de ArchUnit `Rule_2.2`), pero es un tipo que Jackson construye desde
 > el payload MCP.
 
 **Respuestas del propietario:**
 
-| # | Cuestión                                                                                          | Decisión                                                                                      |
-|---|---------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| 1 | ¿El DTO que sustituya a `WorkItemsBatchRequest` conserva el nombre de clase en el entry-point?     | **(b)** se renombra a **`WorkItemsBatchInput`**                                                |
-| 2 | ¿Se autoriza renombrar la clase de dominio para cerrar `Rule_2.2`?                                 | **(a)** sí → **`WorkItemBatchCriteria`**                                                       |
-| 3 | ¿`JsonPatchOperation` se duplica en DTO de entrada y de salida, o basta uno compartido?            | **(a)** **dos DTOs, uno por frontera**, con el dominio en medio                                |
+| # | Cuestión                                                                                       | Decisión                                                        |
+|---|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| 1 | ¿El DTO que sustituya a `WorkItemsBatchRequest` conserva el nombre de clase en el entry-point? | **(b)** se renombra a **`WorkItemsBatchInput`**                 |
+| 2 | ¿Se autoriza renombrar la clase de dominio para cerrar `Rule_2.2`?                             | **(a)** sí → **`WorkItemBatchCriteria`**                        |
+| 3 | ¿`JsonPatchOperation` se duplica en DTO de entrada y de salida, o basta uno compartido?        | **(a)** **dos DTOs, uno por frontera**, con el dominio en medio |
 
 **Cuestión colateral, planteada y arbitrada durante el paso 2.** Al inventariar las fronteras se
-midió que cerrar `Rule_2.2` —por cualquiera de las tres vías— cambia el tipo del parámetro del puerto
+midió que cerrar `Rule_2.2` —por cualquiera de las tres vías— cambia el tipo del parámetro del
+puerto
 `GetWorkItemsBatchRepository` y, por tanto, **obliga a tocar 3 líneas de `RestConsumerTest`** (un
 `import` y dos usos del nombre de clase). Las dos casillas de la Definición de Hecho —«`Rule_2.2` a
 0» y «0 pruebas heredadas modificadas»— eran **mutuamente excluyentes**. Conforme a
@@ -51,17 +55,17 @@ mecánico de símbolo**: sin tocar ni una aserción, ni un cuerpo JSON, ni un c�
 
 Medido al cerrar la Fase 02 (2026-08-30), no estimado:
 
-| Dato                                        | Valor                                                        |
-|---------------------------------------------|--------------------------------------------------------------|
-| Build                                       | 🟢 **VERDE** — **67 pruebas, 0 fallos**                      |
-| Cobertura `domain/model`                    | **0 %** *(el módulo no tiene `src/test`, D-26)*              |
-| Cobertura `domain/usecase`                  | **68,2 %**                                                   |
-| Cobertura `mcp-server`                      | **70,2 %**                                                   |
-| Cobertura `rest-consumer`                   | **90,0 %**                                                   |
-| Cobertura `app-service`                     | **48,4 %**                                                   |
-| Sentencia WIQL                              | **congelada carácter a carácter**, 8 ramas                   |
-| Contrato MCP                                | inventariado y actualizado en [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) |
-| ArchUnit `Rule_2.2`                         | **1 violación real**, en *warning*, **no exportada a Sonar** (D-25) |
+| Dato                       | Valor                                                                            |
+|----------------------------|----------------------------------------------------------------------------------|
+| Build                      | 🟢 **VERDE** — **67 pruebas, 0 fallos**                                          |
+| Cobertura `domain/model`   | **0 %** *(el módulo no tiene `src/test`, D-26)*                                  |
+| Cobertura `domain/usecase` | **68,2 %**                                                                       |
+| Cobertura `mcp-server`     | **70,2 %**                                                                       |
+| Cobertura `rest-consumer`  | **90,0 %**                                                                       |
+| Cobertura `app-service`    | **48,4 %**                                                                       |
+| Sentencia WIQL             | **congelada carácter a carácter**, 8 ramas                                       |
+| Contrato MCP               | inventariado y actualizado en [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) |
+| ArchUnit `Rule_2.2`        | **1 violación real**, en *warning*, **no exportada a Sonar** (D-25)              |
 
 Documentos de referencia: [`BASELINE.md`](../resultados/BASELINE.md) ·
 [`CONTRATO-MCP.md`](../resultados/CONTRATO-MCP.md) ·
@@ -172,11 +176,13 @@ excepción. **La regla debe quedar a cero violaciones reales**, verificado **en 
 - [x] **0.** ⛔ **Plantear DP-03 al propietario y esperar respuesta.** No continuar sin ella.
 - [x] **1.** Releer `CONTRATO-MCP.md` §2 y §3 completos: son la lista de lo que no puede cambiar.
 - [x] **2.** Inventariar cada punto donde un tipo de dominio cruza una frontera (entrada y salida).
-- [x] **3.** Crear los DTOs de entrada en `mcp-server`, con los nombres de campo intactos. **(T-01)**
+- [x] **3.** Crear los DTOs de entrada en `mcp-server`, con los nombres de campo intactos. **(
+  T-01)**
 - [x] **4.** Crear `McpToolDtoMapper` y enchufarlo en las tools. **(T-02)**
 - [x] **5.** `.\gradlew.bat build` verde. Las 67 pruebas heredadas, **sin modificar**.
 - [x] **6.** Crear los DTOs de salida y sus mappers en `rest-consumer`. **(T-03)**
-- [x] **7.** Verificar con `RestConsumerTest` que el JSON enviado es **byte a byte el mismo**. **(T-03)**
+- [x] **7.** Verificar con `RestConsumerTest` que el JSON enviado es **byte a byte el mismo**. **(
+  T-03)**
 - [x] **8.** Aplicar lo que decida DP-03 sobre `WorkItemsBatchRequest`. **(T-04)**
 - [x] **9.** Comprobar en el **log** del `ArchitectureTest` que `Rule_2.2` está a **0**. **(T-04)**
 - [x] **10.** `.\gradlew.bat build` verde de nuevo.
@@ -191,23 +197,23 @@ excepción. **La regla debe quedar a cero violaciones reales**, verificado **en 
 
 > Cerrada el **2026-08-30**. Build 🟢 **VERDE**: **77 pruebas, 0 fallos**.
 
-| Métrica                                                 |   Antes |        Después |
-|---------------------------------------------------------|--------:|---------------:|
-| Modelos de dominio deserializados como `@McpToolParam`   |   **2** |       ✅ **0** |
-| Modelos de dominio serializados por el `WebClient`       |   **3** |       ✅ **0** |
-| Mappers en la frontera de salida                         |   **0** |       ✅ **5** |
-| Mappers en la frontera de entrada                        |   **0** |       ✅ **1** |
-| ArchUnit `Rule_2.2` (violaciones reales, según el log)   |   **1** |       ✅ **0** |
-| Nombres de campo del cable modificados                   |     n/a |       ✅ **0** |
-| Pruebas totales                                          |  **67** |     **77** ▲10 |
-| Pruebas heredadas **modificadas**                        |     n/a | **1** *(3 líneas, renombrado de símbolo autorizado)* |
-| Líneas de `RestConsumer`                                 | **237** |     **186** ▼51 |
-| Cobertura `mcp-server`                                   | **70,2 %** | **73,1 %** ▲2,9 |
-| Cobertura `rest-consumer`                                | **90,0 %** | **88,1 %** ▼1,9 *(clases DTO nuevas con accesores sin ejercitar)* |
-| Cobertura `app-service` / `domain/usecase`               | **48,4 % / 68,2 %** | **48,4 % / 68,2 %** = *(fuera de alcance)* |
+| Métrica                                                |               Antes |                                                           Después |
+|--------------------------------------------------------|--------------------:|------------------------------------------------------------------:|
+| Modelos de dominio deserializados como `@McpToolParam` |               **2** |                                                          ✅ **0** |
+| Modelos de dominio serializados por el `WebClient`     |               **3** |                                                          ✅ **0** |
+| Mappers en la frontera de salida                       |               **0** |                                                          ✅ **5** |
+| Mappers en la frontera de entrada                      |               **0** |                                                          ✅ **1** |
+| ArchUnit `Rule_2.2` (violaciones reales, según el log) |               **1** |                                                          ✅ **0** |
+| Nombres de campo del cable modificados                 |                 n/a |                                                          ✅ **0** |
+| Pruebas totales                                        |              **67** |                                                        **77** ▲10 |
+| Pruebas heredadas **modificadas**                      |                 n/a |              **1** *(3 líneas, renombrado de símbolo autorizado)* |
+| Líneas de `RestConsumer`                               |             **237** |                                                       **186** ▼51 |
+| Cobertura `mcp-server`                                 |          **70,2 %** |                                                   **73,1 %** ▲2,9 |
+| Cobertura `rest-consumer`                              |          **90,0 %** | **88,1 %** ▼1,9 *(clases DTO nuevas con accesores sin ejercitar)* |
+| Cobertura `app-service` / `domain/usecase`             | **48,4 % / 68,2 %** |                        **48,4 % / 68,2 %** = *(fuera de alcance)* |
 
-**Decisión DP-03:** ✅ resuelta el 2026-08-30. (1) DTO de entrada renombrado a
-**`WorkItemsBatchInput`**; (2) clase de dominio renombrada a **`WorkItemBatchCriteria`** —el nombre
+**Decisión DP-03:** ✅ resuelta el 2026-08-30. (1) DTO de entrada renombrado a **
+`WorkItemsBatchInput`**; (2) clase de dominio renombrada a **`WorkItemBatchCriteria`** —el nombre
 que §4.1 del plan maestro ya anticipaba—, lo que cierra `Rule_2.2` **sin excepciones a la regla y
 sin tocar el `ArchitectureTest`** (que lleva el aviso «Please do not modify this file»); (3) **dos
 DTOs** para `JsonPatchOperation`, uno por frontera.
@@ -219,28 +225,30 @@ antes. Lo único que cambió son **nombres de clase Java**, que no viajan por el
 
 ### 4.1 Qué se construyó
 
-| Frontera | Paquete nuevo | Contenido |
-|----------|---------------|-----------|
-| Entrada  | `mcp-server/.../mcp/dto/`       | `JsonPatchOperationInput`, `WorkItemsBatchInput`, `McpToolDtoMapper` |
+| Frontera | Paquete nuevo                        | Contenido                                                                                                                                                 |
+|----------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Entrada  | `mcp-server/.../mcp/dto/`            | `JsonPatchOperationInput`, `WorkItemsBatchInput`, `McpToolDtoMapper`                                                                                      |
 | Salida   | `rest-consumer/.../consumer/dto/`    | `JsonPatchOperationRequestDTO`, `WiqlQueryRequestDTO`, `WorkItemsBatchRequestDTO` **(+ los 9 DTOs de respuesta, movidos aquí desde la raíz del paquete)** |
-| Salida   | `rest-consumer/.../consumer/mapper/` | `JsonPatchMapper`, `WiqlQueryMapper`, `WorkItemBatchMapper` *(ida)* · `WorkItemMapper`, `TeamMapper` *(vuelta)* |
+| Salida   | `rest-consumer/.../consumer/mapper/` | `JsonPatchMapper`, `WiqlQueryMapper`, `WorkItemBatchMapper` *(ida)* · `WorkItemMapper`, `TeamMapper` *(vuelta)*                                           |
 
 Los ocho métodos `toDomain(...)` privados que vivían dentro de `RestConsumer` se movieron a
 `WorkItemMapper` y `TeamMapper` **sin cambiar una sola línea de su lógica**. Ése es el motivo de que
-`RestConsumer` baje 51 líneas: **no se partió la clase** —eso es D-10, Fase 05—, solo se sacó de ella
+`RestConsumer` baje 51 líneas: **no se partió la clase** —eso es D-10, Fase 05—, solo se sacó de
+ella
 lo que nunca fue su responsabilidad.
 
 ### 4.2 Pruebas nuevas (10)
 
-| Clase                                   | Módulo         | Pruebas | Qué congela |
-|-----------------------------------------|----------------|--------:|-------------|
-| `OutboundPayloadCharacterizationTest`   | `rest-consumer`|   **4** | El **cuerpo HTTP realmente enviado** a Azure DevOps, comparado contra la serialización del **modelo de dominio** —literalmente lo que hacía el `WebClient` antes de esta fase |
-| `McpToolDtoMapperTest`                  | `mcp-server`   |   **6** | La traducción DTO→dominio y, por **reflexión**, que los ocho nombres de campo del cable son exactamente los del contrato |
+| Clase                                 | Módulo          | Pruebas | Qué congela                                                                                                                                                                   |
+|---------------------------------------|-----------------|--------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `OutboundPayloadCharacterizationTest` | `rest-consumer` |   **4** | El **cuerpo HTTP realmente enviado** a Azure DevOps, comparado contra la serialización del **modelo de dominio** —literalmente lo que hacía el `WebClient` antes de esta fase |
+| `McpToolDtoMapperTest`                | `mcp-server`    |   **6** | La traducción DTO→dominio y, por **reflexión**, que los ocho nombres de campo del cable son exactamente los del contrato                                                      |
 
 > **Por qué `OutboundPayloadCharacterizationTest` tuvo que existir.** El paso 7 del checklist pedía
 > verificar que el JSON enviado es byte a byte el mismo «con `RestConsumerTest`». Al leerla se
 > comprobó que **`RestConsumerTest` nunca ha comparado un cuerpo de petición**: valida URIs y
-> respuestas. El hueco era justo el que esta fase podía romper en silencio —un campo perdido, un nulo
+> respuestas. El hueco era justo el que esta fase podía romper en silencio —un campo perdido, un
+> nulo
 > que deja de incluirse, un orden que cambia— y que Azure DevOps no reportaría como error, sino como
 > un resultado distinto. La prueba no compara contra una cadena literal escrita a mano (eso solo
 > congelaría «lo que salga hoy»): compara contra `objectMapper.writeValueAsString(<modelo de
@@ -267,7 +275,8 @@ nombre de clase terminado en `Dto`, `DTO`, `Request` o `Response`**.
 ### 4.4 Desviaciones respecto a las Instrucciones, y por qué
 
 1. **Se modificó `RestConsumerTest`** (3 líneas: `import` + 2 usos del nombre de clase), contra la
-   regla «0 pruebas heredadas modificadas». **No fue una decisión propia**: se detectó al inventariar
+   regla «0 pruebas heredadas modificadas». **No fue una decisión propia**: se detectó al
+   inventariar
    las fronteras, se documentó como conflicto directo entre dos casillas de la Definición de Hecho y
    **se elevó al propietario, que lo autorizó** (§0). Ninguna aserción, ningún cuerpo JSON y ningún
    código de estado cambiaron: la red de seguridad sigue comparando peticiones reales contra
@@ -284,7 +293,8 @@ nombre de clase terminado en `Dto`, `DTO`, `Request` o `Response`**.
 ### 4.5 Lo que esta fase NO hizo (y sigue pendiente)
 
 - El **retorno** hacia el cliente MCP sigue serializando modelos de dominio (`WorkItem`,
-  `WiqlResult`, `TeamFieldValues`…). Esa mitad no estaba en el alcance —la fase ataca la frontera con
+  `WiqlResult`, `TeamFieldValues`…). Esa mitad no estaba en el alcance —la fase ataca la frontera
+  con
   Azure DevOps— y queda anotada para la **Fase 07** (D-16).
 - No se tocó la seguridad de la Fase 02: los ocho `@PreAuthorize` acompañaron a sus métodos y
   `McpToolsAuthorizationTest` sigue en verde **sin modificarse**.

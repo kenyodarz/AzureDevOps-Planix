@@ -70,8 +70,8 @@ pasa a la Fase 06 (no depende técnicamente de ésta). Es el §8.5 del plan maes
   `mcp-server/.../mcp/security/McpRoles.java`.
 - **DP-03 — La frontera de contrato existe y no se deshace.** 1 mapper de entrada
   (`McpToolDtoMapper`) y 5 de salida (`consumer/mapper/`). **Ningún modelo de dominio puede volver a
-  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se llama
-  **`WorkItemBatchCriteria`**.
+  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se
+  llama **`WorkItemBatchCriteria`**.
 - **DP-04 — El repliegue se conserva y se mide; las reglas de tipos son dominio.** El repliegue por
   concatenación **sigue vivo, año del calendario incluido**, ahora contado por
   `azuredevops.teamscope.fallback` con `WARN`. Los tipos por defecto y la traducción
@@ -98,7 +98,8 @@ siete puertos para un solo agregado**, organizados por operación CRUD en lugar 
 
 ### Reglas innegociables
 
-1. **Ni una URL, ni un parámetro de consulta, ni un cuerpo JSON, ni una cabecera cambian.** Esta fase
+1. **Ni una URL, ni un parámetro de consulta, ni un cuerpo JSON, ni una cabecera cambian.** Esta
+   fase
    mueve código de sitio. `RestConsumerTest` y `OutboundPayloadCharacterizationTest` son la red de
    seguridad.
 2. **Cero cambios en el contrato MCP público**: ni nombres de tool, ni de parámetro, ni de campo, ni
@@ -145,7 +146,7 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] Plan maestro actualizado: §3, §6, §7, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-05.md` relleno con lo alcanzado **de verdad**.
 - [ ] **`docs/fases/fase-06.md` y `docs/fases/PROMPT-FASE-06.md` generados**, con **DP-06** marcada
-      como bloqueante en el primer paso.
+  como bloqueante en el primer paso.
 - [ ] Commit hecho con el mensaje indicado.
 
 Empieza por el **Paso 0**.

@@ -117,8 +117,10 @@ usa**, y el resultado del `grep` se anota en el bloque **Resultado**. Es el crit
 Comandos de verificación (PowerShell, Windows):
 
 ```
+
 cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 .\gradlew.bat build --no-daemon
+
 ```
 
 ### Definición de Hecho

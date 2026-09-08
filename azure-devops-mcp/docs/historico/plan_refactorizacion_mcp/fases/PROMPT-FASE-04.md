@@ -38,7 +38,8 @@ Lee, en este orden, y confirma en 10 líneas qué entendiste antes de tocar nada
 - El cuerpo HTTP de salida está **congelado carácter a carácter** en
   `OutboundPayloadCharacterizationTest` (4 cuerpos).
 - ArchUnit `Rule_2.2`: ✅ **0 violaciones reales** (D-17 saldada en la Fase 03). Pero **D-25 sigue
-  viva**: el `issues.json` sale vacío aunque haya violaciones, así que **la única verificación fiable
+  viva**: el `issues.json` sale vacío aunque haya violaciones, así que **la única verificación
+  fiable
   es el log del test**.
 - Stack: Java 25 · Spring Boot 4.1.0 · Spring AI 2.0.0-RC1 (MCP `STATELESS`/`ASYNC`) · Reactor ·
   Resilience4j · Lombok · ArchUnit. Módulos: `:app-service`, `:model`, `:usecase`, `:mcp-server`,
@@ -72,8 +73,8 @@ pasa a la Fase 05 (no depende técnicamente de ésta). Es el §8.5 del plan maes
 - **DP-03 — La frontera de contrato ya existe y no se deshace.** Hay **1 mapper de entrada**
   (`mcp-server/.../mcp/dto/McpToolDtoMapper`) y **5 de salida**
   (`rest-consumer/.../consumer/mapper/`). **Ningún modelo de dominio puede volver a exponerse como
-  `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se llama
-  **`WorkItemBatchCriteria`** (antes `WorkItemsBatchRequest`): no revivas el nombre viejo.
+  `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se llama **
+  `WorkItemBatchCriteria`** (antes `WorkItemsBatchRequest`): no revivas el nombre viejo.
 - **Los nombres de campo del cable son intocables** (`CONTRATO-MCP.md` §3): `op`, `path`, `value`,
   `from`, `ids`, `fields`, `expand`, `errorPolicy`. Hay una prueba por reflexión que lo verifica.
 
@@ -107,15 +108,17 @@ aplicación está vacía **porque la lógica se quedó arriba**. Y `spring-rules
    correctas.
 7. **Fuera de alcance:** partir `RestConsumer` y reagrupar los paquetes de `domain/model`
    (D-10/D-14/D-15 → Fase 05); errores y cortacircuitos (D-06/D-13/D-18/D-24 → Fase 06); retirar los
-   `@Setter` del modelo existente (D-16 → Fase 07); D-05, D-19, D-20, D-23, D-25, D-27 → Fase 08.
-   *(Los Value Objects **nuevos** que crees sí nacen inmutables.)*
+   `@Setter` del modelo existente (D-16 → Fase 07); D-05, D-19, D-20, D-23, D-25, D-27 → Fase 08. *(
+   Los Value Objects **nuevos** que crees sí nacen inmutables.)*
 8. **No toques** `azure-devops-agent`, `azure-devops-backend` ni `azure-devops-frontend`.
-9. **Un commit** al cerrar: `refactor(work_item_query): mover la construccion del wiql al caso de uso`
+9. **Un commit** al cerrar:
+   `refactor(work_item_query): mover la construccion del wiql al caso de uso`
 
 ### Cómo trabajar
 
 Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-04.md`, en orden y
-sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la completes.
+sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
+completes.
 
 Comandos de verificación (PowerShell, Windows):
 
@@ -130,7 +133,7 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] `.\gradlew.bat build` en **verde**, con **≥ 77** pruebas y **0** fallos.
 - [ ] **0** pruebas heredadas modificadas.
 - [ ] **La sentencia WIQL es idéntica en las 8 ramas**, verificado por `WiqlCharacterizationTest`
-      **sin modificarla**.
+  **sin modificarla**.
 - [ ] `AzureDevOpsTools` **≤ 120 líneas**.
 - [ ] **0** reglas de negocio de Azure DevOps en `entry-points`.
 - [ ] **0** `String.format` de WIQL fuera del dominio.
@@ -138,12 +141,12 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] `domain/model/src/test` **creado** (empieza a saldar D-26).
 - [ ] Cobertura `domain/usecase` **≥ 85 %**.
 - [ ] **0** modelos de dominio expuestos como `@McpToolParam` o serializados por el `WebClient`
-      *(no deshacer la Fase 03)*.
+  *(no deshacer la Fase 03)*.
 - [ ] `CONTRATO-MCP.md` §2.4 actualizado, comportamiento tolerante por comportamiento tolerante.
 - [ ] Plan maestro actualizado: §3, §6, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-04.md` relleno con lo alcanzado **de verdad**.
 - [ ] **`docs/fases/fase-05.md` y `docs/fases/PROMPT-FASE-05.md` generados**, con **DP-05** marcada
-      como bloqueante en el primer paso.
+  como bloqueante en el primer paso.
 - [ ] Commit hecho con el mensaje indicado.
 
 Empieza por el **Paso 0**.

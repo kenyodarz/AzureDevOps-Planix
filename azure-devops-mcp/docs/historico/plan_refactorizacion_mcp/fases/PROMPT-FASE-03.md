@@ -67,7 +67,8 @@ pasa a la Fase 04 (no depende técnicamente de ésta). Es el §8.5 del plan maes
 
 **Que el dominio deje de ser el contrato de cable en los dos extremos.**
 
-Hoy Jackson deserializa modelos de `domain/model` desde el payload MCP y el `WebClient` los serializa
+Hoy Jackson deserializa modelos de `domain/model` desde el payload MCP y el `WebClient` los
+serializa
 tal cual hacia Azure DevOps. No hay **ni un solo mapper** en la frontera de salida, cuando
 `spring-rules.md` los declara obligatorios. Y `WorkItemsBatchRequest` —un *request* HTTP viviendo en
 el dominio— es la única violación de ArchUnit `Rule_2.2`.
@@ -86,12 +87,14 @@ el dominio— es la única violación de ArchUnit `Rule_2.2`.
 6. **Fuera de alcance:** el WIQL y las rutas (D-07/08/09 → Fase 04); partir `RestConsumer` (D-10 →
    Fase 05); errores y cortacircuitos (D-06/D-13 → Fase 06); `@Setter` e inmutabilidad (D-16 →
    Fase 07); D-19, D-20, D-23, D-25, D-26, D-27 → Fases 07 y 08.
-7. **Un commit** al cerrar: `refactor(mcp_contract): separar los dto de cable de los modelos de dominio`
+7. **Un commit** al cerrar:
+   `refactor(mcp_contract): separar los dto de cable de los modelos de dominio`
 
 ### Cómo trabajar
 
 Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-03.md`, en orden y
-sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la completes.
+sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
+completes.
 
 Comandos de verificación (PowerShell, Windows):
 
@@ -108,7 +111,8 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] **0** modelos de dominio deserializados como `@McpToolParam`.
 - [ ] **0** modelos de dominio serializados por el `WebClient`.
 - [ ] **≥ 3** mappers en la frontera de salida y mapper de entrada en el entry-point.
-- [ ] ArchUnit `Rule_2.2` a **0 violaciones reales**, verificado **en el log** (no en `issues.json`).
+- [ ] ArchUnit `Rule_2.2` a **0 violaciones reales**, verificado **en el log** (no en
+  `issues.json`).
 - [ ] **0** nombres de campo del cable modificados.
 - [ ] `CONTRATO-MCP.md` §3 actualizado.
 - [ ] Plan maestro actualizado: §3, §6, §9 y cabecera.

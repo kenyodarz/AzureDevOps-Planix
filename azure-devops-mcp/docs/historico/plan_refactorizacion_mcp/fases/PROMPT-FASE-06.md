@@ -59,8 +59,8 @@ Lee, en este orden, y confirma en 10 líneas qué entendiste antes de tocar nada
 
 1. **¿Qué debe ver el cliente MCP ante un fallo de Azure DevOps?** (a) forma exacta del error
    —mensaje, código estable, ambos—; (b) ¿se propaga el cuerpo original de Azure DevOps, se resume
-   o se oculta?; (c) ¿se distingue 404 de 401 de 5xx, y con cuántas excepciones de dominio?;
-   (d) ¿un fallo rompe la tool o devuelve resultado vacío? **Ojo: DP-04 ya decidió conservar el
+   o se oculta?; (c) ¿se distingue 404 de 401 de 5xx, y con cuántas excepciones de dominio?; (d) ¿un
+   fallo rompe la tool o devuelve resultado vacío? **Ojo: DP-04 ya decidió conservar el
    repliegue de rutas para NO convertir un tablero vacío en un error. No lo contradigas sin que el
    propietario lo diga.**
 2. **Valores de resiliencia:** `failureRateThreshold`, `slidingWindowSize` y
@@ -86,8 +86,8 @@ pasa a la Fase 07 (no depende técnicamente de ésta). Es el §8.5 del plan maes
   `mcp-server/.../mcp/security/McpRoles.java`.
 - **DP-03 — La frontera de contrato existe y no se deshace.** 1 mapper de entrada
   (`McpToolDtoMapper`) y 5 de salida (`consumer/mapper/`). **Ningún modelo de dominio puede volver a
-  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se llama
-  **`WorkItemBatchCriteria`**.
+  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se
+  llama **`WorkItemBatchCriteria`**.
 - **DP-04 — El repliegue se conserva y se mide; las reglas de tipos son dominio.** El repliegue por
   concatenación **sigue vivo, año del calendario incluido**, contado por
   `azuredevops.teamscope.fallback` con `WARN`. Los tipos por defecto y la traducción
@@ -96,7 +96,8 @@ pasa a la Fase 07 (no depende técnicamente de ésta). Es el §8.5 del plan maes
 - **DP-05 — Los adaptadores y los puertos ya están segregados, y así se quedan.** 3 adaptadores,
   3 puertos, 2 paquetes de dominio. **B-05: los tres nombres de cortacircuito son DEFINITIVOS**
   (`workItemQuery`, `workItemCommand`, `teamScope`) — se renombraron **para que esta fase los
-  configure**, no para que los vuelva a cambiar. **B-06:** el puerto huérfano se borró. **B-07:** los
+  configure**, no para que los vuelva a cambiar. **B-06:** el puerto huérfano se borró. **B-07:**
+  los
   tres adaptadores **comparten el `WebClient`** de `RestConsumerConfig` y el helper
   `consumer/ApiVersions`, que centraliza el ternario de versión **con los literales originales**.
 - **Los nombres de campo del cable son intocables** (`CONTRATO-MCP.md` §3): `op`, `path`, `value`,
@@ -116,7 +117,8 @@ como hizo `TeamScopeFallbackMetrics`.
 resiliencia siga siendo un fantasma.**
 
 Hoy no hay **ni una sola excepción de dominio** en el repositorio: un `401`, un `404` o un
-`TF401232` viajan tal cual como `WebClientResponseException`, una excepción de Spring. Y los **tres**
+`TF401232` viajan tal cual como `WebClientResponseException`, una excepción de Spring. Y los
+**tres**
 cortacircuitos corren con la configuración **por defecto** de Resilience4j porque **nadie los ha
 declarado nunca** en el YAML.
 
@@ -135,7 +137,8 @@ declarado nunca** en el YAML.
    DP-06 lo dice**. Cualquier otra prueba heredada que necesites tocar: **pregunta primero**. Las
    Fases 03, 04 y 05 obtuvieron autorizaciones **puntuales**; no son un permiso general.
 5. **La traducción de errores no se duplica.** Hay **tres** adaptadores: si el traductor acaba
-   copiado tres veces, la fase ha fallado. Mismo criterio con el que la Fase 05 repartió los mappers.
+   copiado tres veces, la fase ha fallado. Mismo criterio con el que la Fase 05 repartió los
+   mappers.
 6. **No toques** la seguridad de la Fase 02, la frontera de la Fase 03, el flujo de la Fase 04 ni el
    reparto de la Fase 05.
 7. **Política de No-Asunción** (`spring-rules.md` §6): ante cualquier duda de nombres, contratos o
@@ -169,7 +172,8 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] **1** solo traductor de errores, **compartido** por los tres adaptadores. **0 duplicados.**
 - [ ] **3 de 3** cortacircuitos con configuración declarada y elegida.
 - [ ] **Timeout por operación**, incluido el de lote. **0** timeouts compartidos sin elegir.
-- [ ] **0** URLs, cuerpos, parámetros de consulta o cabeceras alterados **salvo lo que B-10 autorice**.
+- [ ] **0** URLs, cuerpos, parámetros de consulta o cabeceras alterados **salvo lo que B-10
+  autorice**.
 - [ ] Cobertura de `rest-consumer` **≥ 88,4 %** (no debe bajar).
 - [ ] ArchUnit a **0** violaciones reales, verificado **en el log**.
 - [ ] **0** modelos de dominio expuestos como `@McpToolParam` o serializados por el `WebClient`.

@@ -28,7 +28,8 @@ Lee, en este orden, y confirma en 10 líneas qué entendiste antes de tocar nada
 5. `azure-devops-mcp/docs/resultados/CONTRATO-MCP.md` **§3.4** y **§6** — §3.4 dice qué se sigue
    serializando desde el dominio hacia el cliente MCP *(la trampa de esta fase)*; §6 es el
    **contrato de errores**, nuevo y público desde la Fase 06.
-6. `azure-devops-mcp/docs/fases/fase-06.md` §4.1 — qué construyó la Fase 06 y **qué no debes tocar**.
+6. `azure-devops-mcp/docs/fases/fase-06.md` §4.1 — qué construyó la Fase 06 y **qué no debes
+   tocar**.
 
 ### Estado real al arrancar (medido, no estimado)
 
@@ -42,14 +43,16 @@ Lee, en este orden, y confirma en 10 líneas qué entendiste antes de tocar nada
 - **Tres puertos** de dominio (`WorkItemQueryPort`, `WorkItemCommandPort`, `TeamScopePort`) + 1 de
   observabilidad. **0 puertos huérfanos.**
 - `domain/model` tiene **3 paquetes**: `workitem/`, `team/` y **`exception/`**.
-- **Excepciones de dominio: 3** (+1 base abstracta `AzureDevOpsException`), con códigos estables
-  **`AZDO_NOT_FOUND`**, **`AZDO_UNAUTHORIZED`**, **`AZDO_UNAVAILABLE`**. **Ya son inmutables**: no
+- **Excepciones de dominio: 3** (+1 base abstracta `AzureDevOpsException`), con códigos estables **
+  `AZDO_NOT_FOUND`**, **`AZDO_UNAUTHORIZED`**, **`AZDO_UNAVAILABLE`**. **Ya son inmutables**: no
   entran en D-16.
-- **Errores técnicos crudos hacia el cliente: 0.** Los 7 puntos de salida se traducen con **un solo**
+- **Errores técnicos crudos hacia el cliente: 0.** Los 7 puntos de salida se traducen con **un
+  solo**
   `AzureDevOpsErrorTranslator`, y el entry-point les da forma con `McpErrorTranslator`.
 - **Cortacircuitos: 3**, los tres **declarados y configurados** en `application.yaml`
   (50 % / 10 / 10 s). `testGet` y `testPost` **retirados**.
-- **Timeouts: 4 por operación** (consulta 10 s · **lote 30 s** · comando 10 s · ámbito de equipo 5 s),
+- **Timeouts: 4 por operación** (consulta 10 s · **lote 30 s** · comando 10 s · ámbito de equipo 5
+  s),
   más los de Netty de 5 s, **que siguen intactos**.
 - **Versiones de API:** 2 en `@ConfigurationProperties` (mismos literales) + **2 literales en la
   ruta** de las consultas de equipo (B-10, deliberado).
@@ -109,7 +112,7 @@ El javadoc de `TeamScope` (`domain/model/.../model/workitem/TeamScope.java`) dic
 > comportamiento observable que DP-04 §0.1 descartó al elegir la opción (a).*
 
 **Endurecer una invariante puede reabrir DP-04 sin querer.** Cada invariante nueva la declara el
-propietario en DP-07 §0.2(c), no tú.
+propietario en DP-07 §0.2 (c), no tú.
 
 ### Decisiones YA RESUELTAS — NO las replantees ni las contradigas
 
@@ -121,8 +124,8 @@ propietario en DP-07 §0.2(c), no tú.
   `mcp-server/.../mcp/security/McpRoles.java`.
 - **DP-03 — La frontera de contrato existe y no se deshace.** 1 mapper de entrada
   (`McpToolDtoMapper`) y 5 de salida (`consumer/mapper/`). **Ningún modelo de dominio puede volver a
-  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se llama
-  **`WorkItemBatchCriteria`**.
+  exponerse como `@McpToolParam` ni ser serializado por el `WebClient`.** El tipo de dominio se
+  llama **`WorkItemBatchCriteria`**.
 - **DP-04 — El repliegue se conserva y se mide; las reglas de tipos son dominio.** El repliegue por
   concatenación **sigue vivo, año del calendario incluido**, contado por
   `azuredevops.teamscope.fallback` con `WARN`. Los tipos por defecto y la traducción
@@ -133,8 +136,8 @@ propietario en DP-07 §0.2(c), no tú.
   `workItemCommand`, `teamScope`) **y ya están configurados**. **B-07:** los tres adaptadores
   **comparten el `WebClient`** de `RestConsumerConfig`.
 - **DP-06 — El contrato de errores es público y estable.** Forma `CODIGO: mensaje neutro`. Cuatro
-  códigos: **`AZDO_NOT_FOUND`**, **`AZDO_UNAUTHORIZED`**, **`AZDO_UNAVAILABLE`**,
-  **`MCP_INTERNAL_ERROR`**. El cuerpo original de Azure DevOps **se registra en `ERROR` y NO se
+  códigos: **`AZDO_NOT_FOUND`**, **`AZDO_UNAUTHORIZED`**, **`AZDO_UNAVAILABLE`**, **
+  `MCP_INTERNAL_ERROR`**. El cuerpo original de Azure DevOps **se registra en `ERROR` y NO se
   propaga**. **La tool falla ante un error, PERO el repliegue de rutas se respeta intacto.**
   **B-08:** se traduce en **dos capas** —`AzureDevOpsErrorTranslator` (técnico → dominio) y
   `McpErrorTranslator` (dominio → mensaje MCP)—, **una sola instancia de cada**. **B-09:** las
@@ -178,7 +181,8 @@ Value Objects de la Fase 04. Es el modelo anémico literal que `spring-rules.md`
 4. **Ni una URL, ni un parámetro de consulta, ni un cuerpo JSON, ni una cabecera cambian.**
    `OutboundPayloadCharacterizationTest` y los tres `*AdapterTest` son la red de seguridad.
 5. **Las 184 pruebas deben seguir pasando.** Cualquier prueba heredada que necesites tocar:
-   **pregunta primero**. Las Fases 03, 04, 05 y 06 obtuvieron autorizaciones **puntuales**; no son un
+   **pregunta primero**. Las Fases 03, 04, 05 y 06 obtuvieron autorizaciones **puntuales**; no son
+   un
    permiso general.
 6. **No endurezcas invariantes que reabran DP-04.** Lee el javadoc de `TeamScope` antes de escribir
    la primera validación.
@@ -211,7 +215,8 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] DP-07 respondida por el propietario **o** bloqueo documentado y fase dejada abierta.
 - [ ] `.\gradlew.bat build` en **verde**, con **≥ 184** pruebas y **0** fallos.
 - [ ] **0** clases de `domain/model` con `@Setter`.
-- [ ] **≥ 1 invariante de negocio declarada** por agregado, **todas autorizadas por DP-07 §0.2(c)**.
+- [ ] **≥ 1 invariante de negocio declarada** por agregado, **todas autorizadas por DP-07 §0.2 (
+  c)**.
 - [ ] **0** nombres de campo del JSON de salida alterados, verificado por prueba de caracterización.
 - [ ] **0** cambios en el contrato de errores de la Fase 06.
 - [ ] **0** URLs, cuerpos, parámetros de consulta o cabeceras alterados.
