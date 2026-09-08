@@ -197,13 +197,43 @@ class ClasspathPromptTemplateAdapterTest {
                 Map.of(WORK_ITEM_ID, "1", ORGANIZATION, "org", PROJECT, "proj", STANDARDS, "std"),
                 PromptTemplateId.PROGRAM_PLANNING,
                 Map.of("trimestre", "Q3", "objetivos", "obj", "frentes", "fr", "capacidadSprint",
-                        "30", "specsContexto", "specs"));
+                        "30", "specsContexto", "specs"),
+                PromptTemplateId.EVALUATE_PULL_REQUEST,
+                Map.of("pullRequestId", 100, "repositoryId", "repo", "title", "t",
+                        "description", "d", "sourceBranch", "src", "targetBranch", "dst",
+                        "changesList", "changes", "architectureStandards", "standards"));
 
         // WHEN / THEN
         for (PromptTemplateId id : PromptTemplateId.values()) {
             String rendered = adapter.render(id, variablesById.get(id));
             assertThat(rendered).as("Plantilla %s", id).isNotBlank().doesNotContain("{{");
         }
+    }
+
+    @Test
+    @DisplayName("Sustituye todos los marcadores de la plantilla EVALUATE_PULL_REQUEST")
+    void givenEvaluatePullRequestVariables_whenRender_thenReplacesAllPlaceholders() {
+        // GIVEN
+        Map<String, Object> variables = Map.of(
+                "pullRequestId", 101,
+                "repositoryId", "azure-devops-core",
+                "title", "feat: nuevo caso de uso",
+                "description", "Implementa evaluación",
+                "sourceBranch", "feature/eval",
+                "targetBranch", "main",
+                "changesList", "M file.java",
+                "architectureStandards", "Clean Architecture Bancolombia");
+
+        // WHEN
+        String result = adapter.render(PromptTemplateId.EVALUATE_PULL_REQUEST, variables);
+
+        // THEN
+        assertThat(result)
+                .contains("101")
+                .contains("azure-devops-core")
+                .contains("feat: nuevo caso de uso")
+                .contains("Clean Architecture Bancolombia")
+                .doesNotContain("{{");
     }
 }
 

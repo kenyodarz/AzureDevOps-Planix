@@ -62,16 +62,42 @@ class PromptTemplateContentTest {
                     "frentes", "Canales, Core",
                     "capacidadSprint", 34,
                     "specsContexto", "Contexto de especificaciones");
+            case EVALUATE_PULL_REQUEST -> Map.of(
+                    "pullRequestId", 555,
+                    "repositoryId", "azure-devops-core",
+                    "title", "feat: nuevo endpoint",
+                    "description", "Implementa casos de uso",
+                    "sourceBranch", "feature/endpoint",
+                    "targetBranch", "main",
+                    "changesList", "| Edit | MyClass.java |",
+                    "architectureStandards", "Normas Bancolombia");
         };
     }
 
     @Test
-    @DisplayName("Las cinco plantillas se renderizan sin marcadores pendientes")
+    @DisplayName("Todas las plantillas se renderizan sin marcadores pendientes")
     void givenEveryTemplate_whenRender_thenNoPlaceholderRemains() {
         for (PromptTemplateId id : PromptTemplateId.values()) {
             String rendered = adapter.render(id, variablesFor(id));
             assertThat(rendered).as("Plantilla %s", id).isNotBlank().doesNotContain("{{");
         }
+    }
+
+    @Test
+    @DisplayName("La plantilla EVALUATE_PULL_REQUEST incluye directrices de Clean Architecture y marcadores JSON")
+    void givenEvaluatePullRequestTemplate_whenRender_thenEnforcesCleanArchitectureAndJsonMarkers() {
+        String rendered = adapter.render(PromptTemplateId.EVALUATE_PULL_REQUEST,
+                variablesFor(PromptTemplateId.EVALUATE_PULL_REQUEST));
+
+        assertThat(rendered)
+                .contains("Clean Architecture Bancolombia")
+                .contains("Pureza del Dominio")
+                .contains("Inversión de Dependencias")
+                .contains("Cero Secretos en Código")
+                .contains("EVALUATION_JSON_START")
+                .contains("EVALUATION_JSON_END")
+                .contains("\"pullRequestId\": 555")
+                .doesNotContain("{{");
     }
 
     @Test

@@ -37,6 +37,11 @@ public enum PromptTemplateId {
      * Planeación macro y roadmap trimestral (Program Planning) con distribución de HUs y HAs por
      * sprint.
      */
-    PROGRAM_PLANNING
+    PROGRAM_PLANNING,
+
+    /**
+     * Evaluación técnica y arquitectural de Pull Requests en Azure DevOps.
+     */
+    EVALUATE_PULL_REQUEST
 }
 

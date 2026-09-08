@@ -10,11 +10,13 @@ import co.com.bancolombia.model.chat.gateways.AgentResponseGateway;
 import co.com.bancolombia.model.chat.gateways.ChatGateway;
 import co.com.bancolombia.model.chat.gateways.TaskStoreGateway;
 import co.com.bancolombia.model.prompt.gateways.PromptTemplatePort;
+import co.com.bancolombia.model.pullrequest.gateways.PullRequestMcpPort;
 import co.com.bancolombia.model.spec.gateways.SpecStoragePort;
 import co.com.bancolombia.usecase.chat.AgentChatUseCase;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowDispatcher;
 import co.com.bancolombia.usecase.chat.handler.ChatFlowHandler;
 import co.com.bancolombia.usecase.chat.handler.ProgramPlanningFlowHandler;
+import co.com.bancolombia.usecase.pullrequest.EvaluatePullRequestUseCase;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,7 @@ class UseCasesConfigWiringTest {
             assertThat(context.getBean(AgentChatUseCase.class)).isNotNull();
             assertThat(context.getBean(ChatFlowDispatcher.class)).isNotNull();
             assertThat(context.getBean(ProgramPlanningFlowHandler.class)).isNotNull();
+            assertThat(context.getBean(EvaluatePullRequestUseCase.class)).isNotNull();
 
             // THEN: hay exactamente un handler por cada intención del dominio (exhaustividad total)
             Map<String, ChatFlowHandler> handlers =
@@ -107,6 +110,11 @@ class UseCasesConfigWiringTest {
         @Bean
         PromptTemplatePort promptTemplatePort() {
             return mock(PromptTemplatePort.class);
+        }
+
+        @Bean
+        PullRequestMcpPort pullRequestMcpPort() {
+            return mock(PullRequestMcpPort.class);
         }
     }
 }

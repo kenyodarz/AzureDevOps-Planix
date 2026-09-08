@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -47,11 +48,13 @@ public class ClasspathPromptTemplateAdapter implements PromptTemplatePort {
             PromptTemplateId.STORY_DIVISION, "division-historias.md",
             PromptTemplateId.STORY_REFINEMENT, "refinamiento-historia.md",
             PromptTemplateId.QUALITY_AUDIT, "auditoria-calidad.md",
-            PromptTemplateId.PROGRAM_PLANNING, "program-planning-roadmap.md");
+            PromptTemplateId.PROGRAM_PLANNING, "program-planning-roadmap.md",
+            PromptTemplateId.EVALUATE_PULL_REQUEST, "evaluate-pull-request.st");
 
     private final Map<PromptTemplateId, String> templates;
     private final Map<String, Object> sharedFragments;
 
+    @Autowired
     public ClasspathPromptTemplateAdapter() {
         this(TEMPLATES_FOLDER, FRAGMENTS_FOLDER);
     }
