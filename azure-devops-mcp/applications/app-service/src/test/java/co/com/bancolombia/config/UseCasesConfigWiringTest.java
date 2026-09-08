@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Import;
  *   <li>Registra su propio bean llamado {@code myUseCase}. Como la única aserción es «existe algún
  *       bean cuyo nombre acabe en {@code UseCase}», ese bean la satisface <b>él solo</b>: el test
  *       pasaría igual aunque {@link UseCasesConfig} estuviera vacío.</li>
- *   <li>Envuelve todo en un {@code catch (UnsatisfiedDependencyException)} cuyo cuerpo es
+ *   <li>Envuelve to-do en un {@code catch (UnsatisfiedDependencyException)} cuyo cuerpo es
  *       {@code assertTrue(true)}. Es decir, <b>si el contexto no arranca, el test aprueba</b>.
  *       Y como no registra ningún gateway, ése es precisamente el camino que toma.</li>
  * </ol>
@@ -68,7 +68,9 @@ class UseCasesConfigWiringTest {
             // Añadidos por la Fase 04: el flujo compuesto y la resolución de rutas. La aserción
             // que se les aplica es exactamente la misma que a los otros siete.
             ResolveTeamScopeUseCase.class,
-            ListWorkItemsByTeamAndSprintUseCase.class);
+            ListWorkItemsByTeamAndSprintUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class);
 
     @Test
     @DisplayName("GIVEN los gateways disponibles WHEN se carga UseCasesConfig THEN el contexto arranca y cada caso de uso resuelve a UN solo bean")
@@ -119,6 +121,11 @@ class UseCasesConfigWiringTest {
         @Bean
         TeamScopeFallbackMetrics teamScopeFallbackMetrics() {
             return TeamScopeFallbackMetrics.noOp();
+        }
+
+        @Bean
+        co.com.bancolombia.model.pullrequest.gateways.PullRequestPort pullRequestPort() {
+            return mock(co.com.bancolombia.model.pullrequest.gateways.PullRequestPort.class);
         }
     }
 }

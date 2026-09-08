@@ -69,6 +69,7 @@ adapter:
     api-version:
       work-item: "7.1"   # leer, crear, actualizar y consultar en lote
       wiql: "7.0"        # consulta WIQL; es distinta desde antes de este plan
+      git: "7.1"         # pull requests y repositorios git
     # Techo de tiempo REACTIVO por operacion (D-24, valores elegidos en DP-06 §0.2). Al vencer,
     # AzureDevOpsErrorTranslator lo convierte en AZDO_UNAVAILABLE, no en un TimeoutException crudo.
     operation-timeout:
@@ -118,6 +119,15 @@ resilience4j:
         minimumNumberOfCalls: 10
         waitDurationInOpenState: "10s"
       teamScope:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      gitPullRequest:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50

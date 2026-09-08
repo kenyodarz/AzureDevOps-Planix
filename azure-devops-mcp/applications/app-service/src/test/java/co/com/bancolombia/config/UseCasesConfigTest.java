@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Import;
  *   <li>Registraba un bean propio llamado {@code myUseCase} y después comprobaba «existe algún bean
  *       cuyo nombre acabe en {@code UseCase}». <b>Ese bean satisfacía la aserción por sí solo</b>,
  *       aunque no existiera ni un solo caso de uso real.</li>
- *   <li>Envolvía todo en un {@code catch (UnsatisfiedDependencyException) { assertTrue(true); }}
+ *   <li>Envolvía to-do en un {@code catch (UnsatisfiedDependencyException) { assertTrue(true); }}
  *       sobre un contexto que <b>no podía arrancar</b>, porque no registraba ningún gateway. El
  *       camino que tomaba siempre era el {@code catch}, así que <b>la aserción probablemente no se
  *       ejecutó nunca</b>.</li>
@@ -67,7 +67,9 @@ class UseCasesConfigTest {
             QueryByWiqlUseCase.class,
             GetWorkItemsBatchUseCase.class,
             ResolveTeamScopeUseCase.class,
-            ListWorkItemsByTeamAndSprintUseCase.class);
+            ListWorkItemsByTeamAndSprintUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class);
 
     @Test
     @DisplayName("GIVEN los puertos disponibles WHEN arranca el contexto THEN los nueve casos de uso se registran")
@@ -149,6 +151,11 @@ class UseCasesConfigTest {
         @Bean
         public TeamScopeFallbackMetrics teamScopeFallbackMetrics() {
             return mock(TeamScopeFallbackMetrics.class);
+        }
+
+        @Bean
+        public co.com.bancolombia.model.pullrequest.gateways.PullRequestPort pullRequestPort() {
+            return mock(co.com.bancolombia.model.pullrequest.gateways.PullRequestPort.class);
         }
     }
 }

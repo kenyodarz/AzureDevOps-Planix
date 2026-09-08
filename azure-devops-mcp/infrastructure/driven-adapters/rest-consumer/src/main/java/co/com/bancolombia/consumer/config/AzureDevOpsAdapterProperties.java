@@ -70,18 +70,24 @@ public record AzureDevOpsAdapterProperties(ApiVersion apiVersion, OperationTimeo
      * @param workItem para leer, crear, actualizar y consultar en lote
      * @param wiql     para la consulta WIQL; es distinta desde antes de este plan
      */
-    public record ApiVersion(String workItem, String wiql) {
+    public record ApiVersion(String workItem, String wiql, String git) {
 
         private static final String WORK_ITEM_DEFAULT = "7.1";
         private static final String WIQL_DEFAULT = "7.0";
+        private static final String GIT_DEFAULT = "7.1";
 
         public ApiVersion {
             workItem = orDefault(workItem, WORK_ITEM_DEFAULT);
             wiql = orDefault(wiql, WIQL_DEFAULT);
+            git = orDefault(git, GIT_DEFAULT);
+        }
+
+        public ApiVersion(String workItem, String wiql) {
+            this(workItem, wiql, GIT_DEFAULT);
         }
 
         public static ApiVersion defaults() {
-            return new ApiVersion(WORK_ITEM_DEFAULT, WIQL_DEFAULT);
+            return new ApiVersion(WORK_ITEM_DEFAULT, WIQL_DEFAULT, GIT_DEFAULT);
         }
 
         private static String orDefault(String value, String fallback) {
