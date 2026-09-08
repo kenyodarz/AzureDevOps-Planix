@@ -1,16 +1,19 @@
 package co.com.bancolombia.consumer.mapper;
 
 import co.com.bancolombia.consumer.dto.GitPullRequestChangesResponse;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentRequest;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentResponse;
 import co.com.bancolombia.consumer.dto.GitPullRequestResponse;
 import co.com.bancolombia.model.pullrequest.GitChange;
 import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Mapper desacoplado para transformar DTOs de Azure DevOps Git a entidades inmutables de dominio
- * ({@link PullRequest} y {@link GitChange}).
+ * ({@link PullRequest}, {@link GitChange} y {@link PullRequestComment}).
  */
 public final class PullRequestMapper {
 
@@ -120,5 +123,71 @@ public final class PullRequestMapper {
                 .map(PullRequestMapper::toDomain)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    /**
+     * Transforma una entidad de dominio {@link PullRequestComment} al DTO de solicitud
+     * {@link GitPullRequestCommentRequest} para la API de Azure DevOps Git Threads.
+     *
+     * @param comment entidad de dominio con los datos del comentario
+     * @return DTO de solicitud listo para enviar a la API REST o {@code null} si es nulo
+     */
+    public static GitPullRequestCommentRequest toRequest(PullRequestComment comment) {
+        if (comment == null) {
+            return null;
+        }
+
+        String status = (comment.status() != null && !comment.status().isBlank())
+                ? comment.status()
+                : "active";
+
+        GitPullRequestCommentRequest.CommentItemRequest item =
+                GitPullRequestCommentRequest.CommentItemRequest.builder()
+                        .parentCommentId(0)
+                        .content(comment.content())
+                        .commentType(1)
+                        .build();
+
+        return GitPullRequestCommentRequest.builder()
+                .comments(List.of(item))
+                .status(status)
+                .build();
+    }
+
+    /**
+     * Transforma un {@link GitPullRequestCommentResponse} a la entidad de dominio
+     * {@link PullRequestComment}.
+     *
+     * @param response DTO de respuesta del hilo de Azure DevOps
+     * @return entidad inmutable de dominio {@link PullRequestComment} o {@code null} si el DTO es
+     * nulo
+     */
+    public static PullRequestComment toDomainComment(GitPullRequestCommentResponse response) {
+        if (response == null) {
+            return null;
+        }
+
+        String content = null;
+        String author = null;
+
+        if (response.getComments() != null && !response.getComments().isEmpty()) {
+            GitPullRequestCommentResponse.CommentItemResponse firstComment =
+                    response.getComments().getFirst();
+            if (firstComment != null) {
+                content = firstComment.getContent();
+                if (firstComment.getAuthor() != null) {
+                    author = firstComment.getAuthor().getDisplayName() != null
+                            ? firstComment.getAuthor().getDisplayName()
+                            : firstComment.getAuthor().getUniqueName();
+                }
+            }
+        }
+
+        return PullRequestComment.builder()
+                .id(response.getId())
+                .status(response.getStatus())
+                .content(content)
+                .author(author)
+                .build();
     }
 }

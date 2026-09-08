@@ -2,22 +2,26 @@ package co.com.bancolombia.consumer;
 
 import co.com.bancolombia.consumer.config.AzureDevOpsAdapterProperties;
 import co.com.bancolombia.consumer.dto.GitPullRequestChangesResponse;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentRequest;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentResponse;
 import co.com.bancolombia.consumer.dto.GitPullRequestResponse;
 import co.com.bancolombia.consumer.mapper.PullRequestMapper;
 import co.com.bancolombia.model.pullrequest.GitChange;
 import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import co.com.bancolombia.model.pullrequest.gateways.PullRequestPort;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Adaptador de infraestructura reactivo para consultar detalles y cambios de Pull Requests contra
- * la API REST de Azure DevOps Git.
+ * Adaptador de infraestructura reactivo para consultar detalles, cambios y publicar comentarios de
+ * Pull Requests contra la API REST de Azure DevOps Git.
  *
  * <p>Implementa el puerto {@link PullRequestPort} utilizando {@link WebClient} de forma no
  * bloqueante, protegido con cortacircuito Resilience4j y traducción centralizada de errores
@@ -91,5 +95,33 @@ public class GitPullRequestAdapter implements PullRequestPort {
                 .flatMapIterable(PullRequestMapper::toDomainChanges)
                 .timeout(properties.operationTimeout().query())
                 .onErrorMap(AzureDevOpsErrorTranslator.forOperation("getPullRequestChanges"));
+    }
+
+    @Override
+    @CircuitBreaker(name = CIRCUIT_BREAKER)
+    public Mono<PullRequestComment> createComment(
+            String organization,
+            String project,
+            String repositoryId,
+            int pullRequestId,
+            PullRequestComment comment,
+            String apiVersion) {
+        String version = ApiVersions.orDefault(apiVersion, properties.apiVersion().git());
+        log.info(
+                "Creating comment on Pull Request {} | Org: {}, Project: {}, Repo: {}, API Version: {}",
+                pullRequestId, organization, project, repositoryId, version);
+
+        GitPullRequestCommentRequest request = PullRequestMapper.toRequest(comment);
+
+        return client.post()
+                .uri("/{organization}/{project}/_apis/git/repositories/{repositoryId}/pullRequests/{pullRequestId}/threads?api-version={version}",
+                        organization, project, repositoryId, pullRequestId, version)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(GitPullRequestCommentResponse.class)
+                .map(PullRequestMapper::toDomainComment)
+                .timeout(properties.operationTimeout().command())
+                .onErrorMap(AzureDevOpsErrorTranslator.forOperation("createComment"));
     }
 }

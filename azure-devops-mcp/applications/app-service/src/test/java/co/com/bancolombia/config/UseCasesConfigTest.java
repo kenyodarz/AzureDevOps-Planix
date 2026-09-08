@@ -69,7 +69,8 @@ class UseCasesConfigTest {
             ResolveTeamScopeUseCase.class,
             ListWorkItemsByTeamAndSprintUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
-            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class);
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class);
 
     @Test
     @DisplayName("GIVEN los puertos disponibles WHEN arranca el contexto THEN los nueve casos de uso se registran")

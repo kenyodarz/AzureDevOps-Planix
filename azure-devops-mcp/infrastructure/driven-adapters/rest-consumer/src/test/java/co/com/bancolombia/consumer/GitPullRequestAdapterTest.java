@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import co.com.bancolombia.model.exception.AzureDevOpsUnauthorizedException;
 import co.com.bancolombia.model.exception.AzureDevOpsUnavailableException;
 import co.com.bancolombia.model.exception.WorkItemNotFoundException;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -226,6 +227,115 @@ class GitPullRequestAdapterTest {
 
         StepVerifier.create(response)
                 .expectError(AzureDevOpsUnauthorizedException.class)
+                .verify();
+    }
+
+    @Test
+    @DisplayName("createComment: 200 OK debe enviar POST /threads y retornar PullRequestComment")
+    void shouldCreateCommentWhenResponseIs200() throws InterruptedException {
+        String json = """
+                {
+                    "id": 5001,
+                    "status": "active",
+                    "comments": [
+                        {
+                            "id": 1,
+                            "content": "Excelente arquitectura",
+                            "author": {
+                                "displayName": "Agente Evaluador",
+                                "uniqueName": "agent@devops.corp"
+                            }
+                        }
+                    ]
+                }
+                """;
+
+        mockWebServer.enqueue(new MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(HttpStatus.OK.value())
+                .setBody(json));
+
+        PullRequestComment inputComment = PullRequestComment.builder()
+                .content("Excelente arquitectura")
+                .status("active")
+                .build();
+
+        var response = adapter.createComment("OrgTest", "ProjTest", "repo-uuid", 1234, inputComment,
+                "7.1");
+
+        StepVerifier.create(response)
+                .assertNext(comment -> {
+                    assertThat(comment.id()).isEqualTo(5001);
+                    assertThat(comment.status()).isEqualTo("active");
+                    assertThat(comment.content()).isEqualTo("Excelente arquitectura");
+                    assertThat(comment.author()).isEqualTo("Agente Evaluador");
+                })
+                .verifyComplete();
+
+        RecordedRequest recorded = mockWebServer.takeRequest();
+        assertThat(recorded.getMethod()).isEqualTo("POST");
+        assertThat(recorded.getPath()).isEqualTo(
+                "/OrgTest/ProjTest/_apis/git/repositories/repo-uuid/pullRequests/1234/threads?api-version=7.1");
+        assertThat(recorded.getBody().readUtf8()).contains("Excelente arquitectura");
+    }
+
+    @Test
+    @DisplayName("createComment: 401 Unauthorized debe traducirse a AzureDevOpsUnauthorizedException")
+    void shouldTranslateUnauthorizedWhenCreateComment() {
+        mockWebServer.enqueue(new MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(HttpStatus.UNAUTHORIZED.value())
+                .setBody("{\"message\": \"Unauthorized token\"}"));
+
+        PullRequestComment inputComment = PullRequestComment.builder()
+                .content("Comentario")
+                .build();
+
+        var response = adapter.createComment("OrgTest", "ProjTest", "repo-uuid", 1234, inputComment,
+                null);
+
+        StepVerifier.create(response)
+                .expectError(AzureDevOpsUnauthorizedException.class)
+                .verify();
+    }
+
+    @Test
+    @DisplayName("createComment: 404 Not Found debe traducirse a WorkItemNotFoundException")
+    void shouldTranslateNotFoundWhenCreateComment() {
+        mockWebServer.enqueue(new MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(HttpStatus.NOT_FOUND.value())
+                .setBody("{\"message\": \"Repository or PR not found\"}"));
+
+        PullRequestComment inputComment = PullRequestComment.builder()
+                .content("Comentario")
+                .build();
+
+        var response = adapter.createComment("OrgTest", "ProjTest", "repo-uuid", 1234, inputComment,
+                null);
+
+        StepVerifier.create(response)
+                .expectError(WorkItemNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    @DisplayName("createComment: 500 Server Error debe traducirse a AzureDevOpsUnavailableException")
+    void shouldTranslateServerErrorWhenCreateComment() {
+        mockWebServer.enqueue(new MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .setBody("{\"message\": \"ADO service error\"}"));
+
+        PullRequestComment inputComment = PullRequestComment.builder()
+                .content("Comentario")
+                .build();
+
+        var response = adapter.createComment("OrgTest", "ProjTest", "repo-uuid", 1234, inputComment,
+                null);
+
+        StepVerifier.create(response)
+                .expectError(AzureDevOpsUnavailableException.class)
                 .verify();
     }
 }

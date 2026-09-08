@@ -16,8 +16,8 @@
 | **01** | Modelos de Dominio y Puertos de Git / Pull Request | `docs/fases/FASE-01-modelos-dominio-pull-request.md`   | `docs/resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-08    |
 | **02** | Casos de Uso de Consulta de PRs y Cambios          | `docs/fases/FASE-02-casos-uso-pull-request.md`         | `docs/resultados/RESULTADO-FASE-02.md` | 🟢 **COMPLETADA** |   2026-09-08    |
 | **03** | Adaptador REST para API Git de Azure DevOps        | `docs/fases/FASE-03-adaptador-rest-git.md`             | `docs/resultados/RESULTADO-FASE-03.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **04** | Casos de Uso y Adaptador para Feedback de PR       | `docs/fases/FASE-04-feedback-comentarios-pr.md`        | `docs/resultados/RESULTADO-FASE-04.md` |   🟡 PENDIENTE    |        —        |
-| **05** | Entry Points MCP Server (Tools @McpTool)           | `docs/fases/FASE-05-mcp-tools-git.md`                  | `docs/resultados/RESULTADO-FASE-05.md` |  ⚪ NO GENERADA   |        —        |
+| **04** | Casos de Uso y Adaptador para Feedback de PR       | `docs/fases/FASE-04-feedback-comentarios-pr.md`        | `docs/resultados/RESULTADO-FASE-04.md` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **05** | Entry Points MCP Server (Tools @McpTool)           | `docs/fases/FASE-05-mcp-tools-git.md`                  | `docs/resultados/RESULTADO-FASE-05.md` |   🟡 PENDIENTE    |        —        |
 | **06** | Orquestación y Prompt de Evaluación en el Agente   | `docs/fases/FASE-06-orquestacion-evaluacion-agente.md` | `docs/resultados/RESULTADO-FASE-06.md` |  ⚪ NO GENERADA   |        —        |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
@@ -26,10 +26,10 @@
 
 ## 2. Siguiente Acción Concreta
 
-> 🎯 **Fase 04 Lista para Ejecución:**  
-> Abrir `docs/prompts/PROMPT-FASE-04.md` y ejecutar las tareas especificadas en
-> `docs/fases/FASE-04-feedback-comentarios-pr.md` para implementar la publicación de comentarios
-> y feedback en hilos de Pull Requests de Azure DevOps (`CreatePullRequestCommentUseCase`).
+> 🎯 **Fase 05 Lista para Ejecución:**  
+> Abrir `docs/prompts/PROMPT-FASE-05.md` y ejecutar las tareas especificadas en
+> `docs/fases/FASE-05-mcp-tools-git.md` para implementar la clase `AzureDevOpsGitTools.java`
+> exponiendo las herramientas MCP de consulta de PR, cambios y publicación de comentarios.
 
 ---
 
@@ -43,24 +43,25 @@
 
 ## 4. Métricas Vivas del Proyecto
 
-| Métrica                              | Baseline Inicial | Meta del Plan |           Estado Actual           |
-|:-------------------------------------|:----------------:|:-------------:|:---------------------------------:|
-| **Tests Unitarios `:model`**         |        42        |     100%      |            🟢 47 / 47             |
-| **Tests Unitarios `:usecase`**       |        14        |     100%      |            🟢 36 / 36             |
-| **Tests Unitarios `:rest-consumer`** |        40        |     100%      |            🟢 58 / 58             |
-| **Cobertura de Código Dominio**      |       94%        |  $\ge 90\%$   |              🟢 99%               |
-| **Mutaciones Eliminadas (Pitest)**   |       98%        |  $\ge 60\%$   | 🟢 89% (consumer) / 98% (usecase) |
-| **Violaciones de Arquitectura**      |        0         |       0       |               🟢 0                |
-| **Estado del Build**                 |        OK        |      OK       |             🟢 Limpio             |
+| Métrica                              | Baseline Inicial | Meta del Plan |                  Estado Actual                  |
+|:-------------------------------------|:----------------:|:-------------:|:-----------------------------------------------:|
+| **Tests Unitarios `:model`**         |        42        |     100%      |                   🟢 50 / 50                    |
+| **Tests Unitarios `:usecase`**       |        14        |     100%      |                   🟢 44 / 44                    |
+| **Tests Unitarios `:rest-consumer`** |        40        |     100%      |                   🟢 68 / 68                    |
+| **Cobertura de Código Dominio**      |       94%        |  $\ge 90\%$   |                     🟢 99%                      |
+| **Mutaciones Eliminadas (Pitest)**   |       98%        |  $\ge 60\%$   | 🟢 90% (consumer) / 99% (usecase) / 98% (model) |
+| **Violaciones de Arquitectura**      |        0         |       0       |                      🟢 0                       |
+| **Estado del Build**                 |        OK        |      OK       |                    🟢 Limpio                    |
 
 ---
 
 ## 5. Bitácora del Plan
 
-|     Fecha      | Evento                                                                                                                                                                                      |
-|:--------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **2026-08-30** | Cierre exitoso del Plan de Refactorización Maestro (Fases 01 a 08). Archivado a `docs/historico/plan_refactorizacion_mcp/`.                                                                 |
-| **2026-09-08** | Inicialización del nuevo plan maestro para Evaluación de Pull Requests, registro de decisiones y especificación de la Fase 01 bajo el estándar SDD.                                         |
-| **2026-09-08** | **Cierre de la Fase 01:** Implementadas las entidades inmutables `PullRequest`, `GitChange`, el puerto reactivo `PullRequestPort` y 5 tests unitarios en `:model` con 100% éxito.           |
-| **2026-09-08** | **Cierre de la Fase 02:** Implementados los casos de uso puros `GetPullRequestUseCase`, `GetPullRequestChangesUseCase` y 22 pruebas unitarias en `:usecase` con 100% éxito.                 |
-| **2026-09-08** | **Cierre de la Fase 03:** Implementado el adaptador reactivo `GitPullRequestAdapter`, DTOs de Git, mapper y tests unitarios en `:rest-consumer` con 100% éxito (89% mutaciones eliminadas). |
+|     Fecha      | Evento                                                                                                                                                                                        |
+|:--------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **2026-08-30** | Cierre exitoso del Plan de Refactorización Maestro (Fases 01 a 08). Archivado a `docs/historico/plan_refactorizacion_mcp/`.                                                                   |
+| **2026-09-08** | Inicialización del nuevo plan maestro para Evaluación de Pull Requests, registro de decisiones y especificación de la Fase 01 bajo el estándar SDD.                                           |
+| **2026-09-08** | **Cierre de la Fase 01:** Implementadas las entidades inmutables `PullRequest`, `GitChange`, el puerto reactivo `PullRequestPort` y 5 tests unitarios en `:model` con 100% éxito.             |
+| **2026-09-08** | **Cierre de la Fase 02:** Implementados los casos de uso puros `GetPullRequestUseCase`, `GetPullRequestChangesUseCase` y 22 pruebas unitarias en `:usecase` con 100% éxito.                   |
+| **2026-09-08** | **Cierre de la Fase 03:** Implementado el adaptador reactivo `GitPullRequestAdapter`, DTOs de Git, mapper y tests unitarios en `:rest-consumer` con 100% éxito (89% mutaciones eliminadas).   |
+| **2026-09-08** | **Cierre de la Fase 04:** Implementado `PullRequestComment`, `CreatePullRequestCommentUseCase`, publicación reactiva en `POST /threads` con 100% tests exitosos (99% usecase / 90% consumer). |

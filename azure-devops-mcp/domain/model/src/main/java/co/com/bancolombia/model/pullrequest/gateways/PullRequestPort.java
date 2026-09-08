@@ -2,11 +2,12 @@ package co.com.bancolombia.model.pullrequest.gateways;
 
 import co.com.bancolombia.model.pullrequest.GitChange;
 import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Puerto gateway para consultar información y cambios de Pull Requests en Azure DevOps.
+ * Puerto gateway para consultar información, cambios y comentarios de Pull Requests en Azure DevOps.
  *
  * <p>Define el contrato de salida del dominio para la interacción con repositorios Git de Azure
  * DevOps de forma reactiva no bloqueante.
@@ -45,5 +46,24 @@ public interface PullRequestPort {
             String project,
             String repositoryId,
             int pullRequestId,
+            String apiVersion);
+
+    /**
+     * Publica un comentario o hilo de retroalimentación técnica en un Pull Request.
+     *
+     * @param organization  nombre de la organización en Azure DevOps
+     * @param project       nombre o UUID del proyecto
+     * @param repositoryId  nombre o UUID del repositorio Git
+     * @param pullRequestId identificador numérico único del PR
+     * @param comment       comentario a publicar con su contenido y estado
+     * @param apiVersion    versión de la API de Azure DevOps (opcional)
+     * @return {@link Mono} con la entidad {@link PullRequestComment} creada
+     */
+    Mono<PullRequestComment> createComment(
+            String organization,
+            String project,
+            String repositoryId,
+            int pullRequestId,
+            PullRequestComment comment,
             String apiVersion);
 }

@@ -70,7 +70,8 @@ class UseCasesConfigWiringTest {
             ResolveTeamScopeUseCase.class,
             ListWorkItemsByTeamAndSprintUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
-            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class);
+            co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class,
+            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class);
 
     @Test
     @DisplayName("GIVEN los gateways disponibles WHEN se carga UseCasesConfig THEN el contexto arranca y cada caso de uso resuelve a UN solo bean")

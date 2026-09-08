@@ -3,9 +3,12 @@ package co.com.bancolombia.consumer.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import co.com.bancolombia.consumer.dto.GitPullRequestChangesResponse;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentRequest;
+import co.com.bancolombia.consumer.dto.GitPullRequestCommentResponse;
 import co.com.bancolombia.consumer.dto.GitPullRequestResponse;
 import co.com.bancolombia.model.pullrequest.GitChange;
 import co.com.bancolombia.model.pullrequest.PullRequest;
+import co.com.bancolombia.model.pullrequest.PullRequestComment;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -156,4 +159,86 @@ class PullRequestMapperTest {
         assertThat(resultFallback).hasSize(1);
         assertThat(resultFallback.get(0).itemPath()).isEqualTo("/file2.txt");
     }
+
+    @Test
+    @DisplayName("toRequest debe convertir PullRequestComment a GitPullRequestCommentRequest y aplicar default de status")
+    void shouldMapCommentToRequest() {
+        assertThat(PullRequestMapper.toRequest(null)).isNull();
+
+        PullRequestComment commentWithStatus = PullRequestComment.builder()
+                .content("Buen PR")
+                .status("fixed")
+                .build();
+        GitPullRequestCommentRequest request1 = PullRequestMapper.toRequest(commentWithStatus);
+        assertThat(request1).isNotNull();
+        assertThat(request1.getStatus()).isEqualTo("fixed");
+        assertThat(request1.getComments()).hasSize(1);
+        assertThat(request1.getComments().getFirst().getContent()).isEqualTo("Buen PR");
+        assertThat(request1.getComments().getFirst().getParentCommentId()).isZero();
+        assertThat(request1.getComments().getFirst().getCommentType()).isEqualTo(1);
+
+        PullRequestComment commentWithoutStatus = PullRequestComment.builder()
+                .content("Comentario simple")
+                .build();
+        GitPullRequestCommentRequest request2 = PullRequestMapper.toRequest(commentWithoutStatus);
+        assertThat(request2).isNotNull();
+        assertThat(request2.getStatus()).isEqualTo("active");
+    }
+
+    @Test
+    @DisplayName("toDomainComment debe convertir GitPullRequestCommentResponse a PullRequestComment y tolerar nulos")
+    void shouldMapResponseToDomainComment() {
+        assertThat(PullRequestMapper.toDomainComment(null)).isNull();
+
+        var emptyResponse = GitPullRequestCommentResponse.builder()
+                .id(50)
+                .status("active")
+                .comments(List.of())
+                .build();
+        PullRequestComment commentFromEmpty = PullRequestMapper.toDomainComment(emptyResponse);
+        assertThat(commentFromEmpty).isNotNull();
+        assertThat(commentFromEmpty.id()).isEqualTo(50);
+        assertThat(commentFromEmpty.status()).isEqualTo("active");
+        assertThat(commentFromEmpty.content()).isNull();
+        assertThat(commentFromEmpty.author()).isNull();
+
+        var responseWithDisplayName = GitPullRequestCommentResponse.builder()
+                .id(51)
+                .status("closed")
+                .comments(List.of(
+                        GitPullRequestCommentResponse.CommentItemResponse.builder()
+                                .id(1)
+                                .content("Observación técnica")
+                                .author(GitPullRequestCommentResponse.IdentityRefDTO.builder()
+                                        .displayName("Arquitecto")
+                                        .uniqueName("arq@test.com")
+                                        .build())
+                                .build()
+                ))
+                .build();
+        PullRequestComment commentWithDisplayName = PullRequestMapper.toDomainComment(
+                responseWithDisplayName);
+        assertThat(commentWithDisplayName).isNotNull();
+        assertThat(commentWithDisplayName.id()).isEqualTo(51);
+        assertThat(commentWithDisplayName.content()).isEqualTo("Observación técnica");
+        assertThat(commentWithDisplayName.author()).isEqualTo("Arquitecto");
+
+        var responseWithUniqueName = GitPullRequestCommentResponse.builder()
+                .id(52)
+                .status("active")
+                .comments(List.of(
+                        GitPullRequestCommentResponse.CommentItemResponse.builder()
+                                .id(2)
+                                .content("Review 2")
+                                .author(GitPullRequestCommentResponse.IdentityRefDTO.builder()
+                                        .uniqueName("bot@test.com")
+                                        .build())
+                                .build()
+                ))
+                .build();
+        PullRequestComment commentWithUniqueName = PullRequestMapper.toDomainComment(
+                responseWithUniqueName);
+        assertThat(commentWithUniqueName.author()).isEqualTo("bot@test.com");
+    }
 }
+
