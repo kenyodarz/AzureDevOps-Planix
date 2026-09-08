@@ -104,7 +104,8 @@ import reactor.test.StepVerifier;
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
         SpecHandler.class, ProgramPlanningHandler.class,
-        DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
+        DashboardStreamOrchestrator.class, DashboardTaskTracker.class,
+        co.com.bancolombia.api.task.TaskStreamOrchestrator.class})
 class DashboardRoutesCharacterizationTest {
 
     private static final String CELL = "EQU1096 - EXODIA";

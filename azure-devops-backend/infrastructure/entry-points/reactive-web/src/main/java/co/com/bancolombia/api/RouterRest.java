@@ -39,6 +39,7 @@ public class RouterRest {
         // que /api/** nunca caiga en el index.html del frontend.
         routes = routes
                 .andRoute(POST("/api/chat/messages"), taskHandler::handleSendMessage)
+                .andRoute(GET("/api/tasks/stream"), taskHandler::handleStreamTasks)
                 .andRoute(GET("/api/tasks"), request -> taskHandler.handleListTasks())
                 .andRoute(GET("/api/tasks/{id}"), taskHandler::handleGetTask)
                 .andRoute(POST("/api/tasks/{id}/cancel"), taskHandler::handleCancelTask)

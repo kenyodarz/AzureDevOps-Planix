@@ -16,6 +16,7 @@ import {
   SendMessageResponse,
   SpecDocumentDTO,
   SpecListDTO,
+  TaskStreamEvent,
 } from '../models/devops-agent.model';
 import {
   AgentChatApiService,
@@ -71,6 +72,10 @@ export class DevopsAgentApiService {
 
   getTasks(): Observable<AgentTask[]> {
     return this.tasksApi.getTasks();
+  }
+
+  getTasksStream(): Observable<TaskStreamEvent> {
+    return this.tasksApi.getTasksStream();
   }
 
   cancelTask(id: string): Observable<CancelTaskResponse> {

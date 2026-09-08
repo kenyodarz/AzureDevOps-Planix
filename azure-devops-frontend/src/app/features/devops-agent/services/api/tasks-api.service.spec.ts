@@ -49,4 +49,81 @@ describe('GIVEN TasksApiService', () => {
       req.flush({});
     });
   });
+
+  describe('WHEN getTasksStream is called', () => {
+    let originalEventSource: typeof EventSource;
+
+    beforeEach(() => {
+      originalEventSource = globalThis.EventSource;
+      globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
+    });
+
+    afterEach(() => {
+      globalThis.EventSource = originalEventSource;
+    });
+
+    it('THEN opens EventSource to /api/tasks/stream and emits INITIAL events', () => {
+      let emittedData: unknown = null;
+      const sub = service.getTasksStream().subscribe((event) => {
+        emittedData = event;
+      });
+
+      expect(EventSourceStub.last?.url).toBe('/api/tasks/stream');
+
+      EventSourceStub.last?.emit(
+        'INITIAL',
+        JSON.stringify({ event: 'INITIAL', data: [{ id: 't-1' }] }),
+      );
+
+      expect(emittedData).toEqual({
+        event: 'INITIAL',
+        data: [{ id: 't-1' }],
+      });
+
+      sub.unsubscribe();
+      expect(EventSourceStub.last?.closed).toBe(true);
+    });
+
+    it('THEN emits TASKS_UPDATE events when received', () => {
+      let emittedData: unknown = null;
+      service.getTasksStream().subscribe((event) => {
+        emittedData = event;
+      });
+
+      EventSourceStub.last?.emit(
+        'TASKS_UPDATE',
+        JSON.stringify({ event: 'TASKS_UPDATE', data: [{ id: 't-2' }] }),
+      );
+
+      expect(emittedData).toEqual({
+        event: 'TASKS_UPDATE',
+        data: [{ id: 't-2' }],
+      });
+    });
+  });
 });
+
+class EventSourceStub {
+  static last: EventSourceStub | null = null;
+
+  onerror: (() => void) | null = null;
+  closed = false;
+
+  private readonly listeners = new Map<string, (event: MessageEvent<string>) => void>();
+
+  constructor(public readonly url: string) {
+    EventSourceStub.last = this;
+  }
+
+  addEventListener(type: string, handler: (event: MessageEvent<string>) => void): void {
+    this.listeners.set(type, handler);
+  }
+
+  close(): void {
+    this.closed = true;
+  }
+
+  emit(type: string, data: string): void {
+    this.listeners.get(type)?.({ data } as MessageEvent<string>);
+  }
+}

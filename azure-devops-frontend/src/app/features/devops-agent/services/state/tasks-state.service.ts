@@ -23,9 +23,23 @@ export class TasksStateService {
   private readonly tasks$ = new BehaviorSubject<AgentTask[]>([]);
   public readonly tasks: Observable<AgentTask[]> = this.tasks$.asObservable();
 
+  private isStreamActive = false;
+
   constructor() {
-    this.setupPollingPipeline();
-    this.startDynamicPolling();
+    this.setupStreamPipeline();
+    if (!this.isStreamActive) {
+      this.setupPollingPipeline();
+      this.startDynamicPolling();
+    }
+  }
+
+  public triggerImmediatePoll(): void {
+    if (this.isStreamActive) {
+      this.loadTasks();
+    } else {
+      this.pollingInterval = POLLING_INTERVAL_ACTIVE_MS;
+      this.startDynamicPolling();
+    }
   }
 
   public stopDynamicPolling(): void {
@@ -38,9 +52,31 @@ export class TasksStateService {
     this.scheduleNextPoll();
   }
 
-  public triggerImmediatePoll(): void {
-    this.pollingInterval = POLLING_INTERVAL_ACTIVE_MS;
-    this.startDynamicPolling();
+  private setupStreamPipeline(): void {
+    if (typeof this.api.getTasksStream === 'function') {
+      try {
+        const stream$ = this.api.getTasksStream();
+        if (stream$) {
+          this.isStreamActive = true;
+          stream$.pipe(takeUntil(this.destroy$)).subscribe({
+            next: (event) => {
+              if (event && event.data) {
+                this.tasks$.next(event.data);
+              }
+            },
+            error: () => {
+              if (this.isStreamActive) {
+                this.isStreamActive = false;
+                this.setupPollingPipeline();
+                this.startDynamicPolling();
+              }
+            },
+          });
+        }
+      } catch {
+        this.isStreamActive = false;
+      }
+    }
   }
 
   public loadTasks(): void {

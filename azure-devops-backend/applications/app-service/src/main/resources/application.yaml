@@ -56,9 +56,9 @@ spring:
         similarity-threshold: 0.75
 logging:
   level:
-    co.com.bancolombia: "DEBUG"
-    org.springframework.ai: "DEBUG"
-    org.springframework.ai.chat: "DEBUG"
+    co.com.bancolombia: "INFO"
+    org.springframework.ai: "INFO"
+    org.springframework.ai.chat: "INFO"
 management:
   endpoints:
     web:

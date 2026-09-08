@@ -2,12 +2,14 @@ package co.com.bancolombia.api;
 
 import co.com.bancolombia.api.dto.task.TaskDtoMapper;
 import co.com.bancolombia.api.error.ApiErrorTranslator;
+import co.com.bancolombia.api.task.TaskStreamOrchestrator;
 import co.com.bancolombia.model.agent.AgentCommand;
 import co.com.bancolombia.usecase.agent.TrackAgentTaskUseCase;
 import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -33,9 +35,12 @@ public class TaskHandler {
     private static final String CONTEXT_ID_KEY = "contextId";
 
     private final TrackAgentTaskUseCase trackAgentTaskUseCase;
+    private final TaskStreamOrchestrator taskStreamOrchestrator;
 
-    public TaskHandler(TrackAgentTaskUseCase trackAgentTaskUseCase) {
+    public TaskHandler(TrackAgentTaskUseCase trackAgentTaskUseCase,
+            TaskStreamOrchestrator taskStreamOrchestrator) {
         this.trackAgentTaskUseCase = trackAgentTaskUseCase;
+        this.taskStreamOrchestrator = taskStreamOrchestrator;
     }
 
     /**
@@ -49,11 +54,21 @@ public class TaskHandler {
         return request.bodyToMono(ChatMessageRequest.class)
                 .map(this::toCommand)
                 .flatMap(trackAgentTaskUseCase::sendAndTrack)
+                .doOnSuccess(res -> taskStreamOrchestrator.notifyTaskChange())
                 .map(TaskDtoMapper::toResponse)
                 .flatMap(body -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(body))
                 .onErrorResume(this::toErrorResponse);
+    }
+
+    /**
+     * {@code GET /api/tasks/stream} — stream SSE reactivo de tareas del agente y del BFF.
+     */
+    public Mono<ServerResponse> handleStreamTasks(ServerRequest request) {
+        return ServerResponse.ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(taskStreamOrchestrator.stream(), ServerSentEvent.class);
     }
 
     /**
@@ -90,6 +105,7 @@ public class TaskHandler {
         return Mono.fromCallable(() -> RequestValidator.requireText(request.pathVariable("id"),
                         "id de la tarea"))
                 .flatMap(trackAgentTaskUseCase::cancelTask)
+                .doOnSuccess(task -> taskStreamOrchestrator.notifyTaskChange())
                 .map(TaskDtoMapper::toResponse)
                 .flatMap(task -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)

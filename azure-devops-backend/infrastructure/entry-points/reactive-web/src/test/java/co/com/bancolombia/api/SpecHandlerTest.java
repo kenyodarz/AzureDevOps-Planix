@@ -36,7 +36,8 @@ import reactor.core.publisher.Mono;
         SpecHandler.class,
         ProgramPlanningHandler.class,
         DashboardStreamOrchestrator.class,
-        DashboardTaskTracker.class
+        DashboardTaskTracker.class,
+        co.com.bancolombia.api.task.TaskStreamOrchestrator.class
 })
 class SpecHandlerTest {
 

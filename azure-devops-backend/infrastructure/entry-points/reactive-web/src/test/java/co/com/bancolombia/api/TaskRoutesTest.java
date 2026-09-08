@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import co.com.bancolombia.api.dashboard.DashboardStreamOrchestrator;
 import co.com.bancolombia.api.dashboard.DashboardTaskTracker;
+import co.com.bancolombia.api.task.TaskStreamOrchestrator;
 import co.com.bancolombia.model.a2a.AgentCard;
 import co.com.bancolombia.model.a2a.Message;
 import co.com.bancolombia.model.a2a.Part;
@@ -55,7 +56,8 @@ import reactor.core.publisher.Mono;
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
         SpecHandler.class, ProgramPlanningHandler.class,
-        DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
+        DashboardStreamOrchestrator.class, DashboardTaskTracker.class,
+        TaskStreamOrchestrator.class})
 class TaskRoutesTest {
 
     private static final String TASK_ID = "task-42";
@@ -386,6 +388,21 @@ class TaskRoutesTest {
         webTestClient.post().uri("/api/tasks/{id}/cancel", "desconocida")
                 .exchange()
                 .expectStatus().isBadRequest();
+    }
+
+    @Test
+    @DisplayName("GIVEN tareas en el sistema WHEN GET /api/tasks/stream THEN 200 text/event-stream")
+    void givenTasks_whenGetStream_then200TextEventStream() {
+        // GIVEN
+        when(trackAgentTaskUseCase.listTasks()).thenReturn(Flux.just(
+                TrackedTask.fromAgent(task(TASK_ID, TaskState.WORKING, "En marcha"))));
+
+        // WHEN / THEN
+        webTestClient.get().uri("/api/tasks/stream")
+                .accept(MediaType.TEXT_EVENT_STREAM)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM);
     }
 }
 

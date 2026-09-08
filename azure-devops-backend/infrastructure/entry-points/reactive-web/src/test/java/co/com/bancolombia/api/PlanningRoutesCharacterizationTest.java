@@ -63,7 +63,8 @@ import reactor.core.publisher.Mono;
 @WebFluxTest
 @ContextConfiguration(classes = {RouterRest.class, Handler.class, TaskHandler.class,
         SpecHandler.class, ProgramPlanningHandler.class,
-        DashboardStreamOrchestrator.class, DashboardTaskTracker.class})
+        DashboardStreamOrchestrator.class, DashboardTaskTracker.class,
+        co.com.bancolombia.api.task.TaskStreamOrchestrator.class})
 class PlanningRoutesCharacterizationTest {
 
     private static final String INITIATIVE_ID = "INI-001";

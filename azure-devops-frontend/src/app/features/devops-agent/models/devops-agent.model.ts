@@ -108,6 +108,16 @@ export interface AgentTask {
   status?: AgentTaskStatus;
 }
 
+/** Tipo de evento que emite el stream SSE de tareas. */
+export type TaskStreamEventType = 'INITIAL' | 'TASKS_UPDATE' | 'HEARTBEAT' | 'ERROR';
+
+/** Evento del stream GET /api/tasks/stream. */
+export interface TaskStreamEvent {
+  event: TaskStreamEventType;
+  data: AgentTask[] | null;
+  message?: string | null;
+}
+
 // -------------------------------------------------------------------------------------------------
 // Contratos derivados de `azure-devops-backend` / `azure-devops-agent` (FASE 02, DP-09).
 //

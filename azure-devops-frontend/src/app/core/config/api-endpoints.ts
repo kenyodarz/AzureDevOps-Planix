@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   DEVOPS_DASHBOARD: `${BASE}/api/devops/dashboard`,
   DEVOPS_DASHBOARD_STREAM: `${BASE}/api/devops/dashboard/stream`,
   TASKS: `${BASE}/api/tasks`,
+  TASKS_STREAM: `${BASE}/api/tasks/stream`,
   PLANNING_PROGRAM: `${BASE}/api/planning/program`,
   PLANNING_SPECS: `${BASE}/api/planning/specs`,
   /**

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { TasksStateService } from './tasks-state.service';
 import { DevopsAgentApiService } from '../devops-agent-api.service';
-import { AgentTask } from '../../models/devops-agent.model';
+import { AgentTask, TaskStreamEvent } from '../../models/devops-agent.model';
 import { POLLING_INTERVAL_ACTIVE_MS, POLLING_INTERVAL_IDLE_MS } from '../../../../core';
 
 class MockDevopsAgentApiService {
@@ -149,6 +149,42 @@ describe('GIVEN TasksStateService', () => {
       vi.advanceTimersByTime(POLLING_INTERVAL_IDLE_MS * 2);
 
       expect(mockApi.getTasks).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('WHEN SSE stream is available', () => {
+    it('THEN updates tasks from stream events without starting polling timers', () => {
+      const streamSubject = new Subject<TaskStreamEvent>();
+      const sseMockApi = {
+        getTasks: vi.fn(() => of([])),
+        cancelTask: vi.fn(() => of({})),
+        getTasksStream: vi.fn(() => streamSubject.asObservable()),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          TasksStateService,
+          {
+            provide: DevopsAgentApiService,
+            useValue: sseMockApi as unknown as DevopsAgentApiService,
+          },
+        ],
+      });
+
+      const sseService = TestBed.inject(TasksStateService);
+      expect(sseMockApi.getTasksStream).toHaveBeenCalledTimes(1);
+
+      streamSubject.next({
+        event: 'INITIAL',
+        data: [workingTask('stream-t1')],
+      });
+
+      expect(latest(sseService.tasks)).toEqual([workingTask('stream-t1')]);
+
+      // Comprobar que el sondeo por temporizadores NO se ejecuta
+      vi.advanceTimersByTime(POLLING_INTERVAL_ACTIVE_MS * 2);
+      expect(sseMockApi.getTasks).not.toHaveBeenCalled();
     });
   });
 });
