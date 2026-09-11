@@ -28,6 +28,7 @@ En esta carpeta (`docs/`) residen las plantillas maestras reutilizables para cua
 | **Tablero de Estado** | `plan/_PLANTILLA_ESTADO.md` | **Única fuente de verdad del progreso**: dashboard de lectura en 1 minuto que indica la fase activa, la siguiente acción inmediata y las métricas vivas de calidad. |
 | **Especificación de Fase (Micro-Spec)** | `fases/_PLANTILLA_FASE.md` | Guía técnica ejecutable y autosuficiente para una fase individual (Contexto, Instrucciones paso a paso, Qué NO hacer, Criterios de aceptación). |
 | **Prompt Ejecutable** | `prompts/_PLANTILLA_PROMPT.md` | Prompt autosuficiente estructurado para instruir a cualquier agente o sesión en la ejecución de la fase activa sin ambigüedades. |
+| **Prompt Wizard Interactivo** | `prompts/_PLANTILLA_WIZARD_SDD.md` | Prompt de activación para que el agente opere como **Arquitecto de Soluciones y Entrevistador**, co-diseñando la Macro-Spec y las fases paso a paso. |
 | **Resultado de Fase** | `resultados/_PLANTILLA_RESULTADO.md` | Informe de cierre que registra **métricas reales medidas** (tests unitarios, cobertura, archivos modificados y hallazgos descubiertos). |
 
 ---
@@ -50,7 +51,8 @@ Cuando se aplica este estándar a un proyecto o módulo, la carpeta de documenta
 ├── fases/                               <- Fases atómicas ejecutables (Micro-Specs - ANTES)
 │   └── FASE-01-<nombre>.md
 ├── prompts/                             <- Prompts listos para detonar cada fase
-│   └── PROMPT-FASE-01.md
+│   ├── PROMPT-FASE-01.md
+│   └── PROMPT-WIZARD-SDD.md             <- Prompt opcional para continuar sesiones guiadas
 └── resultados/                          <- Evidencia con métricas reales (DESPUÉS)
     └── .gitkeep
 ```
@@ -61,17 +63,19 @@ Cuando se aplica este estándar a un proyecto o módulo, la carpeta de documenta
 
 Cualquier agente que interactúe con un repositorio bajo este estándar debe seguir estrictamente uno de los dos flujos operativos:
 
-### Flujo A: Inicializar un Nuevo Plan de Trabajo
+### Flujo A: Inicializar un Nuevo Plan de Trabajo (Modo Manual o Modo Wizard)
 
 Cuando el usuario solicite planificar una nueva funcionalidad, refactorización o iniciativa:
 
 1. **Gestión de Histórico:**  
    Si en la carpeta de documentación del módulo ya existen carpetas `plan/`, `fases/`, etc. de un trabajo completado anteriormente, **nunca las sobreescribas**. Muévelas completas a `docs/historico/plan_<nombre_descriptivo>/`.
-2. **Especificación Técnica y Dimensionamiento Atómico (Regla Anti-Monolito):**  
+2. **Activación del Modo Wizard (Recomendado):**  
+   Si el usuario no entrega una especificación cerrada completa, **el agente debe activar el Modo Wizard** (`prompts/_PLANTILLA_WIZARD_SDD.md`) y realizar la entrevista guiada (máximo 2-3 preguntas por turno) para acordar alcance, contratos de API/DTO, arquitectura de capas y criterios de calidad.
+3. **Especificación Técnica y Dimensionamiento Atómico (Regla Anti-Monolito):**  
    * **Elaborar la Macro-Spec:** Redactar primero la especificación técnica en `docs/specs/ESPECIFICACION-<iniciativa>.md` con contratos, DTOs y diagramas.
    * **Prohibido:** Crear planes de 2 o 3 macro-fases gigantes donde se mezcle diseño, backend, frontend y tests.
    * **Obligatorio:** A partir de la Macro-Spec, descomponer la iniciativa en **fases atómicas y quirúrgicas de 2 a 4 archivos como máximo**, diseñadas para ejecutarse y verificarse en una sesión de trabajo de corta duración.
-3. **Instanciación Inicial:**  
+4. **Instanciación Inicial:**  
    Copia y completa las plantillas maestras creando:
    * `docs/README.md`
    * `docs/specs/ESPECIFICACION-<nombre>.md` (especificación rectora de arquitectura)
@@ -80,7 +84,7 @@ Cuando el usuario solicite planificar una nueva funcionalidad, refactorización 
    * `docs/plan/ESTADO.md` (con la Fase 01 en `🟡 PENDIENTE` y las restantes en `⚪ NO GENERADA`)
    * `docs/fases/FASE-01-<nombre>.md` (especificación completa de la primera fase)
    * `docs/prompts/PROMPT-FASE-01.md` (prompt listo para detonar la ejecución)
-4. **Pausa Obligatoria y Aprobación:**  
+5. **Pausa Obligatoria y Aprobación:**  
    Presenta el resumen del plan al usuario y **espera su visto bueno explícito antes de tocar cualquier archivo de código**.
 
 ---
