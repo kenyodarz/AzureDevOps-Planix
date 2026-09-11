@@ -16,16 +16,17 @@ Los asistentes y agentes de código autónomos enfrentan tres problemas crítico
 
 ---
 
-## 2. Los 6 Artefactos Nucleares del Framework
+## 2. Los 7 Artefactos Nucleares del Framework
 
 En esta carpeta (`docs/`) residen las plantillas maestras reutilizables para cualquier iniciativa:
 
 | Artefacto | Ubicación de Plantilla | Propósito y Contrato |
 | :--- | :--- | :--- |
+| **Especificación Técnica (Macro-Spec)** | `specs/_PLANTILLA_SPEC.md` | **Software Design Document (SDD) rector**: alcance, arquitectura del sistema, contratos de API/BFF, modelos DTO y flujos previos a la atomización. |
 | **Plan Maestro** | `plan/_PLANTILLA_PLAN_MAESTRO.md` | Contrato global de arquitectura: objetivo, diagnóstico con IDs (D-XX), diagrama de flujo/componentes y mapa completo de fases atómicas (01 a 0N). |
 | **Decisiones Pendientes** | `plan/_PLANTILLA_DECISIONES_PENDIENTES.md` | Instrumento de la **Política de No-Asunción**: registro de disyuntivas de diseño (DP-XX) categorizadas con semáforo (`🔴 ABIERTA`, `🟢 RESUELTA`, `⚪ INFORMATIVA`). |
 | **Tablero de Estado** | `plan/_PLANTILLA_ESTADO.md` | **Única fuente de verdad del progreso**: dashboard de lectura en 1 minuto que indica la fase activa, la siguiente acción inmediata y las métricas vivas de calidad. |
-| **Especificación de Fase** | `fases/_PLANTILLA_FASE.md` | Guía técnica ejecutable y autosuficiente para una fase individual (Contexto, Instrucciones paso a paso, Qué NO hacer, Criterios de aceptación). |
+| **Especificación de Fase (Micro-Spec)** | `fases/_PLANTILLA_FASE.md` | Guía técnica ejecutable y autosuficiente para una fase individual (Contexto, Instrucciones paso a paso, Qué NO hacer, Criterios de aceptación). |
 | **Prompt Ejecutable** | `prompts/_PLANTILLA_PROMPT.md` | Prompt autosuficiente estructurado para instruir a cualquier agente o sesión en la ejecución de la fase activa sin ambigüedades. |
 | **Resultado de Fase** | `resultados/_PLANTILLA_RESULTADO.md` | Informe de cierre que registra **métricas reales medidas** (tests unitarios, cobertura, archivos modificados y hallazgos descubiertos). |
 
@@ -40,11 +41,13 @@ Cuando se aplica este estándar a un proyecto o módulo, la carpeta de documenta
 ├── README.md                            <- Protocolo de continuidad del módulo
 ├── historico/                           <- Planes pasados completados y archivados
 │   └── plan_<nombre_iniciativa_anterior>/
+├── specs/                               <- Especificaciones técnicas rectoras (Macro-Specs / SDD)
+│   └── ESPECIFICACION-<iniciativa>.md
 ├── plan/                                <- Estrategia global y control
 │   ├── PLAN_MAESTRO.md
 │   ├── DECISIONES_PENDIENTES.md
 │   └── ESTADO.md
-├── fases/                               <- Fases atómicas ejecutables (ANTES)
+├── fases/                               <- Fases atómicas ejecutables (Micro-Specs - ANTES)
 │   └── FASE-01-<nombre>.md
 ├── prompts/                             <- Prompts listos para detonar cada fase
 │   └── PROMPT-FASE-01.md
@@ -64,12 +67,14 @@ Cuando el usuario solicite planificar una nueva funcionalidad, refactorización 
 
 1. **Gestión de Histórico:**  
    Si en la carpeta de documentación del módulo ya existen carpetas `plan/`, `fases/`, etc. de un trabajo completado anteriormente, **nunca las sobreescribas**. Muévelas completas a `docs/historico/plan_<nombre_descriptivo>/`.
-2. **Dimensionamiento Atómico (Regla Anti-Monolito):**  
+2. **Especificación Técnica y Dimensionamiento Atómico (Regla Anti-Monolito):**  
+   * **Elaborar la Macro-Spec:** Redactar primero la especificación técnica en `docs/specs/ESPECIFICACION-<iniciativa>.md` con contratos, DTOs y diagramas.
    * **Prohibido:** Crear planes de 2 o 3 macro-fases gigantes donde se mezcle diseño, backend, frontend y tests.
-   * **Obligatorio:** Descomponer la iniciativa en **fases atómicas y quirúrgicas de 2 a 4 archivos como máximo**, diseñadas para ejecutarse y verificarse en una sesión de trabajo de corta duración.
+   * **Obligatorio:** A partir de la Macro-Spec, descomponer la iniciativa en **fases atómicas y quirúrgicas de 2 a 4 archivos como máximo**, diseñadas para ejecutarse y verificarse en una sesión de trabajo de corta duración.
 3. **Instanciación Inicial:**  
    Copia y completa las plantillas maestras creando:
    * `docs/README.md`
+   * `docs/specs/ESPECIFICACION-<nombre>.md` (especificación rectora de arquitectura)
    * `docs/plan/PLAN_MAESTRO.md` (con el mapa de fases 01 a 0N)
    * `docs/plan/DECISIONES_PENDIENTES.md` (con las decisiones iniciales resueltas o abiertas)
    * `docs/plan/ESTADO.md` (con la Fase 01 en `🟡 PENDIENTE` y las restantes en `⚪ NO GENERADA`)
