@@ -70,7 +70,15 @@ class UseCasesConfigTest {
             ListWorkItemsByTeamAndSprintUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class,
-            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class);
+            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class,
+            co.com.bancolombia.usecase.overview.GetProjectOverviewUseCase.class,
+            co.com.bancolombia.usecase.wiki.GetWikiPageUseCase.class,
+            co.com.bancolombia.usecase.wiki.SearchWikiUseCase.class,
+            co.com.bancolombia.usecase.wiki.CreateOrUpdateWikiPageUseCase.class,
+            co.com.bancolombia.usecase.pipeline.ListPipelinesUseCase.class,
+            co.com.bancolombia.usecase.pipeline.GetPipelineRunUseCase.class,
+            co.com.bancolombia.usecase.pipeline.GetPipelineRunLogsUseCase.class,
+            co.com.bancolombia.usecase.pipeline.TriggerPipelineRunUseCase.class);
 
     @Test
     @DisplayName("GIVEN los puertos disponibles WHEN arranca el contexto THEN los nueve casos de uso se registran")
@@ -157,6 +165,21 @@ class UseCasesConfigTest {
         @Bean
         public co.com.bancolombia.model.pullrequest.gateways.PullRequestPort pullRequestPort() {
             return mock(co.com.bancolombia.model.pullrequest.gateways.PullRequestPort.class);
+        }
+
+        @Bean
+        public co.com.bancolombia.model.overview.gateways.OverviewPort overviewPort() {
+            return mock(co.com.bancolombia.model.overview.gateways.OverviewPort.class);
+        }
+
+        @Bean
+        public co.com.bancolombia.model.wiki.gateways.WikiPort wikiPort() {
+            return mock(co.com.bancolombia.model.wiki.gateways.WikiPort.class);
+        }
+
+        @Bean
+        public co.com.bancolombia.model.pipeline.gateways.PipelinePort pipelinePort() {
+            return mock(co.com.bancolombia.model.pipeline.gateways.PipelinePort.class);
         }
     }
 }

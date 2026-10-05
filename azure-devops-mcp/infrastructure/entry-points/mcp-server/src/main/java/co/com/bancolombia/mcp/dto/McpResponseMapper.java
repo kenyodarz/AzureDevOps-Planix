@@ -140,5 +140,97 @@ public final class McpResponseMapper {
                 comment.status(),
                 comment.author());
     }
+
+    public static ProjectOverviewResponse toResponse(co.com.bancolombia.model.overview.ProjectOverview overview) {
+        if (overview == null) {
+            return null;
+        }
+        return new ProjectOverviewResponse(
+                overview.id(),
+                overview.name(),
+                overview.description(),
+                overview.state(),
+                overview.visibility(),
+                overview.url());
+    }
+
+    public static WikiPageResponse toResponse(co.com.bancolombia.model.wiki.WikiPage page) {
+        if (page == null) {
+            return null;
+        }
+        return new WikiPageResponse(
+                page.id(),
+                page.path(),
+                page.content(),
+                page.remoteUrl(),
+                page.version());
+    }
+
+    public static WikiSearchResultResponse toResponse(co.com.bancolombia.model.wiki.WikiSearchResult result) {
+        if (result == null) {
+            return null;
+        }
+        return new WikiSearchResultResponse(
+                result.path(),
+                result.wikiName(),
+                result.summary(),
+                result.url());
+    }
+
+    public static List<WikiSearchResultResponse> toWikiSearchResultResponses(List<co.com.bancolombia.model.wiki.WikiSearchResult> results) {
+        if (results == null) {
+            return null;
+        }
+        return results.stream().map(McpResponseMapper::toResponse).toList();
+    }
+
+    public static PipelineSummaryResponse toResponse(co.com.bancolombia.model.pipeline.PipelineSummary summary) {
+        if (summary == null) {
+            return null;
+        }
+        return new PipelineSummaryResponse(
+                summary.id(),
+                summary.name(),
+                summary.folder(),
+                summary.revision(),
+                summary.url());
+    }
+
+    public static List<PipelineSummaryResponse> toPipelineSummaryResponses(List<co.com.bancolombia.model.pipeline.PipelineSummary> summaries) {
+        if (summaries == null) {
+            return null;
+        }
+        return summaries.stream().map(McpResponseMapper::toResponse).toList();
+    }
+
+    public static PipelineRunResponse toResponse(co.com.bancolombia.model.pipeline.PipelineRun run) {
+        if (run == null) {
+            return null;
+        }
+        return new PipelineRunResponse(
+                run.id(),
+                run.name(),
+                run.status(),
+                run.result(),
+                run.createdDate(),
+                run.finishedDate(),
+                run.pipelineId(),
+                run.pipelineName(),
+                run.sourceBranch(),
+                run.sourceCommit(),
+                run.webUrl());
+    }
+
+    public static PipelineLogSummaryResponse toResponse(co.com.bancolombia.model.pipeline.PipelineLogSummary logSummary) {
+        if (logSummary == null) {
+            return null;
+        }
+        return new PipelineLogSummaryResponse(
+                logSummary.runId(),
+                logSummary.hasErrors(),
+                logSummary.errorCount(),
+                logSummary.warningCount(),
+                logSummary.errorLines());
+    }
 }
 

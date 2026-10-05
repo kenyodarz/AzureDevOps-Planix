@@ -71,7 +71,15 @@ class UseCasesConfigWiringTest {
             ListWorkItemsByTeamAndSprintUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestUseCase.class,
             co.com.bancolombia.usecase.pullrequest.GetPullRequestChangesUseCase.class,
-            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class);
+            co.com.bancolombia.usecase.pullrequest.CreatePullRequestCommentUseCase.class,
+            co.com.bancolombia.usecase.overview.GetProjectOverviewUseCase.class,
+            co.com.bancolombia.usecase.wiki.GetWikiPageUseCase.class,
+            co.com.bancolombia.usecase.wiki.SearchWikiUseCase.class,
+            co.com.bancolombia.usecase.wiki.CreateOrUpdateWikiPageUseCase.class,
+            co.com.bancolombia.usecase.pipeline.ListPipelinesUseCase.class,
+            co.com.bancolombia.usecase.pipeline.GetPipelineRunUseCase.class,
+            co.com.bancolombia.usecase.pipeline.GetPipelineRunLogsUseCase.class,
+            co.com.bancolombia.usecase.pipeline.TriggerPipelineRunUseCase.class);
 
     @Test
     @DisplayName("GIVEN los gateways disponibles WHEN se carga UseCasesConfig THEN el contexto arranca y cada caso de uso resuelve a UN solo bean")
@@ -127,6 +135,21 @@ class UseCasesConfigWiringTest {
         @Bean
         co.com.bancolombia.model.pullrequest.gateways.PullRequestPort pullRequestPort() {
             return mock(co.com.bancolombia.model.pullrequest.gateways.PullRequestPort.class);
+        }
+
+        @Bean
+        co.com.bancolombia.model.overview.gateways.OverviewPort overviewPort() {
+            return mock(co.com.bancolombia.model.overview.gateways.OverviewPort.class);
+        }
+
+        @Bean
+        co.com.bancolombia.model.wiki.gateways.WikiPort wikiPort() {
+            return mock(co.com.bancolombia.model.wiki.gateways.WikiPort.class);
+        }
+
+        @Bean
+        co.com.bancolombia.model.pipeline.gateways.PipelinePort pipelinePort() {
+            return mock(co.com.bancolombia.model.pipeline.gateways.PipelinePort.class);
         }
     }
 }
