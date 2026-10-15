@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json.schemastore.org/semantic-release.json",
+  "branches": [
+    "master",
+    "main"
+  ],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          {
+            "breaking": true,
+            "release": "major"
+          },
+          {
+            "type": "feat",
+            "release": "minor"
+          },
+          {
+            "type": "fix",
+            "release": "patch"
+          },
+          {
+            "type": "perf",
+            "release": "patch"
+          },
+          {
+            "type": "security",
+            "release": "patch"
+          },
+          {
+            "type": "docs",
+            "release": false
+          },
+          {
+            "type": "style",
+            "release": false
+          },
+          {
+            "type": "refactor",
+            "release": false
+          },
+          {
+            "type": "test",
+            "release": false
+          },
+          {
+            "type": "build",
+            "release": false
+          },
+          {
+            "type": "ci",
+            "release": false
+          },
+          {
+            "type": "chore",
+            "release": false
+          },
+          {
+            "type": "deprecated",
+            "release": false
+          },
+          {
+            "type": "removed",
+            "release": false
+          }
+        ],
+        "parserOpts": {
+          "noteKeywords": [
+            "BREAKING CHANGE",
+            "BREAKING CHANGES",
+            "BREAKING"
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {
+              "type": "feat",
+              "section": "Funcionalidades"
+            },
+            {
+              "type": "fix",
+              "section": "Correcciones"
+            },
+            {
+              "type": "perf",
+              "section": "Rendimiento"
+            },
+            {
+              "type": "security",
+              "section": "Seguridad"
+            },
+            {
+              "type": "deprecated",
+              "section": "Obsoletos"
+            },
+            {
+              "type": "removed",
+              "section": "Eliminados"
+            },
+            {
+              "type": "refactor",
+              "section": "Refactorizaciones",
+              "hidden": true
+            },
+            {
+              "type": "docs",
+              "section": "Documentacion",
+              "hidden": true
+            },
+            {
+              "type": "build",
+              "section": "Construccion",
+              "hidden": true
+            },
+            {
+              "type": "ci",
+              "section": "Integracion continua",
+              "hidden": true
+            },
+            {
+              "type": "test",
+              "section": "Pruebas",
+              "hidden": true
+            },
+            {
+              "type": "style",
+              "section": "Estilo",
+              "hidden": true
+            },
+            {
+              "type": "chore",
+              "section": "Tareas varias",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    ],
+    "@semantic-release/changelog",
+    "@semantic-release/git"
+  ]
+}
+

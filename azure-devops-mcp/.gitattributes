@@ -1,0 +1,21 @@
+# Normalizacion de finales de linea.
+# Los scripts de shell y los git hooks DEBEN usar LF; con CRLF fallan en Linux
+# y en los agentes de CI con el error "bad interpreter: no such file or directory".
+
+*.sh        text eol=lf
+.githooks/* text eol=lf
+gradlew     text eol=lf
+
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+*.jar       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.woff      binary
+*.woff2     binary
+

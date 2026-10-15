@@ -1,0 +1,16 @@
+STOP - Reglas de commit de este repositorio.
+
+Ignora la plantilla por defecto de Conventional Commits en ingles.
+
+Formato unico: COMMIT_TYPE(scope_snake_case): descripcion en espanol
+- El (scope) es OBLIGATORIO. Nunca "feat:" ni "docs:" sin parentesis.
+- PROHIBIDO ingles: add, update, fix, implement, create, refactor, remove, change, improve.
+- Markdown, docs y guias usan tipo "docs", nunca "feat".
+- Descripcion en espanol, minuscula inicial, sin punto final, sin tildes.
+
+Correcto: docs(janus_migracion): agregar analisis y plan de migracion a web components
+Prohibido: docs: add migration plan documentation for Janus project to Angular
+
+Detalle: COMMIT_RULES.md, .antigravity/rules/commit-messages.md
+Arquitectura: AGENTS.md, web/AGENTS.md, rules/spring-rules.md, rules/angular-rules.md
+

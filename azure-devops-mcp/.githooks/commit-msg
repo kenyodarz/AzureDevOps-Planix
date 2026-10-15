@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Git Hook: commit-msg
+# Valida Conventional Commits + Semantic Release + descripcion en espanol.
+#
+# La logica de validacion vive en tools/commit-lint/commit-rules.sh para que el
+# hook local y el pipeline de CI compartan exactamente las mismas reglas.
+# ==============================================================================
+
+set -uo pipefail
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG="$(head -n 1 "$COMMIT_MSG_FILE")"
+
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "$HOOK_DIR/.." && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PARENT_DIR")"
+
+# Buscar el archivo de reglas en orden de prioridad
+if [ -f "$PARENT_DIR/tools/commit-lint/commit-rules.sh" ]; then
+  RULES_FILE="$PARENT_DIR/tools/commit-lint/commit-rules.sh"
+elif [ -f "$REPO_ROOT/tools/commit-lint/commit-rules.sh" ]; then
+  RULES_FILE="$REPO_ROOT/tools/commit-lint/commit-rules.sh"
+else
+  # Modo resiliente / fail-safe para monorepos o hooks huérfanos:
+  echo ""
+  echo "⚠️  [AVISO GITHUB HOOK] No se encontró tools/commit-lint/commit-rules.sh."
+  echo "    Ubicaciones inspeccionadas:"
+  echo "      - $PARENT_DIR/tools/commit-lint/commit-rules.sh"
+  echo "      - $REPO_ROOT/tools/commit-lint/commit-rules.sh"
+  echo "    Se permite el commit para no bloquear el flujo de trabajo."
+  echo "    La validación semántica formal se ejecutará en GitHub Actions (CI)."
+  echo ""
+  exit 0
+fi
+
+# shellcheck source=../tools/commit-lint/commit-rules.sh
+. "$RULES_FILE"
+
+if validate_commit_header "$COMMIT_MSG"; then
+  warn_header_length "$COMMIT_MSG"
+  exit 0
+fi
+
+echo ""
+echo "ERROR: el mensaje de commit no cumple COMMIT_MESSAGE_CONVENTION.md"
+echo "------------------------------------------------------------------------------"
+echo "  Mensaje: \"$COMMIT_MSG\""
+echo "------------------------------------------------------------------------------"
+echo "  Ejemplos válidos (en minúsculas y español):"
+echo "    feat(auth): implementar inicio de sesion biometrico con jwt"
+echo "    fix(transferencias): corregir calculo de comision interbancaria"
+echo "    docs(arquitectura): actualizar diagrama de flujo de integracion"
+echo "    build(deps): actualizar spring boot a version 4.0.0"
+echo "------------------------------------------------------------------------------"
+exit 1

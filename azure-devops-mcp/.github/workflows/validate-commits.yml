@@ -1,0 +1,47 @@
+name: Validate Commits & Security
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+  push:
+    branches: [ main, trunk ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commit-lint:
+    name: Lint Commit Messages (Bancolombia)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout con historial completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validar título de PR y rango de commits
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          chmod +x tools/commit-lint/*.sh
+          echo "Validando Pull Request hacia: origin/${{ github.base_ref }}"
+          tools/commit-lint/validate-range.sh origin/${{ github.base_ref }}..HEAD
+
+  security-scan:
+    name: Security & Secret Scanning (Bancolombia)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout con historial completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Escanear archivos prohibidos y secretos en el PR
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          chmod +x tools/security-lint/*.sh
+          tools/security-lint/scan-pr-secrets.sh origin/${{ github.base_ref }}...HEAD
