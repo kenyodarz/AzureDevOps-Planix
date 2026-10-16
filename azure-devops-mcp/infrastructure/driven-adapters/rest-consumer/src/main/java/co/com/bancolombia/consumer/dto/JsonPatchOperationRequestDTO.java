@@ -1,5 +1,6 @@
 package co.com.bancolombia.consumer.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +24,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
+@JsonPropertyOrder({"op", "path", "value", "from"})
 public class JsonPatchOperationRequestDTO {
     private String op;
     private String path;

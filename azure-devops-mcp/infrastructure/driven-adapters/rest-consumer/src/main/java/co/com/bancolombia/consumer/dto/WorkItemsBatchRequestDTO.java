@@ -1,5 +1,6 @@
 package co.com.bancolombia.consumer.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
+@JsonPropertyOrder({"ids", "fields", "expand", "errorPolicy"})
 public class WorkItemsBatchRequestDTO {
     private List<Integer> ids;
     private List<String> fields;
