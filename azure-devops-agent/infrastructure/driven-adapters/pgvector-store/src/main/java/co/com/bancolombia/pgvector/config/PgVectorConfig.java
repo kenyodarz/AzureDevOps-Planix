@@ -66,9 +66,13 @@ public class PgVectorConfig {
                         "model", modelName
                 );
 
+                String endpoint = baseUrl.endsWith("/v1") || baseUrl.endsWith("/v1/")
+                        ? "/embeddings"
+                        : "/v1/embeddings";
+
                 try {
                     OpenAIEmbeddingResponse response = restClient.post()
-                            .uri("/v1/embeddings")
+                            .uri(endpoint)
                             .header("Authorization", "Bearer " + apiKey)
                             .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                             .body(requestBody)

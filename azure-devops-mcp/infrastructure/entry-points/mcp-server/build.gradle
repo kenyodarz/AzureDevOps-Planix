@@ -4,7 +4,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
     // Spring AI BOM
-    implementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
+    implementation platform('org.springframework.ai:spring-ai-bom:2.0.2')
 
     // MCP Server WebFlux
     implementation "org.springframework.ai:spring-ai-mcp"
