@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**  
 > `test(agent): validar e2e el flujo completo de program planning y cerrar el harness de agentes`  
-> **Instrucciones:** `docs/fases/FASE-09-validacion-e2e-cierre.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

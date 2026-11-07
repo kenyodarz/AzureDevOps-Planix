@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(backend): exponer endpoints reactivos y DTOs para gestion documental y planeacion`  
-> **Instrucciones:** `docs/fases/FASE-05-entry-points-reactivos-planning.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

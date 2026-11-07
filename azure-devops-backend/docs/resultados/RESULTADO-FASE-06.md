@@ -3,8 +3,8 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 >
-`feat(backend): configurar wiring en spring para use cases de specs y program planning con validacion e2e`  
-> **Instrucciones:** `docs/fases/FASE-06-cableado-spring-validacion-e2e.md`
+> `feat(backend): configurar wiring en spring para use cases de specs y program planning con validacion e2e`  
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

@@ -1,7 +1,7 @@
 # RESULTADO — FASE 02: Cliente A2A del agente y control de tareas
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
-> **Instrucciones:** `docs/fases/fase-02.md` · **Plan:** `docs/plan/plan-maestro.md` v2.0
+> **Instrucciones:** `../../../../../docs/sdd/fases` · **Plan:** `../../../../../docs/sdd/plan` v2.0
 > **Hito:** **el build pasa de rojo a verde** — 15 fallos → **0**
 
 ---
@@ -205,7 +205,8 @@ Los 15 tests nuevos cubren el paquete `agent`, pero el paquete `a2a` (`Task`, `M
 
 ## 9. Estado al cerrar
 
-- **Siguiente fase generada:** `docs/fases/fase-03.md` — API de tareas del BFF hacia el front
+- **Siguiente fase generada:** `../../../../../docs/sdd/fases` — API de tareas del BFF hacia el
+  front
 - **Decisiones resueltas:** DP-01, DP-08
 - **Decisiones abiertas:** DP-07 (Fase 03), DP-02 (Fase 04), DP-03 (Fase 05), DP-04 (Fase 06), DP-05
   y DP-06 (Fase 07)

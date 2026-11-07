@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(devops_agent): segregar clientes de api por dominio y crear fachada delegante`
-> **Instrucciones:** `docs/fases/fase-04.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 2 archivos existentes modificados · 5 archivos de servicios nuevos en `services/api/` · 4 archivos de test nuevos · **cero `.spec.ts` de las Fases 01, 02 y 03 modificados**
 
 ---
@@ -134,9 +134,9 @@ Ninguna. Se completaron íntegramente las tareas T-01 a T-09 conforme a lo espec
 
 ## 9. Estado al cerrar
 
-- Siguiente fase generada: **`docs/fases/fase-05.md`** ✅
+- Siguiente fase generada: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones abiertas que bloquean la Fase 05: **DP-01**, **DP-05**, **DP-08**, **DP-10** (aplicar restricción crítica **R-1**)
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos modificados
 - Restricción **R-5 cumplida**: `DevopsAgentApiService` conservado como fachada delegante
 - Siguiente paso: resolver decisiones bloqueantes y ejecutar **Fase 05 (Separación de stores por flujo y migración reactiva)**

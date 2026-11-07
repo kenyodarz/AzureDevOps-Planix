@@ -56,8 +56,8 @@
 | Ruta                                                                                                |  Acción   | Propósito                                                                                |
 |:----------------------------------------------------------------------------------------------------|:---------:|:-----------------------------------------------------------------------------------------|
 | `infrastructure/entry-points/reactive-web/src/test/java/co/com/bancolombia/api/RouterRestTest.java` | MODIFICAR | Añadir escenario E2E para el comando `/plan` verificando respuesta 200 y cuerpo Markdown |
-| `docs/plan/ESTADO.md`                                                                               | MODIFICAR | Marcar Fase 09 como COMPLETADA y cerrar formalmente el Plan Maestro.                     |
-| `docs/resultados/RESULTADO-FASE-09.md`                                                              |   CREAR   | Informe de cierre definitivo con métricas finales consolidadas del Harness.              |
+| `../../../docs/sdd/plan`                                                                            | MODIFICAR | Marcar Fase 09 como COMPLETADA y cerrar formalmente el Plan Maestro.                     |
+| `../../../docs/sdd/resultados`                                                                      |   CREAR   | Informe de cierre definitivo con métricas finales consolidadas del Harness.              |
 
 ### 1.5 Reglas aplicables
 

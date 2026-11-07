@@ -48,7 +48,7 @@ Esta fase no corrige ninguna deuda: **congela el comportamiento actual** en test
 caracterización (*characterization tests*) que actúan como contrato de regresión. Cualquier fase
 posterior que altere el flujo elegido para un texto dado romperá el build de inmediato.
 
-Además establece las **métricas baseline** exigidas por `docs/plan/PLAN_MAESTRO.md` §5.
+Además establece las **métricas baseline** exigidas por `../../../../../docs/sdd/plan` §5.
 
 ### 1.3 Estado esperado al terminar
 
@@ -56,19 +56,19 @@ Además establece las **métricas baseline** exigidas por `docs/plan/PLAN_MAESTR
    **qué flujo se ejecuta hoy** y **qué prompt recibe el `ChatGateway`**.
 2. Existe `AgentChatUseCaseParsingTest` que documenta el comportamiento actual de los tres
    extractores de JSON, incluidos sus valores por defecto.
-3. `docs/plan/ESTADO.md` contiene las métricas baseline reales de cobertura.
+3. `../../../../../docs/sdd/plan` contiene las métricas baseline reales de cobertura.
 4. El código productivo está **intacto**: cero líneas modificadas fuera de `src/test`.
 
 ### 1.4 Archivos involucrados
 
-| Ruta | Acción |
-|---|---|
-| `domain/usecase/src/main/java/co/com/bancolombia/usecase/chat/AgentChatUseCase.java` | **LEER** (no modificar) |
-| `domain/usecase/build.gradle` | MODIFICAR (solo si faltan dependencias de test) |
-| `domain/usecase/src/test/java/co/com/bancolombia/usecase/chat/AgentChatUseCaseCharacterizationTest.java` | CREAR |
-| `domain/usecase/src/test/java/co/com/bancolombia/usecase/chat/AgentChatUseCaseParsingTest.java` | CREAR |
-| `docs/plan/ESTADO.md` | MODIFICAR |
-| `docs/fases/FASE-01-externalizacion-de-prompts.md` | CREAR |
+| Ruta                                                                                                     | Acción                                          |
+|----------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| `domain/usecase/src/main/java/co/com/bancolombia/usecase/chat/AgentChatUseCase.java`                     | **LEER** (no modificar)                         |
+| `domain/usecase/build.gradle`                                                                            | MODIFICAR (solo si faltan dependencias de test) |
+| `domain/usecase/src/test/java/co/com/bancolombia/usecase/chat/AgentChatUseCaseCharacterizationTest.java` | CREAR                                           |
+| `domain/usecase/src/test/java/co/com/bancolombia/usecase/chat/AgentChatUseCaseParsingTest.java`          | CREAR                                           |
+| `../../../../../docs/sdd/plan`                                                                           | MODIFICAR                                       |
+| `../../../../../docs/sdd/fases`                                                                          | CREAR                                           |
 
 ### 1.5 Reglas aplicables
 
@@ -104,7 +104,7 @@ Stack disponible confirmado: Java 25, Spring Boot 4.1.0, Reactor (`reactor-test`
 
 > ⚠️ Si al escribir los tests descubres comportamientos extraños adicionales (más allá de DP-01 a
 > DP-06 ya registrados), **no los corrijas**: añádelos como nueva entrada `DP-XX` en
-> `docs/plan/DECISIONES_PENDIENTES.md` y escribe el test reflejando el comportamiento **actual**.
+> `../../../../../docs/sdd/plan` y escribe el test reflejando el comportamiento **actual**.
 
 ---
 
@@ -213,7 +213,7 @@ Ejecuta:
 
 De `build/reports/jacocoMergedReport/jacocoMergedReport.xml` extrae el porcentaje de cobertura de
 instrucciones para `domain/model` y `domain/usecase`, y regístralo en la tabla de métricas de
-`docs/plan/ESTADO.md`.
+`../../../../../docs/sdd/plan`.
 
 ### 2.2 Qué NO hacer
 
@@ -255,28 +255,28 @@ instrucciones para `domain/model` y `domain/usecase`, y regístralo en la tabla 
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmado: Fase 00 no está bloqueada |
-| 2 | Leer íntegro `AgentChatUseCase.java` (644 líneas) | Comprensión completa del enrutamiento actual |
-| 3 | Verificar dependencias de test en `domain/usecase/build.gradle` (Paso A) | Módulo listo para tests unitarios |
-| 4 | Crear `AgentChatUseCaseCharacterizationTest` con los 16 casos (Paso B) | Archivo creado |
-| 5 | Ejecutar `.\gradlew.bat :usecase:test` | Los 16 tests en verde |
-| 6 | Crear `AgentChatUseCaseParsingTest` con los 6 casos (Paso C) | Archivo creado |
-| 7 | Ejecutar `.\gradlew.bat :usecase:test` | Los 22 tests en verde |
-| 8 | Ejecutar `.\gradlew.bat clean build jacocoMergedReport` (Paso D) | `BUILD SUCCESSFUL` + reporte generado |
-| 9 | Verificar con `git diff --stat` que `src/main` está intacto | Sin cambios productivos |
-| 10 | Registrar métricas baseline de cobertura en `docs/plan/ESTADO.md` | Tabla de métricas completa |
-| 11 | Marcar Fase 00 como 🟢 COMPLETADA en `ESTADO.md` + añadir entrada a la bitácora | Tablero al día |
-| 12 | **Generar `docs/fases/FASE-01-externalizacion-de-prompts.md`** usando `_PLANTILLA_FASE.md` | Checkpoint de continuidad creado |
-| 13 | Commit: `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos` | Cambios versionados |
+| Paso | Acción                                                                                    | Resultado esperado                           |
+|-----:|-------------------------------------------------------------------------------------------|----------------------------------------------|
+|    1 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                      | Confirmado: Fase 00 no está bloqueada        |
+|    2 | Leer íntegro `AgentChatUseCase.java` (644 líneas)                                         | Comprensión completa del enrutamiento actual |
+|    3 | Verificar dependencias de test en `domain/usecase/build.gradle` (Paso A)                  | Módulo listo para tests unitarios            |
+|    4 | Crear `AgentChatUseCaseCharacterizationTest` con los 16 casos (Paso B)                    | Archivo creado                               |
+|    5 | Ejecutar `.\gradlew.bat :usecase:test`                                                    | Los 16 tests en verde                        |
+|    6 | Crear `AgentChatUseCaseParsingTest` con los 6 casos (Paso C)                              | Archivo creado                               |
+|    7 | Ejecutar `.\gradlew.bat :usecase:test`                                                    | Los 22 tests en verde                        |
+|    8 | Ejecutar `.\gradlew.bat clean build jacocoMergedReport` (Paso D)                          | `BUILD SUCCESSFUL` + reporte generado        |
+|    9 | Verificar con `git diff --stat` que `src/main` está intacto                               | Sin cambios productivos                      |
+|   10 | Registrar métricas baseline de cobertura en `../../../../../docs/sdd/plan`                | Tabla de métricas completa                   |
+|   11 | Marcar Fase 00 como 🟢 COMPLETADA en `ESTADO.md` + añadir entrada a la bitácora           | Tablero al día                               |
+|   12 | **Generar `../../../../../docs/sdd/fases`** usando `_PLANTILLA_FASE.md`                   | Checkpoint de continuidad creado             |
+|   13 | Commit: `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos` | Cambios versionados                          |
 
 > ⚠️ **El paso 12 es innegociable.** Sin el MD de la Fase 01, el trabajo no es reanudable tras una
 > desconexión y la Fase 00 se considera **incompleta**.
 
 ### 3.1 Contenido mínimo del MD de la Fase 01
 
-El archivo `docs/fases/FASE-01-externalizacion-de-prompts.md` debe contener, con la estructura de
+El archivo `../../../../../docs/sdd/fases` debe contener, con la estructura de
 tres bloques de `_PLANTILLA_FASE.md`:
 
 **CONTEXTO**

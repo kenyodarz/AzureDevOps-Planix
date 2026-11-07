@@ -1,6 +1,6 @@
 # INFORME DE CIERRE — Plan de Refactorización `azure-devops-agent`
 
-> **Plan:** `docs/plan/PLAN_MAESTRO.md` v1.0 · **Iniciado:** 2026-08-28 · **Cerrado:** 2026-08-29
+> **Plan:** `../../../../../docs/sdd/plan` v1.0 · **Iniciado:** 2026-08-28 · **Cerrado:** 2026-08-29
 > **Fases ejecutadas:** 8 (00 a 07), todas 🟢 COMPLETADAS
 > **Resultado:** todas las métricas de éxito alcanzadas; ninguna decisión abierta.
 

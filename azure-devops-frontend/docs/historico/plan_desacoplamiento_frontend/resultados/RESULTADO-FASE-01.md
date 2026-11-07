@@ -1,8 +1,8 @@
 # RESULTADO — FASE 01: Baseline y red de seguridad
 
 > **Ejecutada:** 2026-08-31 · **Estado final:** 🟢 COMPLETADA
-> **Instrucciones:** `docs/fases/fase-01.md`
-> **Baseline medido:** `docs/resultados/baseline-fase-01.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
+> **Baseline medido:** `../../../../../docs/sdd/resultados`
 > **Código productivo modificado:** 1 archivo, exclusivamente por la excepción autorizada **S-01**
 
 ---
@@ -55,11 +55,11 @@ Construir la red de verificación que permita refactorizar el frontend en las fa
 
 ### 2.3 Documentos publicados
 
-| Archivo                                | Contenido                                                                     |
-|----------------------------------------|-------------------------------------------------------------------------------|
-| `docs/resultados/baseline-fase-01.md`  | Baseline reproducible, 12 métricas medidas, 3 hallazgos, correcciones al plan |
-| `docs/resultados/RESULTADO-FASE-01.md` | Este documento                                                                |
-| `docs/fases/fase-02.md`                | Checkpoint de continuidad                                                     |
+| Archivo                              | Contenido                                                                     |
+|--------------------------------------|-------------------------------------------------------------------------------|
+| `../../../../../docs/sdd/resultados` | Baseline reproducible, 12 métricas medidas, 3 hallazgos, correcciones al plan |
+| `../../../../../docs/sdd/resultados` | Este documento                                                                |
+| `../../../../../docs/sdd/fases`      | Checkpoint de continuidad                                                     |
 
 ---
 
@@ -218,9 +218,9 @@ Las pruebas de `planning-management` no podían escribirse como se preveía porq
 ## 9. Estado al cerrar
 
 - **Fase 01:** 🟢 COMPLETADA.
-- **Siguiente fase generada:** `docs/fases/fase-02.md`.
-- **`docs/plan/ESTADO.md`:** actualizado con las métricas medidas.
-- **`docs/plan/plan-maestro.md`:** actualizado (D-07 saldada; D-22 a D-27 registradas; métricas corregidas).
+- **Siguiente fase generada:** `../../../../../docs/sdd/fases`.
+- **`../../../../../docs/sdd/plan`:** actualizado con las métricas medidas.
+- **`../../../../../docs/sdd/plan`:** actualizado (D-07 saldada; D-22 a D-27 registradas; métricas corregidas).
 - **Deuda saldada en esta fase:** D-07 (vía S-01), D-15 parcialmente (0/9 → 9/9 componentes con pruebas).
 - **Deudas nuevas:** D-22, D-23, D-24, D-25, D-26, D-27.
 - **Decisiones abiertas:** DP-01 · DP-02 (con evidencia nueva) · DP-03 · DP-04 · DP-05 · DP-06 · DP-08 · DP-09.

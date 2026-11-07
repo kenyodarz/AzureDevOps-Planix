@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit propuesto:** `feat(frontend): crear componente visor y explorador de especificaciones documentales`  
-> **Instrucciones:** `docs/fases/FASE-03-visor-explorador-specs.md`  
+> **Instrucciones:** `../../../docs/sdd/fases`  
 > **Código productivo y pruebas intervenidos:** 8 archivos (2 creados, 6 modificados).
 
 ---

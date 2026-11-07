@@ -88,13 +88,13 @@ Actualmente el usuario no tiene un mecanismo visual e interactivo en la interfaz
 
 ## 3. ORDEN DE EJECUCIÓN
 
-|   Paso   | Acción                                             | Resultado esperado                     |
-|:--------:|:---------------------------------------------------|:---------------------------------------|
-| **P-01** | Leer `docs/plan/ESTADO.md` y verificar fase activa | Confirmar Fase 04                      |
-| **P-02** | Crear `ProgramPlanningModalComponent`              | Componente modal reactivo y estilizado |
-| **P-03** | Crear `program-planning-modal.component.spec.ts`   | Suite de tests pasando al 100%         |
-| **P-04** | Exportar en `components/index.ts`                  | Re-export disponible                   |
-| **P-05** | Ejecutar `pnpm test --watch=false` y `pnpm build`  | 100% verde y compilación limpia        |
-| **P-06** | Generar `docs/resultados/RESULTADO-FASE-04.md`     | Registro de evidencias                 |
-| **P-07** | Actualizar `docs/plan/ESTADO.md`                   | Marcar Fase 04 completada              |
-| **P-08** | Proponer commit bajo `COMMIT_RULES.md`             | Commit listo para autorizar            |
+|   Paso   | Acción                                                | Resultado esperado                     |
+|:--------:|:------------------------------------------------------|:---------------------------------------|
+| **P-01** | Leer `../../../docs/sdd/plan` y verificar fase activa | Confirmar Fase 04                      |
+| **P-02** | Crear `ProgramPlanningModalComponent`                 | Componente modal reactivo y estilizado |
+| **P-03** | Crear `program-planning-modal.component.spec.ts`      | Suite de tests pasando al 100%         |
+| **P-04** | Exportar en `components/index.ts`                     | Re-export disponible                   |
+| **P-05** | Ejecutar `pnpm test --watch=false` y `pnpm build`     | 100% verde y compilación limpia        |
+| **P-06** | Generar `../../../docs/sdd/resultados`                | Registro de evidencias                 |
+| **P-07** | Actualizar `../../../docs/sdd/plan`                   | Marcar Fase 04 completada              |
+| **P-08** | Proponer commit bajo `COMMIT_RULES.md`                | Commit listo para autorizar            |

@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(agent): agregar plantilla externalizada de prompt para program planning y roadmap`  
-> **Instrucciones:** `docs/fases/FASE-05-prompt-externalizado-planeacion.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-28 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent_chat): extraer objeto de valor de estimacion de complejidad`
-> **Instrucciones:** `docs/fases/FASE-02-value-objects-de-estimacion.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 

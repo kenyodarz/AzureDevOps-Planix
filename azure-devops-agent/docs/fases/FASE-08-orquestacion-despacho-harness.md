@@ -53,8 +53,8 @@
 | `domain/usecase/src/test/java/co/com/bancolombia/usecase/chat/handler/ChatFlowDispatcherTest.java` | MODIFICAR | Actualizar pruebas unitarias de exhaustividad incorporando `ProgramPlanningFlowHandler`. |
 | `applications/app-service/src/main/java/co/com/bancolombia/config/UseCasesConfig.java`             | MODIFICAR | Registrar bean de `ProgramPlanningFlowHandler`.                                          |
 | `applications/app-service/src/test/java/co/com/bancolombia/config/UseCasesConfigWiringTest.java`   | MODIFICAR | Validar que el contexto levante con el nuevo handler cableado.                           |
-| `docs/plan/ESTADO.md`                                                                              | MODIFICAR | Actualizar tablero y bitácora del plan.                                                  |
-| `docs/resultados/RESULTADO-FASE-08.md`                                                             |   CREAR   | Documento de cierre con métricas de la Fase 08.                                          |
+| `../../../docs/sdd/plan`                                                                           | MODIFICAR | Actualizar tablero y bitácora del plan.                                                  |
+| `../../../docs/sdd/resultados`                                                                     |   CREAR   | Documento de cierre con métricas de la Fase 08.                                          |
 
 ### 1.5 Reglas aplicables
 

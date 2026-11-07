@@ -121,7 +121,8 @@ siete puertos para un solo agregado**, organizados por operación CRUD en lugar 
 
 ### Cómo trabajar
 
-Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-05.md`, en orden y
+Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `../../../../../docs/sdd/fases`, en
+orden y
 sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
 completes.
 
@@ -145,7 +146,8 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] **0** modelos de dominio expuestos como `@McpToolParam` o serializados por el `WebClient`.
 - [ ] Plan maestro actualizado: §3, §6, §7, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-05.md` relleno con lo alcanzado **de verdad**.
-- [ ] **`docs/fases/fase-06.md` y `docs/fases/PROMPT-FASE-06.md` generados**, con **DP-06** marcada
+- [ ] **`../../../../../docs/sdd/fases` y `../../../../../docs/sdd/fases` generados**, con **DP-06**
+  marcada
   como bloqueante en el primer paso.
 - [ ] Commit hecho con el mensaje indicado.
 

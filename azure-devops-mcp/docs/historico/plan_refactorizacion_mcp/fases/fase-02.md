@@ -1,6 +1,6 @@
 # FASE 02 — Seguridad conmutable y saneamiento de la configuración
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-01, D-02, D-03, D-04, D-22 · **Decisiones:** ✅ DP-01, ✅ DP-02, ✅ B-01, ✅
 > B-02, ✅ B-03
@@ -187,7 +187,7 @@ real (DP-02).
 
 ### T-05 · Documentar lo que necesitan los clientes
 
-**Fichero a crear:** `docs/resultados/ACTIVACION-SEGURIDAD.md`
+**Fichero a crear:** `../../../../../docs/sdd/resultados`
 
 No es burocracia: es la garantía de que el trabajo de esta fase sea utilizable el día del SP. Debe
 contener el **procedimiento exacto** para pasar a `ENFORCED`:
@@ -207,7 +207,8 @@ Y declarar explícitamente qué **no** hace falta: **recompilar**. Ése es el en
 2. Actualizar el plan maestro: §3 (D-01 a D-04, D-22 saldadas), §6 (métricas de seguridad), §9
    (Bitácora) y la cabecera.
 3. Actualizar `CONTRATO-MCP.md` §5 con el estado nuevo de autorización.
-4. **Generar `docs/fases/fase-03.md`**, con **DP-03** marcada como bloqueante en su primer paso.
+4. **Generar `../../../../../docs/sdd/fases`**, con **DP-03** marcada como bloqueante en su primer
+   paso.
 5. Commit: `security(mcp_server): hacer conmutable la politica de acceso y sanear la configuracion`
 
 ---
@@ -238,11 +239,11 @@ Y declarar explícitamente qué **no** hace falta: **recompilar**. Ése es el en
 - [x] **15.** Retirar `spring.h2.console` y `/h2-console/**`. **(T-04)**
 - [x] **16.** Revisar `spring.devtools` y `profiles.include: null`. **(T-04)**
 - [x] **17.** `.\gradlew.bat build` verde de nuevo.
-- [x] **18.** Crear `docs/resultados/ACTIVACION-SEGURIDAD.md`. **(T-05)**
+- [x] **18.** Crear `../../../../../docs/sdd/resultados`. **(T-05)**
 - [x] **19.** Verificar que **ningún** fichero del repositorio contiene un token real (DP-02).
 - [x] **20.** Actualizar `CONTRATO-MCP.md` §5 y el plan maestro (§3, §6, §9, cabecera).
 - [x] **21.** Rellenar **Resultado** en §4 y marcar este checklist.
-- [x] **22.** **Generar `docs/fases/fase-03.md`.** **(Regla de Continuidad)**
+- [x] **22.** **Generar `../../../../../docs/sdd/fases`.** **(Regla de Continuidad)**
 - [x] **23.** Commit:
   `security(mcp_server): hacer conmutable la politica de acceso y sanear la configuracion`
 
@@ -322,5 +323,6 @@ y `ROLE_MCP.AZURE_DEVOPS.WRITE`, no porque falte una anotación. El contrato MCP
 
 **Bloqueos encontrados:** ninguno. No hizo falta resolver ninguna `DP-nn` por cuenta propia.
 
-**Fase siguiente generada:** ☑ [`docs/fases/fase-03.md`](fase-03.md) — con **DP-03** marcada como
+**Fase siguiente generada:** ☑ [`../../../../../docs/sdd/fases`](fase-03.md) — con **DP-03** marcada
+como
 bloqueante en su primer paso.

@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(agent): implementar caso de uso y handler de flujo para program planning`  
-> **Instrucciones:** `docs/fases/FASE-06-handler-planner-agent.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

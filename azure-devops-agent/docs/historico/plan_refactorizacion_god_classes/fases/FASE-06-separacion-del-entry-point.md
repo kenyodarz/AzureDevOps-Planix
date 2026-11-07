@@ -2,7 +2,7 @@
 
 > **Estado:** 🟢 COMPLETADA (2026-08-29) · **Depende de:** FASE 05 (🟢 completada) · **Riesgo:** Alto
 > **Commit al cerrar:** `refactor(agent_api): separar validacion y mapeo de errores del entry point`
-> **Resultado:** `docs/resultados/RESULTADO-FASE-06.md`
+> **Resultado:** `../../../../../docs/sdd/resultados`
 
 > ⚠️ **Riesgo alto:** es la única fase que toca el **contrato público** de la API. Un error aquí es
 > visible para los consumidores del agente, no solo para el equipo.
@@ -189,24 +189,24 @@ demás delega. Comprobar que los campos sean **finales** (Rule_2.7).
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-05.md` | Contexto al día |
-| 2 | Ejecutar `.\gradlew.bat :reactive-web:test` **antes de tocar nada** | Línea base verde registrada |
-| 3 | Crear `JsonRpcPayloadMapper` moviendo los 10 métodos (Paso A) | Mapeo aislado |
-| 4 | Escribir `JsonRpcPayloadMapperTest` con los casos degenerados (Paso E) | Verde antes de seguir |
-| 5 | Crear `JsonRpcResponseFactory` con los códigos como constantes (Paso B) | Errores aislados |
-| 6 | Escribir `JsonRpcResponseFactoryTest` | Verde |
-| 7 | Crear `AgentCardProvider` (Paso C) | Tarjeta fuera del handler |
-| 8 | Adelgazar `Handler` y verificar campos finales (Paso D) | ≤ 150 líneas |
-| 9 | Ejecutar `.\gradlew.bat :reactive-web:test` | Las 4 suites verdes, **sin haberlas tocado** |
-| 10 | `git diff` sobre las 4 suites del entry-point | **Salida vacía** |
-| 11 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 12 | Medir cobertura y contar clases > 300 líneas | Métricas reales; el contador debe dar **0** |
-| 13 | **Escribir `docs/resultados/RESULTADO-FASE-06.md`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad |
-| 14 | Actualizar `docs/plan/ESTADO.md`: 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
-| 15 | **Generar `docs/fases/FASE-07-endurecimiento-y-cierre.md`** con `_PLANTILLA_FASE.md` | Checkpoint creado |
-| 16 | Commit: `refactor(agent_api): separar validacion y mapeo de errores del entry point` | Cambios versionados |
+| Paso | Acción                                                                               | Resultado esperado                           |
+|-----:|--------------------------------------------------------------------------------------|----------------------------------------------|
+|    1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-05.md`                | Contexto al día                              |
+|    2 | Ejecutar `.\gradlew.bat :reactive-web:test` **antes de tocar nada**                  | Línea base verde registrada                  |
+|    3 | Crear `JsonRpcPayloadMapper` moviendo los 10 métodos (Paso A)                        | Mapeo aislado                                |
+|    4 | Escribir `JsonRpcPayloadMapperTest` con los casos degenerados (Paso E)               | Verde antes de seguir                        |
+|    5 | Crear `JsonRpcResponseFactory` con los códigos como constantes (Paso B)              | Errores aislados                             |
+|    6 | Escribir `JsonRpcResponseFactoryTest`                                                | Verde                                        |
+|    7 | Crear `AgentCardProvider` (Paso C)                                                   | Tarjeta fuera del handler                    |
+|    8 | Adelgazar `Handler` y verificar campos finales (Paso D)                              | ≤ 150 líneas                                 |
+|    9 | Ejecutar `.\gradlew.bat :reactive-web:test`                                          | Las 4 suites verdes, **sin haberlas tocado** |
+|   10 | `git diff` sobre las 4 suites del entry-point                                        | **Salida vacía**                             |
+|   11 | Ejecutar `.\gradlew.bat build`                                                       | `BUILD SUCCESSFUL`                           |
+|   12 | Medir cobertura y contar clases > 300 líneas                                         | Métricas reales; el contador debe dar **0**  |
+|   13 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md`      | Trazabilidad                                 |
+|   14 | Actualizar `../../../../../docs/sdd/plan`: 🟢 COMPLETADA + métricas + bitácora       | Tablero al día                               |
+|   15 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`                 | Checkpoint creado                            |
+|   16 | Commit: `refactor(agent_api): separar validacion y mapeo de errores del entry point` | Cambios versionados                          |
 
 > ⚠️ **Los pasos 13 y 15 son innegociables.** Sin ellos la fase se considera **incompleta**.
 >

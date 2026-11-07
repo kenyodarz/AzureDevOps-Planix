@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent_config): agrupar configuracion en objetos de valor`
-> **Instrucciones:** `docs/fases/FASE-05-value-objects-de-configuracion.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 

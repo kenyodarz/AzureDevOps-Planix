@@ -93,14 +93,14 @@ Existirán en `domain/model`:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar que DP-BFF-01 está resuelta |
-| P-02 | Crear `SpecDocument.java` y `SpecNotFoundException.java` | Clases de dominio listas |
-| P-03 | Crear `SpecStoragePort.java` | Contrato de puerto definido |
-| P-04 | Crear `SpecDocumentTest.java` y ejecutar `./gradlew :model:test` | Pruebas unitarias verdes |
-| P-05 | Ejecutar `./gradlew test` en todo el backend | 238+ pruebas pasando al 100% |
-| P-06 | Escribir `docs/resultados/RESULTADO-FASE-01.md` | Trazabilidad con métricas reales |
-| P-07 | Actualizar `docs/plan/ESTADO.md` a `🟢 COMPLETADA` | Tablero al día |
-| P-08 | Generar `docs/fases/FASE-02-modelos-dominio-planeacion.md` | Próxima fase lista |
-| P-09 | Presentar resumen de cambios al usuario para confirmación de commit | Checkpoint cumplido |
+| Paso | Acción                                                              | Resultado esperado                    |
+|-----:|---------------------------------------------------------------------|---------------------------------------|
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`            | Confirmar que DP-BFF-01 está resuelta |
+| P-02 | Crear `SpecDocument.java` y `SpecNotFoundException.java`            | Clases de dominio listas              |
+| P-03 | Crear `SpecStoragePort.java`                                        | Contrato de puerto definido           |
+| P-04 | Crear `SpecDocumentTest.java` y ejecutar `./gradlew :model:test`    | Pruebas unitarias verdes              |
+| P-05 | Ejecutar `./gradlew test` en todo el backend                        | 238+ pruebas pasando al 100%          |
+| P-06 | Escribir `../../../docs/sdd/resultados`                             | Trazabilidad con métricas reales      |
+| P-07 | Actualizar `../../../docs/sdd/plan` a `🟢 COMPLETADA`               | Tablero al día                        |
+| P-08 | Generar `../../../docs/sdd/fases`                                   | Próxima fase lista                    |
+| P-09 | Presentar resumen de cambios al usuario para confirmación de commit | Checkpoint cumplido                   |

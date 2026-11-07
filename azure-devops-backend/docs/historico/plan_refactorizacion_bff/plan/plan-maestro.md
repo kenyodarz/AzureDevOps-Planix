@@ -6,7 +6,8 @@
 > reactiva**, pero como *cliente*, no como servidor.
 > **Reglas:** `rules/spring-rules.md` · **Precedente:**
 > `azure-devops-agent/docs/resultados/CIERRE-DEL-PLAN.md`
-> **Fases:** 8 (01 → 08) · **Fase activa:** `docs/fases/fase-08.md` · **Completadas:** 01, 02, 03,
+> **Fases:** 8 (01 → 08) · **Fase activa:** `../../../../../docs/sdd/fases` · **Completadas:** 01,
+> 02, 03,
 > 04, 05, 06, 07
 
 ---
@@ -388,7 +389,8 @@ el usuario el 2026-08-29 (DP-07 opción B, DP-07-bis opción B2).
 
 ## 8. Protocolo de continuidad
 
-1. Cada fase vive en `docs/fases/fase-NN.md` con **Contexto**, **Instrucciones** y **Orden de
+1. Cada fase vive en `../../../../../docs/sdd/fases` con **Contexto**, **Instrucciones** y **Orden
+   de
    Ejecución**.
 2. Al cerrar una fase: marcar su checklist, rellenar su bloque **Resultado**, actualizar §9 aquí y
    **generar `fase-NN+1.md`** con el estado real alcanzado.

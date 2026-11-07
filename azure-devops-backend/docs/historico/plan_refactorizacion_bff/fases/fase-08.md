@@ -1,10 +1,10 @@
 # FASE 08 — Configuración, cierre y verificación
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟢 **COMPLETADA** (2026-08-29)
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟢 **COMPLETADA** (2026-08-29)
 > **Deudas objetivo:** **D-04, D-12, D-32, D-42** · **D-27 ya saldada** (ver §1.2)
 > **Arranque en sesión nueva:** [`HANDOFF-FASE-08.md`](../plan/HANDOFF-FASE-08.md)
 > **Fase anterior:** [`fase-07.md`](fase-07.md) → [
-`RESULTADO-FASE-07.md`](../resultados/RESULTADO-FASE-07.md)
+> `RESULTADO-FASE-07.md`](../resultados/RESULTADO-FASE-07.md)
 > **Fase siguiente:** ninguna. Ésta cierra el plan.
 
 ---

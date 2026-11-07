@@ -152,7 +152,8 @@ declarado nunca** en el YAML.
 
 ### Cómo trabajar
 
-Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-06.md`, en orden y
+Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `../../../../../docs/sdd/fases`, en
+orden y
 sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
 completes.
 
@@ -180,7 +181,7 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] `CONTRATO-MCP.md` con una **sección nueva sobre el contrato de errores**.
 - [ ] Plan maestro actualizado: §3, §6, §7, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-06.md` relleno con lo alcanzado **de verdad**.
-- [ ] **`docs/fases/fase-07.md` y `docs/fases/PROMPT-FASE-07.md` generados**.
+- [ ] **`../../../../../docs/sdd/fases` y `../../../../../docs/sdd/fases` generados**.
 - [ ] Commit hecho con el mensaje indicado.
 
 Empieza por el **Paso 0**.

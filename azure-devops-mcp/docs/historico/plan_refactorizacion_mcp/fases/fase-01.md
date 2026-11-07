@@ -1,6 +1,6 @@
 # FASE 01 — Baseline, caracterización y verificación del wiring
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-05, D-06, D-21 · **Deudas que congela:** D-07, D-08, D-09, D-11
 > **Riesgo:** Nulo · **Depende de:** — · **Habilita:** Fases 02, 03 y 04
@@ -120,7 +120,8 @@ pueden dejarse abiertas:
     - `build/issues.json` de cada módulo (lo escribe `ArchitectureTest`) → **violaciones de ArchUnit
       por regla**. Confirmar que `Rule_2.2` aparece **una vez** y que la clase señalada es
       `WorkItemsBatchRequest` (D-17).
-3. Crear **`docs/resultados/BASELINE.md`** con: tabla de cobertura por módulo, número de pruebas,
+3. Crear **`../../../../../docs/sdd/resultados`** con: tabla de cobertura por módulo, número de
+   pruebas,
    fallos, violaciones de ArchUnit por regla, líneas por clase de las cinco clases de §1.1 y la
    complejidad cognitiva máxima observada.
 4. Volcar esas cifras en §6 del plan maestro, sustituyendo cada *«por medir (Fase 01)»*.
@@ -246,7 +247,7 @@ siete, y §3 confirma o corrige D-06.
 
 **Objetivo:** que las Fases 03 y 04 no puedan romper a los clientes sin enterarse.
 
-Crear **`docs/resultados/CONTRATO-MCP.md`** con, para **cada** tool expuesta:
+Crear **`../../../../../docs/sdd/resultados`** con, para **cada** tool expuesta:
 
 - Nombre exacto de la tool (`name` del `@McpTool`).
 - Nombre, tipo y obligatoriedad de **cada** parámetro (`@McpToolParam`).
@@ -275,7 +276,7 @@ público** hoy.
 2. Rellenar el bloque **Resultado** de §4 con lo realmente alcanzado.
 3. Actualizar en el plan maestro: §6 (cifras reales), §9 (Bitácora) y la cabecera (**Fase activa** →
    `fase-02.md`, **Completadas** → `01`).
-4. **Generar `docs/fases/fase-02.md`** con las tres secciones obligatorias, tomando como
+4. **Generar `../../../../../docs/sdd/fases`** con las tres secciones obligatorias, tomando como
    **Contexto**
    el estado real medido en esta fase, y con **DP-01** y **DP-02** marcadas como bloqueantes en su
    primer paso.
@@ -295,7 +296,8 @@ Secuencial. **No adelantar pasos**: T-02 depende de conocer el estado real que p
   vacíos**,
   pero el log del test sí declara `Rule_2.2 ... violated (1 times)`. **D-17 confirmada** y **D-25
   detectada**: el informe para Sonar descarta las incidencias en silencio.
-- [x] **4.** Crear [`docs/resultados/BASELINE.md`](../resultados/BASELINE.md) con todas las cifras.
+- [x] **4.** Crear [`../../../../../docs/sdd/resultados`](../resultados/BASELINE.md) con todas las
+  cifras.
   **(T-01)**
 - [x] **5.** Leer `AzureDevOpsToolsTest.java` completo. → Sus 7 pruebas usan **solo
   `contains(...)`**:
@@ -325,7 +327,7 @@ Secuencial. **No adelantar pasos**: T-02 depende de conocer el estado real que p
 - [x] **20.** Cifras reales en §6 del plan maestro; veredictos de D-05 y D-06 en §3.
 - [x] **21.** Bloque **Resultado** de §4 relleno y checklist marcado.
 - [x] **22.** §9 (Bitácora) y cabecera del plan maestro actualizadas.
-- [x] **23.** **[`docs/fases/fase-02.md`](fase-02.md) generado.** **(Regla de Continuidad)**
+- [x] **23.** **[`../../../../../docs/sdd/fases`](fase-02.md) generado.** **(Regla de Continuidad)**
 - [ ] **24.** Commit:
   `test(mcp_baseline): agregar pruebas de caracterizacion de las herramientas mcp`
 
@@ -388,5 +390,5 @@ sea una decisión visible de **DP-04** y no un efecto colateral.
 **Bloqueos encontrados:** ninguno. El build estaba y sigue verde, así que **no se consume** la
 excepción de rojo heredado del §8.4 del plan maestro.
 
-**Fase siguiente generada:** ☑ [`docs/fases/fase-02.md`](fase-02.md)
+**Fase siguiente generada:** ☑ [`../../../../../docs/sdd/fases`](fase-02.md)
 

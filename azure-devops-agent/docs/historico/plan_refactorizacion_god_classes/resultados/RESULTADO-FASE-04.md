@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-28 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent_chat): separar flujos de conversacion con patron strategy`
-> **Instrucciones:** `docs/fases/FASE-04-separacion-de-flujos.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 

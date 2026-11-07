@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(backend): implementar adaptador reactivo FileSystemSpecAdapter para spec storage`  
-> **Instrucciones:** `docs/fases/FASE-03-adaptador-filesystem-spec.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

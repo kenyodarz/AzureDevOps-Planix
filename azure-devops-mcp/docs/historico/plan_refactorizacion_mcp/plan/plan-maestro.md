@@ -106,7 +106,7 @@ de salida, cuando `spring-rules.md` los declara **obligatorios**.
 > la seguridad está construida a propósito y desactivada a propósito: **todavía no existe el Service
 > Principal**, y el objetivo es enviar a pre y producción una **copia 1 a 1** del binario, sin
 > reconstruir nada. El flujo objetivo es: el front obtiene del IDP (Entra ID) un token **de
-usuario**
+> usuario**
 > válido **solo para el BFF**; el BFF llama al agente; y el agente obtiene un **segundo token M2M**,
 > distinto del de usuario, para hablar con el MCP.
 >
@@ -449,13 +449,14 @@ sin aviso es un fallo de la fase, no un efecto colateral.
 
 Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de contexto.
 
-1. Cada fase vive en **`docs/fases/fase-NN.md`** con exactamente tres secciones: **Contexto**,
+1. Cada fase vive en **`../../../../../docs/sdd/fases`** con exactamente tres secciones:
+   **Contexto**,
    **Instrucciones** y **Orden de Ejecución** (checklist).
 2. **Regla de continuidad:** al concluir la implementación de una fase se debe, en este orden:
     1. marcar su checklist completo;
     2. rellenar su bloque **Resultado** con lo realmente alcanzado (no con lo planeado);
     3. actualizar §9 (Bitácora) y la cabecera de este documento (**Fase activa** / **Completadas**);
-    4. **generar `docs/fases/fase-NN+1.md`** con el estado real alcanzado como Contexto.
+    4. **generar `../../../../../docs/sdd/fases`** con el estado real alcanzado como Contexto.
 3. **Punto de reanudación ante reinicio:** leer §9 de este documento, abrir el último `fase-NN.md`
    sin cerrar y continuar por el **primer paso sin marcar** de su Orden de Ejecución.
 4. Ninguna fase arranca con el build en rojo heredado. La 01 es la única excepción declarada, y solo
@@ -465,7 +466,7 @@ Este plan está diseñado para sobrevivir a reinicios de sesión y pérdidas de 
    **abierta** y se pasa a la siguiente si no hay dependencia técnica.
 6. Un commit por fase como mínimo, con el formato de `COMMIT_RULES.md` (§10 de este plan).
 7. **Cada fase se ejecuta en una sesión nueva.** Al generar `fase-NN+1.md` se genera también **
-   `docs/fases/PROMPT-FASE-NN+1.md`**: un prompt de arranque **autocontenido** que no dependa del
+   `../../../../../docs/sdd/fases`**: un prompt de arranque **autocontenido** que no dependa del
    historial de la sesión anterior. Debe incluir, como mínimo: la lectura obligatoria en orden, el
    estado real medido, **todas las decisiones ya resueltas** —para que la sesión nueva no las
    replantee ni las contradiga—, las reglas innegociables, lo que queda fuera de alcance y la

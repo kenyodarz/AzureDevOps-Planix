@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit propuesto:** `feat(frontend): implementar servicios de api y estado reactivo para program planning y specs`  
-> **Instrucciones:** `docs/fases/FASE-02-servicios-api-estado-reactivo.md`  
+> **Instrucciones:** `../../../docs/sdd/fases`  
 > **Código productivo y pruebas intervenidos:** 5 archivos modificados (`planning-api.service.ts`, `devops-agent-api.service.ts`, `planning-state.service.ts`, `devops-agent-state.service.ts` y sus respectivos `.spec.ts`).
 
 ---

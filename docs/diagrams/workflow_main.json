@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Flujo de Decisión: Despacho de Intenciones y Gobernanza HyMS",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "Flujo Nominal de Planeación",
+        "focus": [
+          "start",
+          "parse_intent",
+          "check_intent",
+          "plan_execute",
+          "hyms_gate",
+          "human_approval",
+          "spec_saved"
+        ],
+        "note": "Ruta nominal desde la recepción del mensaje hasta la certificación y persistencia."
+      },
+      {
+        "id": "intent-branches",
+        "label": "Bifurcación de Intenciones",
+        "focus": [
+          "check_intent",
+          "other_flows",
+          "rejected_unknown"
+        ],
+        "note": "Despacho exhaustivo hacia los 7 handlers especializados de flujo."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "channel",
+      "label": "Canal Usuario / BFF"
+    },
+    {
+      "id": "dispatch",
+      "label": "Resolución y Despacho"
+    },
+    {
+      "id": "planning",
+      "label": "Motor de Planeación"
+    },
+    {
+      "id": "governance",
+      "label": "Gobernanza HyMS & Humano",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intake",
+      "label": "1. Recepción",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "resolution",
+      "label": "2. Clasificación",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "execution",
+      "label": "3. Ejecución y Certificación",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "start",
+    "parse_intent",
+    "check_intent",
+    "plan_execute",
+    "hyms_gate",
+    "human_approval",
+    "spec_saved"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "lane": "channel",
+      "col": 0,
+      "type": "external",
+      "label": "Mensaje Entrante",
+      "sublabel": "JSON-RPC /plan",
+      "width": 140
+    },
+    {
+      "id": "parse_intent",
+      "lane": "dispatch",
+      "col": 1,
+      "type": "backend",
+      "label": "IntentResolver",
+      "sublabel": "servicio puro de dominio",
+      "tag": "DP-01",
+      "width": 140
+    },
+    {
+      "id": "check_intent",
+      "lane": "dispatch",
+      "col": 2,
+      "type": "backend",
+      "label": "ChatFlowDispatcher",
+      "sublabel": "exhaustividad 7/7 intents",
+      "width": 150
+    },
+    {
+      "id": "rejected_unknown",
+      "lane": "governance",
+      "col": 2,
+      "type": "security",
+      "label": "Intención Inválida",
+      "sublabel": "fallback amigable",
+      "width": 140
+    },
+    {
+      "id": "plan_execute",
+      "lane": "planning",
+      "col": 3,
+      "type": "backend",
+      "label": "ProgramPlanningUseCase",
+      "sublabel": "estimación y capacidad",
+      "tag": "DP-PL-04",
+      "width": 160
+    },
+    {
+      "id": "other_flows",
+      "lane": "dispatch",
+      "col": 3,
+      "type": "backend",
+      "label": "Otros 6 Handlers",
+      "sublabel": "Audit, Refine, Divide...",
+      "width": 140
+    },
+    {
+      "id": "hyms_gate",
+      "lane": "governance",
+      "col": 4,
+      "type": "security",
+      "label": "Compuerta HyMS",
+      "sublabel": "HU (QA) vs HA (HyMS)",
+      "tag": "DP-PL-02",
+      "width": 150
+    },
+    {
+      "id": "human_approval",
+      "lane": "governance",
+      "col": 5,
+      "type": "security",
+      "label": "Aprobación Humana",
+      "sublabel": "Human-in-the-loop",
+      "tag": "ApprovalHandler",
+      "width": 150
+    },
+    {
+      "id": "spec_saved",
+      "lane": "channel",
+      "col": 5,
+      "type": "backend",
+      "label": "Persistencia & Salida",
+      "sublabel": "SpecStoragePort Markdown",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-start-parse",
+      "from": "start",
+      "to": "parse_intent",
+      "variant": "default"
+    },
+    {
+      "id": "e2-parse-check",
+      "from": "parse_intent",
+      "to": "check_intent",
+      "label": "resuelve",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e3-check-plan",
+      "from": "check_intent",
+      "to": "plan_execute",
+      "label": "PROGRAM_PLANNING",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4-check-other",
+      "from": "check_intent",
+      "to": "other_flows",
+      "label": "otros intents",
+      "variant": "default"
+    },
+    {
+      "id": "e5-check-rejected",
+      "from": "check_intent",
+      "to": "rejected_unknown",
+      "label": "no resuelto",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e6-plan-hyms",
+      "from": "plan_execute",
+      "to": "hyms_gate",
+      "label": "delimitación",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e7-hyms-approval",
+      "from": "hyms_gate",
+      "to": "human_approval",
+      "label": "conforme",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e8-approval-save",
+      "from": "human_approval",
+      "to": "spec_saved",
+      "label": "aprobado",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Exhaustividad Estricta",
+      "items": [
+        "ChatFlowDispatcher exige validación estricta de 7/7 intenciones al arrancar.",
+        "Cualquier intención omitida detiene el levantamiento de la aplicación (Fail-Fast)."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Gobernanza y Supervisión Humana",
+      "items": [
+        "La directiva DP-PL-02 separa taxativamente HU de desarrollo y HA de despliegue HyMS.",
+        "Ninguna historia se publica a Azure DevOps sin aprobación explícita del usuario."
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(agent): implementar adaptador FileSystemSpecAdapter para almacenamiento de specs`  
-> **Instrucciones:** `docs/fases/FASE-02-adaptador-filesystem-spec.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

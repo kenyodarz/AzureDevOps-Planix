@@ -1,14 +1,14 @@
 # FASE 08 — Configuración tipada, ArchUnit y cierre del plan
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-05, D-19, D-20, D-22 *(residual)*, D-23, D-27 **saldadas** · **D-25 sigue
-viva**
+> viva**
 > **Decisión bloqueante:** ✅ **DP-08 (RESUELTA)**
 > **Riesgo:** 🟢 Bajo · **Depende de:** Fases 01 a 07 (cerradas) · **Cierra:** el plan
 > **Regla de oro de esta fase:** **es la última, así que lo que no se cierre aquí se queda sin
 > cerrar.** Y dos de sus deudas — **D-25** y **D-27**— no son código feo: son **mecanismos de
-control
+> control
 > que llevan todo el plan diciendo que todo está bien sin haberlo comprobado nunca**.
 > 🔸 **Desenlace:** D-27 **cerrada**; **D-25 no**, porque depende de ficheros que **genera el
 > plugin** y cualquier corrección se pierde en el siguiente build (§4.3).
@@ -191,7 +191,7 @@ que el build depende de un mecanismo que no se ha verificado nunca.
 
 ### T-06 · Informe de cierre y documentación
 
-1. **`docs/resultados/CIERRE-DEL-PLAN.md`**, como en `azure-devops-agent` y `azure-devops-backend`.
+1. **`../../../../../docs/sdd/resultados`**, como en `azure-devops-agent` y `azure-devops-backend`.
 2. `CONTRATO-MCP.md`: §1 (capacidades), §2.6 (`HealthTool`) y §4 (`queryByWiql`) según DP-08.
 3. Plan maestro: §3, §6, §7, §9, cabecera y **estado del plan a 🟢 CERRADO**.
 4. Rellenar §4 de este documento y marcar el checklist.
@@ -265,7 +265,7 @@ que el build depende de un mecanismo que no se ha verificado nunca.
 **Bloqueos encontrados:** ninguno que detuviera la fase. **Dos objetivos resultaron no alcanzables**
 por una causa externa, documentada en §4.3.
 
-**Plan cerrado:** ☑ `docs/resultados/CIERRE-DEL-PLAN.md`
+**Plan cerrado:** ☑ `../../../../../docs/sdd/resultados`
 
 ### 4.1 Qué se construyó
 

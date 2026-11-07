@@ -1,6 +1,6 @@
 # CONTRATO MCP PÚBLICO — `azure-devops-mcp`
 
-> **Fase:** [`docs/fases/fase-01.md`](../fases/fase-01.md) · **Fecha:** 2026-08-30
+> **Fase:** [`../../../docs/sdd/fases`](../fases/fase-01.md) · **Fecha:** 2026-08-30
 > **Fuente:** `infrastructure/entry-points/mcp-server/.../tools/AzureDevOpsTools.java` (267 líneas) y
 > `.../tools/HealthTool.java`
 >

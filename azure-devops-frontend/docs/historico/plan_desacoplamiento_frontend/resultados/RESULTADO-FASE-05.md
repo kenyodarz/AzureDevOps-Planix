@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(devops_agent): separar stores por flujo y migrar estado a reactividad pura`
-> **Instrucciones:** `docs/fases/fase-05.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 2 archivos existentes modificados (`devops-agent-state.service.ts`, `services/index.ts`) · 6 archivos nuevos en `services/state/` (5 stores atómicos + `index.ts`) · 5 archivos de pruebas unitarias nuevos (`services/state/*.spec.ts`) · **cero `.spec.ts` de las Fases 01, 02, 03 y 04 modificados**
 
 ---
@@ -141,9 +141,9 @@ Ninguna. Se completaron íntegramente las tareas T-01 a T-11 conforme a lo espec
 
 ## 9. Estado al cerrar
 
-- Siguiente fase generada: **`docs/fases/fase-06.md`** ✅
+- Siguiente fase generada: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones abiertas que bloquean la Fase 06: **DP-05**, **DP-06**
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos modificados
 - Restricción **R-5 cumplida**: `DevopsAgentStateService` conservado como fachada delegante
 - Siguiente paso: ejecutar **Fase 06 (Flujo de tareas, sondeo y temporizadores seguros)**

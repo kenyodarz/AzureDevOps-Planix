@@ -1,6 +1,6 @@
 # RESULTADO — FASE 04: Prompts y datos fuera del dominio
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Instrucciones:** `docs/fases/fase-04.md`
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Estado:** 🟢 **COMPLETADA** — 2026-08-29
 > **Deudas atacadas:** D-08 (saldada), D-19 (parcial)
 > **Deudas nuevas:** D-35
@@ -258,5 +258,5 @@ módulo con la mezclada**; son medidas distintas.
 | **D-19**      | 🟡 parcial — lote y retardo nombrados; `maxResults 3` ya tenía nombre; el **año** queda para la Fase 05 |
 | **D-09**      | 🟡 duplicación eliminada, Value Objects pendientes (Fase 05)                                            |
 | **D-35**      | 🆕 registrada — migración de prompts al MCP/agente, requiere plan propio                                |
-| **Siguiente** | `docs/fases/fase-05.md` — dominio del dashboard, bloqueada por **DP-03**                                |
+| **Siguiente** | `../../../../../docs/sdd/fases` — dominio del dashboard, bloqueada por **DP-03**                        |
 

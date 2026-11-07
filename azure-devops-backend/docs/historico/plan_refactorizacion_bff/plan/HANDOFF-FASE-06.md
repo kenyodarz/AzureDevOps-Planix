@@ -197,7 +197,7 @@ Get-ChildItem -Recurse -Include *.java -Path .\domain,.\infrastructure,.\applica
    falla y cuesta dos intentos.
 5. **No pegues la salida cruda de Gradle.** Fíltrala con `Select-String`.
 6. Si el contexto se te acaba igual: cierra lo que tengas, escribe el resultado parcial en
-   `docs/resultados/` y genera un handoff nuevo como éste.
+   `../../../../../docs/sdd/resultados` y genera un handoff nuevo como éste.
 
 ### Ingeniería
 

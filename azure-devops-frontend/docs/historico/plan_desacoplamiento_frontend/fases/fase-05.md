@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 04 cerró el 2026-09-01 (`docs/resultados/RESULTADO-FASE-04.md`) dejando:
+La Fase 04 cerró el 2026-09-01 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **220 pruebas verdes en 19 archivos** (188 de Fase 01 + 12 de `core/` + 2 de `domain/` + 18 de `services/api/`).
 - **Existe `src/app/features/devops-agent/services/api/`** con 4 clientes atómicos (`AgentChatApiService`, `PlanningApiService`, `DashboardApiService`, `TasksApiService`) y su `index.ts`.
@@ -185,21 +185,21 @@ git diff --stat -- 'src/app/**/*.spec.ts'  # SOLO las nuevas suites
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción                                                                                        | Resultado esperado               |
-|-----:|-----------------------------------------------------------------------------------------------|----------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y resolver decisiones bloqueantes DP-01, DP-05, DP-08, DP-10       | Decisiones claras                |
-| P-02 | `corepack pnpm test --no-watch`                                                               | 220 passed                       |
-| P-03 | Aplicar R-1 en `PlanningManagementComponent`                                                  | Reactividad zoneless corregida   |
-| P-04 | Crear los 5 stores atómicos en `services/state/`                                              | Stores creados                   |
-| P-05 | Crear `services/state/index.ts`                                                               | Barrel creado                    |
-| P-06 | Refactorizar `DevopsAgentStateService` a fachada                                              | Fachada delegante limpia         |
-| P-07 | Crear suites `services/state/*.spec.ts`                                                       | Pruebas nuevas                   |
-| P-08 | `corepack pnpm test --no-watch`                                                               | Todas las pruebas verdes         |
-| P-09 | `corepack pnpm build`                                                                         | Correcto y < 500 kB              |
-| P-10 | Escribir `docs/resultados/RESULTADO-FASE-05.md`                                               | Trazabilidad                     |
-| P-11 | Actualizar `docs/plan/ESTADO.md`                                                              | Tablero al día                   |
-| P-12 | Generar `docs/fases/fase-06.md`                                                               | Checkpoint de continuidad creado |
-| P-13 | Commit: `refactor(devops_agent): separar stores por flujo y migrar estado a reactividad pura` | Versionado                       |
+| Paso | Acción                                                                                           | Resultado esperado               |
+|-----:|--------------------------------------------------------------------------------------------------|----------------------------------|
+| P-01 | Leer `../../../../../docs/sdd/plan` y resolver decisiones bloqueantes DP-01, DP-05, DP-08, DP-10 | Decisiones claras                |
+| P-02 | `corepack pnpm test --no-watch`                                                                  | 220 passed                       |
+| P-03 | Aplicar R-1 en `PlanningManagementComponent`                                                     | Reactividad zoneless corregida   |
+| P-04 | Crear los 5 stores atómicos en `services/state/`                                                 | Stores creados                   |
+| P-05 | Crear `services/state/index.ts`                                                                  | Barrel creado                    |
+| P-06 | Refactorizar `DevopsAgentStateService` a fachada                                                 | Fachada delegante limpia         |
+| P-07 | Crear suites `services/state/*.spec.ts`                                                          | Pruebas nuevas                   |
+| P-08 | `corepack pnpm test --no-watch`                                                                  | Todas las pruebas verdes         |
+| P-09 | `corepack pnpm build`                                                                            | Correcto y < 500 kB              |
+| P-10 | Escribir `../../../../../docs/sdd/resultados`                                                    | Trazabilidad                     |
+| P-11 | Actualizar `../../../../../docs/sdd/plan`                                                        | Tablero al día                   |
+| P-12 | Generar `../../../../../docs/sdd/fases`                                                          | Checkpoint de continuidad creado |
+| P-13 | Commit: `refactor(devops_agent): separar stores por flujo y migrar estado a reactividad pura`    | Versionado                       |
 
 ### 3.1 Contenido mínimo del MD de la Fase 06
 

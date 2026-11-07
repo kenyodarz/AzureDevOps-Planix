@@ -1,6 +1,7 @@
 # BASELINE — `azure-devops-mcp`
 
-> **Fase:** [`docs/fases/fase-01.md`](../fases/fase-01.md) · **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md)
+> **Fase:** [`../../../docs/sdd/fases`](../fases/fase-01.md) · **Plan:** [
+> `../../../docs/sdd/plan`](../plan/plan-maestro.md)
 > **Fecha de medición:** 2026-08-30 · **Comando:** `.\gradlew.bat build --no-daemon`
 > **Resultado del build:** 🟢 **VERDE** — 33 pruebas, **0 fallos**, 0 errores, 0 omitidas
 >

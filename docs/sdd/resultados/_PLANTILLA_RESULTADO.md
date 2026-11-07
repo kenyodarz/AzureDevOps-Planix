@@ -58,7 +58,8 @@
 |---|---|
 
 ## 9. Estado al cerrar
-- Siguiente fase generada: `docs/fases/fase-XX+1.md`
-- `docs/plan/ESTADO.md` actualizado: sí / no
+
+- Siguiente fase generada: `../fases`
+- `../plan` actualizado: sí / no
 ```
 

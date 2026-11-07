@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(devops_agent): descomponer tablero de calidad y modularizar subcomponentes`
-> **Instrucciones:** `docs/fases/fase-07.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 3 archivos modificados (`planning-dashboard.component.ts`, `components/index.ts`, `domain/index.ts`) · 5 archivos creados (`domain/quality-score.ts`, `quality-summary-cards.component.ts`, `quality-stories-table.component.ts`, `quality-chart.component.ts`, `story-audit-modal.component.ts`) · 5 suites unitarias nuevas creadas · **cero `.spec.ts` de las Fases 01 a 05 modificados**
 
 ---
@@ -131,9 +131,9 @@ Ninguna. Se completaron íntegramente las tareas T-01 a T-05 conforme a lo espec
 
 ## 9. Estado al cerrar
 
-- Siguiente fase a generar: **`docs/fases/fase-08.md`** ✅
+- Siguiente fase a generar: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones abiertas: **DP-02** (informada y preservada en dominio)
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos modificados
 - Siguiente paso: ejecutar **Fase 08 (Endurecimiento, erradicación de console.error y cierre)**
 

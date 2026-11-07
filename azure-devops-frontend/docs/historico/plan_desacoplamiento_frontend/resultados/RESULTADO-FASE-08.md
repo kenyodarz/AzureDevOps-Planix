@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(frontend): endurecimiento global, erradicacion de console.error y migracion OnPush`
-> **Instrucciones:** `docs/fases/fase-08.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 22 archivos productivos modificados · **cero `.spec.ts` de caracterización modificados (R-3 cumplida)** · fachada `devops-agent-state.service.ts` reducida a 50 líneas (M-01)
 
 ---
@@ -144,7 +144,7 @@ Ninguna. Se completaron íntegramente las tareas T-01 a T-06 de la Fase 08.
 
 - Siguiente fase a generar: **Ninguna — PLAN MAESTRO COMPLETADO AL 100%** 🏆
 - Decisiones abiertas: **Ninguna (DP-01 a DP-10 resueltas)**
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos modificados
 - Commit preparado: `refactor(frontend): endurecimiento global, erradicacion de console.error y migracion OnPush`
 

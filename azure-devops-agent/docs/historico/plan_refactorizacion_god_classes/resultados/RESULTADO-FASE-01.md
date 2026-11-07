@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-28 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `3efe9a7` — `refactor(agent_prompts): externalizar plantillas de prompt a recursos`
-> **Instrucciones:** `docs/fases/FASE-01-externalizacion-de-prompts.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 >
 > *Registro reconstruido a partir de la salida real de la ejecución.*
 

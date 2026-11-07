@@ -1,7 +1,7 @@
 # CIERRE DEL PLAN — `azure-devops-mcp`
 
 > **Fecha:** 2026-08-30 · **Estado:** 🟢 **PLAN CERRADO** · **Fases:** 8 de 8 completadas
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md)
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md)
 > **Build final:** 🟢 **VERDE** — **204 pruebas, 0 fallos**
 
 ---

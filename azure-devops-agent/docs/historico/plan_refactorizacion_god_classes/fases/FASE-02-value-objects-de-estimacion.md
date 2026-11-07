@@ -226,22 +226,22 @@ Cobertura ≥ 90% de `domain/model`. Casos mínimos:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar estado de DP-03 |
-| 2 | **Si DP-03 sigue abierta → preguntar al usuario** | Decisión registrada |
-| 3 | Crear `UncertaintyLevel` + su test (Paso A, G) | Tests en verde |
-| 4 | Crear `ComplexityEstimation` + su test (Paso B, G) | Tests en verde; frontera 8/9 cubierta |
-| 5 | Crear el componente de composición de respuesta (Paso C) | Duplicación D-04 eliminada |
-| 6 | Sustituir en `AgentChatUseCase` y aplicar Pasos D y E | Use case ≤ 430 líneas |
-| 7 | Ajustar los 2 tests indicados en el Paso F | Aserción de 9 puntos invertida |
-| 8 | Ejecutar `.\gradlew.bat test` | Todas las suites en verde |
-| 9 | Verificar `git diff` sobre `AgentChatUseCaseCharacterizationTest.java` | Salida **vacía** |
-| 10 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 11 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`) y actualizar `ESTADO.md` | Métricas al día |
-| 12 | Marcar Fase 02 🟢 COMPLETADA + entrada en la bitácora | Tablero al día |
-| 13 | **Generar `docs/fases/FASE-03-resolucion-de-intencion.md`** con `_PLANTILLA_FASE.md` | Checkpoint creado |
-| 14 | Commit: `refactor(agent_chat): extraer objeto de valor de estimacion de complejidad` | Cambios versionados |
+| Paso | Acción                                                                                   | Resultado esperado                    |
+|-----:|------------------------------------------------------------------------------------------|---------------------------------------|
+|    1 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                     | Confirmar estado de DP-03             |
+|    2 | **Si DP-03 sigue abierta → preguntar al usuario**                                        | Decisión registrada                   |
+|    3 | Crear `UncertaintyLevel` + su test (Paso A, G)                                           | Tests en verde                        |
+|    4 | Crear `ComplexityEstimation` + su test (Paso B, G)                                       | Tests en verde; frontera 8/9 cubierta |
+|    5 | Crear el componente de composición de respuesta (Paso C)                                 | Duplicación D-04 eliminada            |
+|    6 | Sustituir en `AgentChatUseCase` y aplicar Pasos D y E                                    | Use case ≤ 430 líneas                 |
+|    7 | Ajustar los 2 tests indicados en el Paso F                                               | Aserción de 9 puntos invertida        |
+|    8 | Ejecutar `.\gradlew.bat test`                                                            | Todas las suites en verde             |
+|    9 | Verificar `git diff` sobre `AgentChatUseCaseCharacterizationTest.java`                   | Salida **vacía**                      |
+|   10 | Ejecutar `.\gradlew.bat build`                                                           | `BUILD SUCCESSFUL`                    |
+|   11 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`) y actualizar `ESTADO.md` | Métricas al día                       |
+|   12 | Marcar Fase 02 🟢 COMPLETADA + entrada en la bitácora                                    | Tablero al día                        |
+|   13 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`                     | Checkpoint creado                     |
+|   14 | Commit: `refactor(agent_chat): extraer objeto de valor de estimacion de complejidad`     | Cambios versionados                   |
 
 > ⚠️ **El paso 13 es innegociable.** Sin el MD de la Fase 03, la Fase 02 se considera **incompleta**.
 

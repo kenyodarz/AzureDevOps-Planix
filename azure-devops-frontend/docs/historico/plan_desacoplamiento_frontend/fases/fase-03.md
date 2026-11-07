@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 02 cerró el 2026-08-31 (`docs/resultados/RESULTADO-FASE-02.md`) dejando:
+La Fase 02 cerró el 2026-08-31 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **200 pruebas verdes en 14 archivos** (188 de caracterización de la Fase 01, intactas, + 12 nuevas de `core/`).
 - **Existe `src/app/core/{config,interceptors,services}`** con barrel export (D-10, D-13 ✅).
@@ -244,7 +244,7 @@ git diff --stat -- 'src/app/**/*.spec.ts'   # SOLO el archivo nuevo de domain/
 
 | Paso | Acción                                                                                                 | Resultado esperado                           |
 |-----:|--------------------------------------------------------------------------------------------------------|----------------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                                      | Confirmar DP-04 y DP-07                      |
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                                   | Confirmar DP-04 y DP-07                      |
 | P-02 | **Si DP-04 sigue 🔴 ABIERTA: aplicar R-4** (mover sin reescribir) o preguntar si se detecta ambigüedad | Alcance acotado                              |
 | P-03 | Exportar `NODE_EXTRA_CA_CERTS` y ejecutar `corepack pnpm install`                                      | Dependencias listas                          |
 | P-04 | `corepack pnpm test`                                                                                   | 200 passed (200)                             |
@@ -259,9 +259,9 @@ git diff --stat -- 'src/app/**/*.spec.ts'   # SOLO el archivo nuevo de domain/
 | P-13 | `corepack pnpm test`                                                                                   | Cero fallos; ningún `.spec.ts` previo tocado |
 | P-14 | `corepack pnpm build`                                                                                  | Correcto, dentro del presupuesto             |
 | P-15 | Actualizar `DECISIONES_PENDIENTES.md` con lo resuelto                                                  | Bitácora al día                              |
-| P-16 | **Escribir `docs/resultados/RESULTADO-FASE-03.md`** con `_PLANTILLA_RESULTADO.md` y métricas reales    | Trazabilidad                                 |
-| P-17 | Actualizar `docs/plan/ESTADO.md`: Fase 03 🟢 + métricas + bitácora                                     | Tablero al día                               |
-| P-18 | **Generar `docs/fases/fase-04.md`** con `_PLANTILLA_FASE.md`                                           | Checkpoint de continuidad                    |
+| P-16 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md` y métricas reales      | Trazabilidad                                 |
+| P-17 | Actualizar `../../../../../docs/sdd/plan`: Fase 03 🟢 + métricas + bitácora                            | Tablero al día                               |
+| P-18 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`                                   | Checkpoint de continuidad                    |
 | P-19 | Commit: `refactor(devops_agent): externalizar copys y prompts a la capa domain`                        | Versionado                                   |
 
 > ⚠️ **Los pasos P-16 y P-18 son innegociables.** Sin el registro de resultado no hay trazabilidad,

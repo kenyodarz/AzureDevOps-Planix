@@ -1,11 +1,11 @@
 # FASE 06 — El flujo SSE y la salida de los reportes
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟢 **CERRADA** (2026-08-29)
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟢 **CERRADA** (2026-08-29)
 > **Deudas objetivo:** **D-05, D-10, D-11, D-31** · más **DP-04** — todas cerradas
 > **Resultado:** [`RESULTADO-FASE-06.md`](../resultados/RESULTADO-FASE-06.md)
 > **Arranque en sesión nueva:** [`HANDOFF-FASE-06.md`](../plan/HANDOFF-FASE-06.md)
 > **Fase anterior:** [`fase-05.md`](fase-05.md) → [
-`RESULTADO-FASE-05.md`](../resultados/RESULTADO-FASE-05.md)
+> `RESULTADO-FASE-05.md`](../resultados/RESULTADO-FASE-05.md)
 > **Fase siguiente:** [`fase-07.md`](fase-07.md)
 
 ---

@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 07 cerró el 2026-09-01 (`docs/resultados/RESULTADO-FASE-07.md`) dejando:
+La Fase 07 cerró el 2026-09-01 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **291 pruebas verdes en 29 archivos**.
 - `PlanningDashboardComponent` desacoplado y reducido de 753 líneas a **200 líneas** (M-03).
@@ -145,7 +145,7 @@ corepack pnpm build
 
 | Paso | Acción                                                                                                | Resultado esperado     |
 |-----:|-------------------------------------------------------------------------------------------------------|------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y verificar baseline                                                       | Contexto confirmado    |
+| P-01 | Leer `../../../../../docs/sdd/plan` y verificar baseline                                              | Contexto confirmado    |
 | P-02 | `corepack pnpm test --no-watch`                                                                       | 291 passed             |
 | P-03 | Sustituir `console.error` por `NotificationService` y corregir formato de errores                     | M-21 = 0               |
 | P-04 | Aplicar `ChangeDetectionStrategy.OnPush` en todos los componentes                                     | M-07 = 100%            |
@@ -153,7 +153,7 @@ corepack pnpm build
 | P-06 | Auditar `aria-label` en controles interactivos                                                        | A11Y completada        |
 | P-07 | `corepack pnpm test --no-watch`                                                                       | Verde                  |
 | P-08 | `corepack pnpm build`                                                                                 | Correcto y < 500 kB    |
-| P-09 | Escribir `docs/resultados/RESULTADO-FASE-08.md`                                                       | Trazabilidad de cierre |
-| P-10 | Actualizar `docs/plan/ESTADO.md` (Plan Completado)                                                    | Tablero al 100%        |
+| P-09 | Escribir `../../../../../docs/sdd/resultados`                                                         | Trazabilidad de cierre |
+| P-10 | Actualizar `../../../../../docs/sdd/plan` (Plan Completado)                                           | Tablero al 100%        |
 | P-11 | Commit: `refactor(frontend): endurecimiento global, erradicacion de console.error y migracion OnPush` | Plan finalizado        |
 

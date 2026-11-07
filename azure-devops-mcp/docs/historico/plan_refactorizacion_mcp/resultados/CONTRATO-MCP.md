@@ -1,6 +1,6 @@
 # CONTRATO MCP PÚBLICO — `azure-devops-mcp`
 
-> **Fase:** [`docs/fases/fase-01.md`](../fases/fase-01.md) · **Fecha:** 2026-08-30
+> **Fase:** [`../../../../../docs/sdd/fases`](../fases/fase-01.md) · **Fecha:** 2026-08-30
 > **Fuente:** `infrastructure/entry-points/mcp-server/.../tools/AzureDevOpsTools.java` (267 líneas)
 > y
 > `.../tools/HealthTool.java`
@@ -446,7 +446,7 @@ repliegue, con su `WARN` y su contador `azuredevops.teamscope.fallback`.
 
 > **Donde hoy sale un tablero vacío, sigue saliendo un tablero vacío.** Convertirlo en un error es
 > una decisión de producto que el propietario aún no ha tomado; esta fase **no la ha tomado por
-él**.
+> él**.
 > Lo único que gana es que ahora el log dice **por qué** se disparó el repliegue, y no solo cuántas
 > veces. Fijado por prueba en `ResolveTeamScopeUseCaseTest`.
 

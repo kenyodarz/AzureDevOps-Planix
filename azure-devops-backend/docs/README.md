@@ -2,7 +2,7 @@
 
 > **Módulo:** `azure-devops-backend` (BFF)  
 > **Metodología:** Spec-Driven Development (SDD) con retroalimentación continua  
-> **Especificación Base:** `docs/specs/ESPECIFICACION-INTEGRACION-PLANNING-BFF.md`  
+> **Especificación Base:** `../../docs/sdd/specs`  
 > **Última actualización:** 2026-09-06
 
 ---

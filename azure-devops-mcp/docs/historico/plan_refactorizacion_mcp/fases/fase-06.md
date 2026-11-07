@@ -1,9 +1,9 @@
 # FASE 06 — Errores, resiliencia y contrato de fallos
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-06, D-13, D-18, D-24 *(D-06, D-13 y D-24 **saldadas**; D-18 **saldada en
-su parte configurable**)*
+> su parte configurable**)*
 > **Decisión bloqueante:** ✅ **DP-06 (RESUELTA)**
 > **Riesgo:** 🟠 Medio · **Depende de:** Fases 01 a 05 (cerradas) · **Habilita:** Fases 07 y 08
 > **Regla de oro de esta fase:** **esta fase SÍ cambia comportamiento observable, y por eso lo
@@ -201,7 +201,7 @@ que no se parametrizan, las dos URLs de equipo se quedan como están.**
    momento en que se traduce el primero.
 2. Plan maestro: §3 (D-06, D-13, D-18, D-24), §6 (métricas), §7 (DP-06), §9 (bitácora) y cabecera.
 3. Rellenar §4 de este documento y marcar el checklist.
-4. **Generar `docs/fases/fase-07.md`** y **`PROMPT-FASE-07.md`**.
+4. **Generar `../../../../../docs/sdd/fases`** y **`PROMPT-FASE-07.md`**.
 5. Commit: `refactor(error_handling): traducir los fallos de azure devops a excepciones de dominio`
 
 ---
@@ -276,7 +276,7 @@ de parámetro, ni de campo, ni la forma de un resultado de éxito ha cambiado.**
 
 **Bloqueos encontrados:** ninguno. DP-06 se respondió en el paso 0.
 
-**Fase siguiente generada:** ☑ `docs/fases/fase-07.md` · ☑ `docs/fases/PROMPT-FASE-07.md`
+**Fase siguiente generada:** ☑ `../../../../../docs/sdd/fases` · ☑ `../../../../../docs/sdd/fases`
 
 ### 4.1 Qué se construyó
 

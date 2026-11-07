@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0.0 · **Fecha:** 2026-09-06  
 > **Alineado con:** Clean Architecture de Bancolombia (`rules/spring-rules.md`), Protocolo A2A v1.0, JSON-RPC 2.0  
-> **Especificación Base:** `docs/specs/ESPECIFICACION-INTEGRACION-PLANNING-BFF.md`  
+> **Especificación Base:** `../../../docs/sdd/specs`  
 > **Módulo:** `azure-devops-backend` (BFF)
 
 ---
@@ -151,8 +151,8 @@ flowchart TD
   - `applications/app-service/.../config/UseCasesConfig.java` [MODIFICAR]
   - `applications/app-service/src/main/resources/application.yaml` [MODIFICAR]
   - `applications/app-service/.../UseCasesConfigWiringTest.java` [MODIFICAR]
-  - `docs/plan/ESTADO.md` [MODIFICAR]
-  - `docs/resultados/RESULTADO-FASE-06.md` [CREAR]
+  - `../../../docs/sdd/plan` [MODIFICAR]
+  - `../../../docs/sdd/resultados` [CREAR]
 * **Entregable:** Sistema completamente integrado, 100% de pruebas pasando (238+ baseline), `validateStructure` aprobado y reporte de cierre.
 * **Dependencias:** Fase 05.
 

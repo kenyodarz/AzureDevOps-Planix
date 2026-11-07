@@ -1,6 +1,6 @@
 # RESULTADO — FASE 07 · Adaptadores y contrato HTTP
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Fase:** [`fase-07.md`](../fases/fase-07.md)
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Fase:** [`fase-07.md`](../fases/fase-07.md)
 > **Fase anterior:** [`RESULTADO-FASE-06.md`](RESULTADO-FASE-06.md)
 > **Fecha de cierre:** 2026-08-29
 

@@ -11,14 +11,14 @@
 
 ## 1. Tablero de Fases
 
-|   #    | Fase                                               | Archivo de Especificación                              | Resultado / Cierre                     |      Estado       | Fecha de Cierre |
-|:------:|:---------------------------------------------------|:-------------------------------------------------------|:---------------------------------------|:-----------------:|:---------------:|
-| **01** | Modelos de Dominio y Puertos de Git / Pull Request | `docs/fases/FASE-01-modelos-dominio-pull-request.md`   | `docs/resultados/RESULTADO-FASE-01.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **02** | Casos de Uso de Consulta de PRs y Cambios          | `docs/fases/FASE-02-casos-uso-pull-request.md`         | `docs/resultados/RESULTADO-FASE-02.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **03** | Adaptador REST para API Git de Azure DevOps        | `docs/fases/FASE-03-adaptador-rest-git.md`             | `docs/resultados/RESULTADO-FASE-03.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **04** | Casos de Uso y Adaptador para Feedback de PR       | `docs/fases/FASE-04-feedback-comentarios-pr.md`        | `docs/resultados/RESULTADO-FASE-04.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **05** | Entry Points MCP Server (Tools @McpTool)           | `docs/fases/FASE-05-mcp-tools-git.md`                  | `docs/resultados/RESULTADO-FASE-05.md` | 🟢 **COMPLETADA** |   2026-09-08    |
-| **06** | Orquestación y Prompt de Evaluación en el Agente   | `docs/fases/FASE-06-orquestacion-evaluacion-agente.md` | `docs/resultados/RESULTADO-FASE-06.md` | 🟢 **COMPLETADA** |   2026-09-08    |
+|   #    | Fase                                               | Archivo de Especificación | Resultado / Cierre             |      Estado       | Fecha de Cierre |
+|:------:|:---------------------------------------------------|:--------------------------|:-------------------------------|:-----------------:|:---------------:|
+| **01** | Modelos de Dominio y Puertos de Git / Pull Request | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **02** | Casos de Uso de Consulta de PRs y Cambios          | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **03** | Adaptador REST para API Git de Azure DevOps        | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **04** | Casos de Uso y Adaptador para Feedback de PR       | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **05** | Entry Points MCP Server (Tools @McpTool)           | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
+| **06** | Orquestación y Prompt de Evaluación en el Agente   | `../../../docs/sdd/fases` | `../../../docs/sdd/resultados` | 🟢 **COMPLETADA** |   2026-09-08    |
 
 **Leyenda:** ⚪ NO GENERADA · 🟡 PENDIENTE · 🔵 EN_CURSO · 🟢 COMPLETADA · 🔴 BLOQUEADA
 
@@ -61,7 +61,7 @@
 
 |     Fecha      | Evento                                                                                                                                                                                                                                                                                                                 |
 |:--------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **2026-08-30** | Cierre exitoso del Plan de Refactorización Maestro (Fases 01 a 08). Archivado a `docs/historico/plan_refactorizacion_mcp/`.                                                                                                                                                                                            |
+| **2026-08-30** | Cierre exitoso del Plan de Refactorización Maestro (Fases 01 a 08). Archivado a `../../../docs/sdd/historico`.                                                                                                                                                                                                         |
 | **2026-09-08** | Inicialización del nuevo plan maestro para Evaluación de Pull Requests, registro de decisiones y especificación de la Fase 01 bajo el estándar SDD.                                                                                                                                                                    |
 | **2026-09-08** | **Cierre de la Fase 01:** Implementadas las entidades inmutables `PullRequest`, `GitChange`, el puerto reactivo `PullRequestPort` y 5 tests unitarios en `:model` con 100% éxito.                                                                                                                                      |
 | **2026-09-08** | **Cierre de la Fase 02:** Implementados los casos de uso puros `GetPullRequestUseCase`, `GetPullRequestChangesUseCase` y 22 pruebas unitarias en `:usecase` con 100% éxito.                                                                                                                                            |

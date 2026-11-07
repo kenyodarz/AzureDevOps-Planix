@@ -1,9 +1,9 @@
 # FASE 04 — Desacople del flujo compuesto
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-07, D-08, D-09, D-12 *(las cuatro **saldadas**)* · **Decisión
-bloqueante:** ✅ **DP-04 (RESUELTA)**
+> bloqueante:** ✅ **DP-04 (RESUELTA)**
 > **Riesgo:** 🔴 **Alto** — el más alto del plan · **Depende de:** Fases 01, 02 y 03 (cerradas) ·
 > **Habilita:** Fases 05 a 08
 > **Regla de oro de esta fase:** **la sentencia WIQL que sale por el cable debe ser idéntica,
@@ -46,7 +46,7 @@ dispara** (D-09, heredada como D-37 del plan del BFF).
 | **(c)** Se retira el repliegue por completo                                         | Lo más limpio; si Azure DevOps no responde, la tool falla. Máximo cambio de contrato de facto                                                             |
 
 > ⚠️ El punto 5 y el punto 6 de `CONTRATO-MCP.md` §2.4 declaran este repliegue **contrato de
-facto**:
+> facto**:
 > los clientes pueden estar explotándolo sin saberlo. Por eso lo decide el propietario, no la fase.
 
 ### 0.2 La segunda pregunta: ¿qué es regla de dominio y qué es configuración?
@@ -227,7 +227,8 @@ saldar **D-26** por la vía de los hechos.
    uno a uno. Son contrato de facto: cualquier cambio se declara aquí o no existe.
 2. Plan maestro: §3 (D-07, D-08, D-09, D-12), §6 (métricas), §9 (bitácora) y cabecera.
 3. Rellenar §4 de este documento y marcar el checklist.
-4. **Generar `docs/fases/fase-05.md`** con **DP-05** marcada como bloqueante en su primer paso.
+4. **Generar `../../../../../docs/sdd/fases`** con **DP-05** marcada como bloqueante en su primer
+   paso.
 5. Commit: `refactor(work_item_query): mover la construccion del wiql al caso de uso`
 
 ---
@@ -253,7 +254,8 @@ saldar **D-26** por la vía de los hechos.
   **(T-04)**
 - [ ] **12.** Actualizar `CONTRATO-MCP.md` §2.4 y el plan maestro (§3, §6, §9, cabecera). **(T-05)**
 - [ ] **13.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
-- [ ] **14.** **Generar `docs/fases/fase-05.md`** con DP-05 bloqueante. **(Regla de Continuidad)**
+- [ ] **14.** **Generar `../../../../../docs/sdd/fases`** con DP-05 bloqueante. **(Regla de
+  Continuidad)**
 - [ ] **15.** Commit: `refactor(work_item_query): mover la construccion del wiql al caso de uso`
 
 ---
@@ -279,5 +281,5 @@ saldar **D-26** por la vía de los hechos.
 **Decisión DP-04:** *(pendiente)*
 **Cambios en el contrato MCP público:** *(pendiente — debe ser «ninguno»)*
 **Bloqueos encontrados:** *(pendiente)*
-**Fase siguiente generada:** ☐ `docs/fases/fase-05.md`
+**Fase siguiente generada:** ☐ `../../../../../docs/sdd/fases`
 

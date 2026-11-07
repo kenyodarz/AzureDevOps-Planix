@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 03 cerró el 2026-09-01 (`docs/resultados/RESULTADO-FASE-03.md`) dejando:
+La Fase 03 cerró el 2026-09-01 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **202 pruebas verdes en 15 archivos** (188 de la Fase 01 + 12 de `core/` + 2 de `domain/`).
 - **Existe `src/app/features/devops-agent/domain/`** con `chat-greetings.ts`, `chat-prompts.ts`, `chat-suggestions.ts`, `tech-tags.ts` e `index.ts` (D-06, D-19, D-21 ✅).
@@ -166,7 +166,7 @@ git diff --stat -- 'src/app/**/*.spec.ts'  # SOLO las nuevas suites de api/
 
 | Paso | Acción                                                                                           | Resultado esperado                |
 |-----:|--------------------------------------------------------------------------------------------------|-----------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                                | Confirmar que DP-03 está resuelta |
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                             | Confirmar que DP-03 está resuelta |
 | P-02 | `corepack pnpm test --no-watch`                                                                  | 202 passed                        |
 | P-03 | Crear `services/api/agent-chat-api.service.ts`                                                   | Servicio creado                   |
 | P-04 | Crear `services/api/planning-api.service.ts`                                                     | Servicio creado                   |
@@ -177,9 +177,9 @@ git diff --stat -- 'src/app/**/*.spec.ts'  # SOLO las nuevas suites de api/
 | P-09 | Crear suites `services/api/*.spec.ts`                                                            | Pruebas nuevas                    |
 | P-10 | `corepack pnpm test --no-watch`                                                                  | Todas las pruebas verdes          |
 | P-11 | `corepack pnpm build`                                                                            | Correcto y < 500 kB               |
-| P-12 | Escribir `docs/resultados/RESULTADO-FASE-04.md`                                                  | Trazabilidad                      |
-| P-13 | Actualizar `docs/plan/ESTADO.md`                                                                 | Tablero al día                    |
-| P-14 | Generar `docs/fases/fase-05.md`                                                                  | Continuidad garantizada           |
+| P-12 | Escribir `../../../../../docs/sdd/resultados`                                                    | Trazabilidad                      |
+| P-13 | Actualizar `../../../../../docs/sdd/plan`                                                        | Tablero al día                    |
+| P-14 | Generar `../../../../../docs/sdd/fases`                                                          | Continuidad garantizada           |
 | P-15 | Commit: `refactor(devops_agent): segregar clientes de api por dominio y crear fachada delegante` | Versionado                        |
 
 ### 3.1 Contenido mínimo del MD de la Fase 05

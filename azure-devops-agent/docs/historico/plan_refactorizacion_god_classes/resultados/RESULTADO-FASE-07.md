@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent): endurecer arquitectura y cerrar deudas del plan`
-> **Instrucciones:** `docs/fases/FASE-07-endurecimiento-y-cierre.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 
@@ -208,7 +208,7 @@ git --no-pager diff --stat HEAD -- <4 suites> ArchitectureTest.java   # salida v
 ## 10. Estado al cerrar
 
 - **Siguiente fase generada:** **ninguna.** La Fase 07 era la última del plan; en su lugar se
-  escribió `docs/resultados/CIERRE-DEL-PLAN.md`.
+  escribió `../../../../../docs/sdd/resultados`.
 - **Decisiones abiertas:** **ninguna.** DP-01 a DP-07 resueltas por el usuario.
 - **Pendiente de ratificación del usuario** (ambas triviales de revertir, sin bloquear nada):
   1. Eliminación de la «Regla de Mínimos de 5 puntos» (Fase 01).

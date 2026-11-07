@@ -30,11 +30,11 @@
 > Todas las 6 fases técnicas se encuentran ejecutadas y verificadas al 100%. El BFF expone con
 > solidez:
 > 1. Gestión documental de especificaciones (`GET /api/planning/specs` y
-     `GET /api/planning/specs/{specName}`).
+>    `GET /api/planning/specs/{specName}`).
 > 2. Activación de planeación macro reactiva (`POST /api/planning/program`).
 > 3. Trazabilidad completa mediante comando canónico A2A asíncrono y seguimiento de tareas (`Task`).
 > 4. Los próximos pasos corresponden a la fase de integración y consumo desde el frontend
-     (`azure-devops-frontend`).
+>    (`azure-devops-frontend`).
 
 ---
 
@@ -81,4 +81,4 @@
 | **2026-09-06** | Cierre exitoso de la **Fase 03**: Submódulo `:spec-storage` y adaptador reactivo `FileSystemSpecAdapter` con operaciones no bloqueantes (`Schedulers.boundedElastic()`), protección contra Path Traversal y 18 pruebas unitarias pasando al 100% con 98% de cobertura. Suite total sube a 376 tests. Activación de la **Fase 04**.                                                                                                                                                                                                       |
 | **2026-09-06** | Cierre exitoso de la **Fase 02**: Modelos inmutables de Program Planning (`ActivityType`, `SprintAllocation`, `ProgramPlanRequest`, `ProgramPlanResult`, `ProgramPlanningCommand`) en `domain/model` con 111 pruebas unitarias y 100% de cobertura. Suite total sube a 358 tests pasando al 100%. Activación de la **Fase 03**.                                                                                                                                                                                                          |
 | **2026-09-06** | Cierre exitoso de la **Fase 01**: Modelos y puerto documental (`SpecDocument`, `SpecNotFoundException`, `SpecStoragePort`) incorporados en `domain/model` con 9 pruebas unitarias y 100% de cobertura. Suite total sube a 247 tests pasando al 100%. Activación de la **Fase 02**.                                                                                                                                                                                                                                                       |
-| **2026-09-06** | Inicialización del Plan Maestro de Integración de Program Planning y Almacenamiento Documental en el BFF (`azure-devops-backend`). Resguardo histórico del plan anterior en `docs/historico/plan_refactorizacion_bff/`. Fase 01 lista para ejecución.                                                                                                                                                                                                                                                                                    |
+| **2026-09-06** | Inicialización del Plan Maestro de Integración de Program Planning y Almacenamiento Documental en el BFF (`azure-devops-backend`). Resguardo histórico del plan anterior en `../../../docs/sdd/historico`. Fase 01 lista para ejecución.                                                                                                                                                                                                                                                                                                 |

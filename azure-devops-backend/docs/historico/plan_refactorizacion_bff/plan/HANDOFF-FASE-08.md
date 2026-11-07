@@ -186,7 +186,7 @@ pnpm exec tsc -p tsconfig.app.json --noEmit
 4. Para reescribir un fichero grande: bórralo y créalo.
 5. **No pegues la salida cruda de Gradle.** Fíltrala con `Select-String`.
 6. Si el contexto se te acaba: cierra lo que tengas, escribe el resultado parcial en
-   `docs/resultados/` y genera un handoff nuevo como éste.
+   `../../../../../docs/sdd/resultados` y genera un handoff nuevo como éste.
 
 ### Ingeniería
 

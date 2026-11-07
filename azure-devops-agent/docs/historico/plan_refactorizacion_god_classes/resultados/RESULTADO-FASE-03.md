@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-28 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent_intent): introducir resolutor de intencion en el dominio`
-> **Instrucciones:** `docs/fases/FASE-03-resolucion-de-intencion.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 

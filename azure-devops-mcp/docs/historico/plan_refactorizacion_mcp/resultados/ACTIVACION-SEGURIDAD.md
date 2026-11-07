@@ -1,6 +1,6 @@
 # ACTIVACIÓN DE LA SEGURIDAD — `azure-devops-mcp`
 
-> **Fase:** [`docs/fases/fase-02.md`](../fases/fase-02.md) · **Fecha:** 2026-08-30
+> **Fase:** [`../../../../../docs/sdd/fases`](../fases/fase-02.md) · **Fecha:** 2026-08-30
 > **Decisiones que lo sustentan:** DP-01, DP-02, B-01, B-02, B-03
 >
 > **Para qué sirve este documento.** La Fase 02 dejó el modo `ENFORCED` **construido, compilado y

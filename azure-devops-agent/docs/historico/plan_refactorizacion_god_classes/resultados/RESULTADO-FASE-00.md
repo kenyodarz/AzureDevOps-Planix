@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-28 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `07f9419` — `test(agent_chat): agregar pruebas de caracterizacion del enrutamiento de flujos`
-> **Instrucciones:** `docs/fases/FASE-00-baseline-y-caracterizacion.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 >
 > *Registro reconstruido a partir de la salida real de la ejecución.*
 

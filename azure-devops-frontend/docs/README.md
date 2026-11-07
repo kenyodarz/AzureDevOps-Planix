@@ -2,7 +2,7 @@
 
 > **Módulo:** `azure-devops-frontend`  
 > **Metodología:** Spec-Driven Development (SDD) para Agentes de IA (`../../../docs/README.md`)  
-> **Especificación Base:** `docs/specs/ESPECIFICACION-INTEGRACION-PLANNING-FRONTEND.md`
+> **Especificación Base:** `../../docs/sdd/specs`
 
 ---
 
@@ -10,13 +10,13 @@
 
 Si estás iniciando una nueva sesión o continuando el trabajo en este módulo:
 
-1. **Lee primero `docs/plan/ESTADO.md`:** Es la **única fuente de verdad del progreso**. Te indicará la fase activa (`🟡 PENDIENTE` o `🔵 EN_CURSO`).
-2. **Lee `docs/plan/DECISIONES_PENDIENTES.md`:** Verifica que no existan decisiones bloqueantes en estado `🔴 ABIERTA`. Si las hay, **detente inmediatamente y consulta al usuario**.
-3. **Lee la fase activa en `docs/fases/` o su prompt en `docs/prompts/`:** Contiene el contexto y las tareas quirúrgicas sin ambigüedad.
+1. **Lee primero `../../docs/sdd/plan`:** Es la **única fuente de verdad del progreso**. Te indicará la fase activa (`🟡 PENDIENTE` o `🔵 EN_CURSO`).
+2. **Lee `../../docs/sdd/plan`:** Verifica que no existan decisiones bloqueantes en estado `🔴 ABIERTA`. Si las hay, **detente inmediatamente y consulta al usuario**.
+3. **Lee la fase activa en `../../docs/sdd/fases` o su prompt en `../../docs/sdd/prompts`:** Contiene el contexto y las tareas quirúrgicas sin ambigüedad.
 4. **Al terminar la fase:** Aplica la **Regla del Doble Artefacto**:
-   - Genera el reporte de resultados en `docs/resultados/RESULTADO-FASE-XX.md`.
-   - Actualiza `docs/plan/ESTADO.md`.
-   - Genera la especificación de la siguiente fase (`docs/fases/FASE-XX+1-*.md`) y su prompt (`docs/prompts/PROMPT-FASE-XX+1.md`).
+    - Genera el reporte de resultados en `../../docs/sdd/resultados`.
+    - Actualiza `../../docs/sdd/plan`.
+    - Genera la especificación de la siguiente fase (`../../docs/sdd/fases`) y su prompt (`../../docs/sdd/prompts`).
 
 ---
 

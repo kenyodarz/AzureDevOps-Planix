@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(devops_agent): desacoplar sondeo de tareas y sanear temporizadores`
-> **Instrucciones:** `docs/fases/fase-06.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 2 archivos modificados (`tasks-state.service.ts`, `refinement-chat-state.service.ts`) · 1 archivo de pruebas unitarias actualizado (`tasks-state.service.spec.ts`) · **cero `.spec.ts` de las Fases 01 a 05 modificados**
 
 ---
@@ -124,9 +124,9 @@ Ninguna. Se completaron íntegramente las tareas T-01 a T-04 conforme a lo espec
 
 ## 9. Estado al cerrar
 
-- Siguiente fase generada: **`docs/fases/fase-07.md`** ✅
+- Siguiente fase generada: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones abiertas que bloquean la Fase 07: **DP-02**
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos de Fases 01 a 05 modificados
 - Restricción **R-5 cumplida**: `DevopsAgentStateService` conservado como fachada delegante
 - Siguiente paso: ejecutar **Fase 07 (Descomposición del Tablero de Calidad)**

@@ -1,14 +1,14 @@
 # FASE 05 — Dominio del dashboard
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** ✅ **CERRADA** (2026-08-29)
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** ✅ **CERRADA** (2026-08-29)
 > **Deudas saldadas:** **D-06, D-07, D-09, D-13, D-19**
 > **Resultado:** [`RESULTADO-FASE-05.md`](../resultados/RESULTADO-FASE-05.md)
 > **Bloqueantes:** [`BLOQUEANTES-FASE-05.md`](../plan/BLOQUEANTES-FASE-05.md) — B-01 a B-04
 > **cerrados** · **S-2** resuelto
 > **Fase anterior:** [`fase-04.md`](fase-04.md) → [
-`RESULTADO-FASE-04.md`](../resultados/RESULTADO-FASE-04.md)
+> `RESULTADO-FASE-04.md`](../resultados/RESULTADO-FASE-04.md)
 > **Fase siguiente:** [`fase-06.md`](fase-06.md) · relevo en [
-`HANDOFF-FASE-06.md`](../plan/HANDOFF-FASE-06.md)
+> `HANDOFF-FASE-06.md`](../plan/HANDOFF-FASE-06.md)
 
 ---
 

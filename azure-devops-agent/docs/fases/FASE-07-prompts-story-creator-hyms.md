@@ -51,8 +51,8 @@
 |:--------------------------------------------------------------------------------------------------|:---------:|:----------------------------------------------------------------------------------------|
 | `applications/app-service/src/main/resources/prompts/fase2-historia-estructurada.md`              | MODIFICAR | Incorporar directivas normativas de DP-PL-02 (alcance QA para HU vs HyMS para HA).      |
 | `applications/app-service/src/test/java/co/com/bancolombia/prompt/PromptTemplateContentTest.java` | MODIFICAR | Añadir pruebas normativas verificando directivas DP-PL-02 en la plantilla estructurada. |
-| `docs/plan/ESTADO.md`                                                                             | MODIFICAR | Actualizar tablero y bitácora del plan.                                                 |
-| `docs/resultados/RESULTADO-FASE-07.md`                                                            |   CREAR   | Documento de cierre con métricas de la Fase 07.                                         |
+| `../../../docs/sdd/plan`                                                                          | MODIFICAR | Actualizar tablero y bitácora del plan.                                                 |
+| `../../../docs/sdd/resultados`                                                                    |   CREAR   | Documento de cierre con métricas de la Fase 07.                                         |
 
 ### 1.5 Reglas aplicables
 

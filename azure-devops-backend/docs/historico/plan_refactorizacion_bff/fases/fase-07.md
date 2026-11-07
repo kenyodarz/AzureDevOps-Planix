@@ -1,11 +1,11 @@
 # FASE 07 — Adaptadores y contrato HTTP
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟢 **CERRADA** (2026-08-29)
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟢 **CERRADA** (2026-08-29)
 > **Deudas objetivo:** **D-14, D-15, D-16, D-20** *(las cuatro saldadas)* · más **D-40**
 > **Resultado:** [`RESULTADO-FASE-07.md`](../resultados/RESULTADO-FASE-07.md)
 > **Arranque en sesión nueva:** [`HANDOFF-FASE-07.md`](../plan/HANDOFF-FASE-07.md)
 > **Fase anterior:** [`fase-06.md`](fase-06.md) → [
-`RESULTADO-FASE-06.md`](../resultados/RESULTADO-FASE-06.md)
+> `RESULTADO-FASE-06.md`](../resultados/RESULTADO-FASE-06.md)
 > **Fase siguiente:** [`fase-08.md`](fase-08.md)
 
 ---

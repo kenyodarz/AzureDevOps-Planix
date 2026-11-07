@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**  
 > `feat(agent): integrar y despachar flujo de program planning en el harness de agentes`  
-> **Instrucciones:** `docs/fases/FASE-08-orquestacion-despacho-harness.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

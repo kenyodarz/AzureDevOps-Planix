@@ -1,6 +1,6 @@
 # FASE 07 — Dominio rico y cobertura ≥ 90 %
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-16 *(**saldada**)* · D-21 *(enunciado **reescrito**, B-11)*
 > **Decisión bloqueante:** ✅ **DP-07 (RESUELTA)**
@@ -179,7 +179,7 @@ Enunciado de D-21 y política de líneas de `AzureDevOpsTools` / `WorkItemQueryA
 1. `CONTRATO-MCP.md`: §3.4 **debe dejar de decir «queda anotada para la Fase 07»**.
 2. Plan maestro: §3 (D-16, D-21), §6 (métricas), §7 (DP-07), §9 (bitácora) y cabecera.
 3. Rellenar §4 de este documento y marcar el checklist.
-4. **Generar `docs/fases/fase-08.md`** y **`PROMPT-FASE-08.md`**.
+4. **Generar `../../../../../docs/sdd/fases`** y **`PROMPT-FASE-08.md`**.
 5. Commit: `refactor(domain_model): convertir el modelo en objetos de valor inmutables`
 
 ---
@@ -248,7 +248,7 @@ es precisamente lo que la prueba de caracterización demuestra.
 **Bloqueos encontrados:** ninguno. DP-07 se respondió en el paso 0 y la cuestión colateral de las
 pruebas heredadas se arbitró antes de tocar código.
 
-**Fase siguiente generada:** ☑ `docs/fases/fase-08.md` · ☑ `docs/fases/PROMPT-FASE-08.md`
+**Fase siguiente generada:** ☑ `../../../../../docs/sdd/fases` · ☑ `../../../../../docs/sdd/fases`
 
 ### 4.1 Qué se construyó
 

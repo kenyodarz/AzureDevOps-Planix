@@ -156,14 +156,14 @@ La Fase 01 creó el núcleo de dominio para especificaciones en `domain/model`:
 
 | Paso | Acción                                                                                                   | Resultado esperado                                  |
 |-----:|:---------------------------------------------------------------------------------------------------------|:----------------------------------------------------|
-|    1 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                                        | Confirmar que la Fase 02 está activa y no bloqueada |
+|    1 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`                                                 | Confirmar que la Fase 02 está activa y no bloqueada |
 |    2 | Configurar módulo `:spec-storage` en `settings.gradle` y `app-service/build.gradle`                      | Gradle sincronizado                                 |
 |    3 | Implementar `FileSystemSpecAdapter.java` en `spec-storage`                                               | Código compila                                      |
 |    4 | Implementar `FileSystemSpecAdapterTest.java`                                                             | Tests unitarios reactivos escritos                  |
 |    5 | Ejecutar `.\gradlew.bat :spec-storage:test` y `.\gradlew.bat test`                                       | 100% pruebas aprobadas, 0 violaciones               |
-|    6 | Escribir `docs/resultados/RESULTADO-FASE-02.md` con métricas reales                                      | Trazabilidad completa                               |
-|    7 | Actualizar `docs/plan/ESTADO.md` a 🟢 COMPLETADA                                                         | Tablero actualizado                                 |
-|    8 | Generar `docs/fases/FASE-03-migracion-draft-handler.md` y `docs/prompts/PROMPT-FASE-03.md`               | Checkpoint de continuidad                           |
+|    6 | Escribir `../../../docs/sdd/resultados` con métricas reales                                              | Trazabilidad completa                               |
+|    7 | Actualizar `../../../docs/sdd/plan` a 🟢 COMPLETADA                                                      | Tablero actualizado                                 |
+|    8 | Generar `../../../docs/sdd/fases` y `../../../docs/sdd/prompts`                                          | Checkpoint de continuidad                           |
 |    9 | Commit sugerido: `feat(agent): implementar adaptador FileSystemSpecAdapter para almacenamiento de specs` | Control de versiones                                |
 
 ---

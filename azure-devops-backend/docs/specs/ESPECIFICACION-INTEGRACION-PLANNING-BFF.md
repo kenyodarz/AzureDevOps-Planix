@@ -305,7 +305,8 @@ domain/usecase/src/main/java/co/com/bancolombia/usecase/planning/
 
 #### Submódulo `:spec-storage` (Nuevo o Compartido)
 - Implementa `SpecStoragePort` en `FileSystemSpecAdapter.java`.
-- Configurado con la propiedad `specs.storage.path` (por defecto `docs/specs` en el directorio de trabajo).
+- Configurado con la propiedad `specs.storage.path` (por defecto `../../../docs/sdd/specs` en el
+  directorio de trabajo).
 - Utiliza lectura reactiva con `DataBufferUtils` y `AsynchronousFileChannel` de NIO.2, sin bloqueos en hilos Netty (`blockhound` compliant).
 - Sanitización estricta de nombres para prevenir ataques de Directory Traversal:
   ```java

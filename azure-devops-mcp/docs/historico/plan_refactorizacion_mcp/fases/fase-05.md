@@ -1,6 +1,6 @@
 # FASE 05 — Segregación de puertos y adaptadores
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-10, D-14, D-15 *(las tres **saldadas**)* · **Decisión bloqueante:** ✅
 > **DP-05 (RESUELTA)**
@@ -8,7 +8,7 @@
 > **Regla de oro de esta fase:** **ni una URL, ni un parámetro de consulta, ni un cuerpo JSON
 > cambian.** Esta fase mueve código de sitio; no cambia una sola llamada HTTP.
 > ✅ **No cambió ninguna:** diff literal de URLs, verbos, `contentType` y cuerpos a **0
-diferencias**.
+> diferencias**.
 
 ---
 
@@ -167,7 +167,7 @@ Cada adaptador resultante **≤ 120 líneas**. La cobertura de `rest-consumer` *
 1. `CONTRATO-MCP.md`: si algún puerto cambia de nombre, dejarlo escrito.
 2. Plan maestro: §3 (D-10, D-14, D-15), §6 (métricas), §7 (DP-05), §9 (bitácora) y cabecera.
 3. Rellenar §4 de este documento y marcar el checklist.
-4. **Generar `docs/fases/fase-06.md`** y **`PROMPT-FASE-06.md`** con **DP-06** bloqueante.
+4. **Generar `../../../../../docs/sdd/fases`** y **`PROMPT-FASE-06.md`** con **DP-06** bloqueante.
 5. Commit: `refactor(rest_consumer): segregar los adaptadores de azure devops por agregado`
 
 ---
@@ -229,7 +229,7 @@ clase e interfaz Java** y **el paquete en que viven**, que no viajan por el cabl
 
 **Bloqueos encontrados:** ninguno. DP-05 se respondió en el primer paso.
 
-**Fase siguiente generada:** ☑ `docs/fases/fase-06.md` · ☑ `docs/fases/PROMPT-FASE-06.md`
+**Fase siguiente generada:** ☑ `../../../../../docs/sdd/fases` · ☑ `../../../../../docs/sdd/fases`
 
 ### 4.1 Qué se construyó
 

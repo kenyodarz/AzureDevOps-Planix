@@ -90,10 +90,10 @@ Existirá el paquete `co.com.bancolombia.usecase.pullrequest` con:
 
 | Paso | Acción                                                                                 | Resultado esperado                 |
 |-----:|----------------------------------------------------------------------------------------|------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                      | Confirmar estado activo de Fase 02 |
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`                               | Confirmar estado activo de Fase 02 |
 | P-02 | Implementar `GetPullRequestUseCase.java` y `GetPullRequestChangesUseCase.java`         | Lógica de negocio lista            |
 | P-03 | Implementar `GetPullRequestUseCaseTest.java` y `GetPullRequestChangesUseCaseTest.java` | Pruebas unitarias listas           |
 | P-04 | Ejecutar `./gradlew :usecase:test`                                                     | Verde                              |
-| P-05 | Escribir `docs/resultados/RESULTADO-FASE-02.md`                                        | Registro de trazabilidad           |
-| P-06 | Actualizar `docs/plan/ESTADO.md` a 🟢 COMPLETADA                                       | Tablero al día                     |
-| P-07 | Generar `docs/fases/FASE-03-adaptador-rest-git.md` y `docs/prompts/PROMPT-FASE-03.md`  | Siguiente fase lista               |
+| P-05 | Escribir `../../../docs/sdd/resultados`                                                | Registro de trazabilidad           |
+| P-06 | Actualizar `../../../docs/sdd/plan` a 🟢 COMPLETADA                                    | Tablero al día                     |
+| P-07 | Generar `../../../docs/sdd/fases` y `../../../docs/sdd/prompts`                        | Siguiente fase lista               |

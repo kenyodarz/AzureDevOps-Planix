@@ -4,7 +4,7 @@
 > **Riesgo:** Bajo  
 > **Commit al cerrar:**
 >
-`feat(backend): configurar wiring en spring para use cases de specs y program planning con validacion e2e`  
+> `feat(backend): configurar wiring en spring para use cases de specs y program planning con validacion e2e`  
 > **Siguiente fase:** Cierre Definitivo del Plan Maestro
 
 ---
@@ -82,7 +82,7 @@ beans para la ejecución en producción:
 
 - Ejecutar `./gradlew test` (verificando que los 408+ tests pasen).
 - Ejecutar `./gradlew validateStructure`.
-- Generar `docs/resultados/RESULTADO-FASE-06.md`.
+- Generar `../../../docs/sdd/resultados`.
 
 ---
 

@@ -4,7 +4,7 @@
 > **Plan:** [`plan-maestro.md`](../plan/plan-maestro.md) v2.0 · **Fases ejecutadas:** 8 de 8
 > **Última fase:** [`RESULTADO-FASE-08.md`](RESULTADO-FASE-08.md)
 > **Alcance:** este documento cierra el plan del BFF. **No cierra las deudas de otros
-repositorios.**
+> repositorios.**
 > **Deudas:** 48 registradas · **33 saldadas** · **15 vivas** (detalle y dueño en §3).
 
 ---
@@ -158,7 +158,8 @@ degrada un resultado sin dejar rastro en ningún log.
 
 ## 5. Lo que este plan deja escrito además del código
 
-- **8 documentos de fase** (`docs/fases/`) y **8 de resultado** (`docs/resultados/`), cada uno con
+- **8 documentos de fase** (`../../../../../docs/sdd/fases`) y **8 de resultado**
+  (`../../../../../docs/sdd/resultados`), cada uno con
   sus desviaciones declaradas.
 - **13 decisiones de negocio registradas** (B-01 … B-13) y las decisiones de plan (DP-04, DP-05,
   DP-06, DP-08) que fijaron criterios técnicos.

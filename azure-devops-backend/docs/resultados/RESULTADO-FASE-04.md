@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(backend): implementar casos de uso para gestion documental y program planning`  
-> **Instrucciones:** `docs/fases/FASE-04-casos-de-uso-planeacion.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

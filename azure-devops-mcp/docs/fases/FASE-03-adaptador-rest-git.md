@@ -3,7 +3,7 @@
 > **Estado:** 🟡 PENDIENTE · **Depende de:** FASE 01, FASE 02 · **Riesgo:** Medio  
 > **Commit al cerrar:**
 >
-`feat(rest_consumer): implementar adaptador reactivo para API Git y Pull Requests de Azure DevOps`  
+> `feat(rest_consumer): implementar adaptador reactivo para API Git y Pull Requests de Azure DevOps`  
 > **Siguiente fase:** `FASE-04-feedback-comentarios-pr.md`
 
 ---
@@ -108,11 +108,11 @@ Existirá en `infrastructure/driven-adapters/rest-consumer`:
 
 | Paso | Acción                                                            | Resultado esperado                      |
 |-----:|-------------------------------------------------------------------|-----------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar estado activo de Fase 03      |
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`          | Confirmar estado activo de Fase 03      |
 | P-02 | Implementar DTOs y Mapper                                         | Deserialización y transformación listas |
 | P-03 | Implementar `GitPullRequestAdapter.java`                          | Adaptador REST reactivo listo           |
 | P-04 | Implementar pruebas unitarias en `GitPullRequestAdapterTest.java` | Tests unitarios pasando                 |
 | P-05 | Ejecutar `./gradlew :rest-consumer:test`                          | Verde                                   |
-| P-06 | Escribir `docs/resultados/RESULTADO-FASE-03.md`                   | Registro de trazabilidad                |
-| P-07 | Actualizar `docs/plan/ESTADO.md` a 🟢 COMPLETADA                  | Tablero al día                          |
-| P-08 | Generar `docs/fases/FASE-04-feedback-comentarios-pr.md`           | Siguiente fase lista                    |
+| P-06 | Escribir `../../../docs/sdd/resultados`                           | Registro de trazabilidad                |
+| P-07 | Actualizar `../../../docs/sdd/plan` a 🟢 COMPLETADA               | Tablero al día                          |
+| P-08 | Generar `../../../docs/sdd/fases`                                 | Siguiente fase lista                    |

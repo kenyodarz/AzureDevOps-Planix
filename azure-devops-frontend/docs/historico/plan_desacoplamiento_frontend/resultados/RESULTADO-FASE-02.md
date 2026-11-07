@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-31 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(core): crear capa core con configuracion, interceptor y tipos sin any`
-> **Instrucciones:** `docs/fases/fase-02.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 5 archivos existentes tocados · 9 archivos nuevos ·
 > **cero `.spec.ts` de la Fase 01 modificados**
 
@@ -175,10 +175,10 @@ git diff --stat -- 'src/app/**/*.spec.ts'
 
 ## 9. Estado al cerrar
 
-- Siguiente fase generada: **`docs/fases/fase-03.md`** ✅
+- Siguiente fase generada: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones resueltas en esta fase: **DP-03** 🟢, **DP-09** 🟢 · **DP-06** 🟡 parcial
 - Decisiones abiertas: DP-01, DP-02, DP-04, DP-05, DP-06 *(parcial)*, DP-08, DP-10 · DP-07 informativa
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` de la Fase 01 modificados
 - La Fase 03 está **bloqueada por DP-04 y DP-07**
 

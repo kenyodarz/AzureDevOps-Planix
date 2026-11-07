@@ -3,8 +3,8 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 >
-`feat(agent): migrar PlanningDraftFlowHandler para consumir SpecStoragePort e inyectar specs completos`
-> **Instrucciones:** `docs/fases/FASE-03-migracion-draft-handler.md`
+> `feat(agent): migrar PlanningDraftFlowHandler para consumir SpecStoragePort e inyectar specs completos`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

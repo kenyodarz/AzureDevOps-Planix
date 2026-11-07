@@ -2,7 +2,7 @@
 
 > **Estado:** ✅ **CERRADA** · **Fecha:** 2026-08-29
 > **Fase anterior:** [`RESULTADO-FASE-04.md`](RESULTADO-FASE-04.md) · **Siguiente:** [
-`fase-06.md`](../fases/fase-06.md)
+> `fase-06.md`](../fases/fase-06.md)
 > **Bloqueantes:** [`BLOQUEANTES-FASE-05.md`](../plan/BLOQUEANTES-FASE-05.md) — B-01 a B-04, más
 > **S-2** surgido en ejecución
 > **Deudas saldadas:** **D-06, D-07, D-09, D-13, D-19**
@@ -264,6 +264,6 @@ por fases**. Los mensajes deberán seguir `COMMIT_RULES.md`.
 - [x] ArchUnit *Rule_2.2* sin violaciones en el backend
 - [x] `RESULTADO-FASE-05.md` con la estructura acordada
 - [x] `plan-maestro.md` actualizado
-- [x] `docs/fases/fase-06.md` generada, con sus bloqueantes
-- [x] `docs/plan/HANDOFF-FASE-06.md` generado
+- [x] `../../../../../docs/sdd/fases` generada, con sus bloqueantes
+- [x] `../../../../../docs/sdd/plan` generado
 

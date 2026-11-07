@@ -1,6 +1,6 @@
 # PLANTILLA OBLIGATORIA DE ESPECIFICACIÓN TÉCNICA (MACRO-SPEC / SDD)
 
-> Copia este archivo para generar cada especificación base en `docs/specs/ESPECIFICACION-<nombre-iniciativa>.md`.
+> Copia este archivo para generar cada especificación base en ``.
 > **Propósito:** Actuar como el *Software Design Document (SDD)* rector del sistema o funcionalidad. 
 > Define la arquitectura macro, los contratos de comunicación, modelos de datos y flujos antes de desglosar el trabajo en el `PLAN_MAESTRO.md` y sus fases atómicas.
 
@@ -135,7 +135,7 @@ export const MOCK_FEATURE_RESPONSE: FeatureResponseDTO = {
 
 ## 6. Desglose Preliminar para el Plan Maestro
 
-<Propuesta inicial de desglose atómico para ser transferido a `docs/plan/PLAN_MAESTRO.md`:>
+<Propuesta inicial de desglose atómico para ser transferido a `../plan`:>
 
 * **Fase 01:** Contratos de API, modelos de datos e interfaces DTO.
 * **Fase 02:** Adaptadores de infraestructura, servicios HTTP y mocks de prueba.

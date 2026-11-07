@@ -248,7 +248,7 @@ Cada fase deja el repositorio **compilando, con las pruebas verdes y desplegable
 **Objetivo.** Congelar el comportamiento observable de los cinco flujos con pruebas de caracterización **antes** de tocar una sola línea productiva, y publicar el baseline medido.
 
 **Entregable.** Suite de caracterización sobre `DevopsAgentStateService`, `DevopsAgentApiService`
-y los dos componentes gordos; documento `docs/resultados/RESULTADO-FASE-01.md` con métricas reales.
+y los dos componentes gordos; documento `../../../../../docs/sdd/resultados` con métricas reales.
 
 **Restricción innegociable.** **Cero líneas modificadas en `src/app/**` fuera de archivos
 `.spec.ts`.**
@@ -351,7 +351,7 @@ y los dos componentes gordos; documento `docs/resultados/RESULTADO-FASE-01.md` c
 - `shared/components/` con los elementos de UI genéricos extraídos.
 - `aria-label` verificado en el 100 % de los botones de solo icono.
 - Pruebas de componente para todos los componentes resultantes.
-- `docs/resultados/CIERRE-DEL-PLAN.md`.
+- `../../../../../docs/sdd/resultados`.
 
 ---
 
@@ -398,16 +398,16 @@ Ninguna fase se considera cerrada si falla alguno de estos puntos:
 - [ ] Botones de solo icono con `aria-label`.
 - [ ] Pruebas nuevas en formato `describe('GIVEN…')` → `describe('WHEN…')` → `it('THEN…')`.
 - [ ] Ninguna decisión pendiente (DP-XX) que bloquee la fase permanece abierta.
-- [ ] `docs/resultados/RESULTADO-FASE-XX.md` escrito con métricas reales.
-- [ ] `docs/plan/ESTADO.md` actualizado.
-- [ ] `docs/fases/fase-XX+1.md` generado.
+- [ ] `../../../../../docs/sdd/resultados` escrito con métricas reales.
+- [ ] `../../../../../docs/sdd/plan` actualizado.
+- [ ] `../../../../../docs/sdd/fases` generado.
 - [ ] Commit conforme a `COMMIT_RULES.md`.
 
 ---
 
 ## 8. Decisiones pendientes (Política de No-Asunción)
 
-El detalle vive en `docs/plan/DECISIONES_PENDIENTES.md`. Resumen de bloqueos:
+El detalle vive en `../../../../../docs/sdd/plan`. Resumen de bloqueos:
 
 | ID    | Pregunta                                                                              | Bloquea |
 |-------|---------------------------------------------------------------------------------------|---------|
@@ -439,13 +439,14 @@ El detalle vive en `docs/plan/DECISIONES_PENDIENTES.md`. Resumen de bloqueos:
 
 Regla operativa para poder reanudar el trabajo tras una desconexión o un reinicio de sesión:
 
-1. El punto de entrada **siempre** es `docs/plan/ESTADO.md`. Indica la fase activa y su estado.
-2. Cada fase vive en un archivo autosuficiente `docs/fases/fase-XX.md` con la estructura obligatoria de tres bloques: **CONTEXTO**, **INSTRUCCIONES**, **ORDEN DE EJECUCIÓN**.
-3. Antes de ejecutar una fase, hay que leer `docs/plan/DECISIONES_PENDIENTES.md`. Si alguna DP que la bloquea sigue 🔴 ABIERTA, **hay que detenerse y preguntar al usuario**.
+1. El punto de entrada **siempre** es `../../../../../docs/sdd/plan`. Indica la fase activa y su estado.
+2. Cada fase vive en un archivo autosuficiente `../../../../../docs/sdd/fases` con la estructura obligatoria de tres bloques: **CONTEXTO**, **INSTRUCCIONES**, **ORDEN DE EJECUCIÓN**.
+3. Antes de ejecutar una fase, hay que leer `../../../../../docs/sdd/plan`. Si alguna DP que la bloquea sigue 🔴 ABIERTA, **hay que detenerse y preguntar al usuario**.
 4. Al terminar una fase es **innegociable**:
-  - escribir `docs/resultados/RESULTADO-FASE-XX.md` con métricas reales;
-  - actualizar `docs/plan/ESTADO.md`;
-  - **generar `docs/fases/fase-XX+1.md`** a partir de `docs/fases/_PLANTILLA_FASE.md`.
+
+- escribir `../../../../../docs/sdd/resultados` con métricas reales;
+- actualizar `../../../../../docs/sdd/plan`;
+- **generar `../../../../../docs/sdd/fases`** a partir de `../../../../../docs/sdd/fases`.
 5. Sin el resultado no hay trazabilidad y sin el MD de la siguiente fase el trabajo no es reanudable: en cualquiera de los dos casos la fase se declara **incompleta**.
 
 ---

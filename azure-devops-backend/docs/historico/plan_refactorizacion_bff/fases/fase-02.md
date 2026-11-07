@@ -1,6 +1,6 @@
 # FASE 02 — Cliente A2A del agente y control de tareas
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟡 EN EJECUCIÓN
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟡 EN EJECUCIÓN
 > **Deudas objetivo:** D-01, D-02, D-03, D-22, D-23, D-29
 > **Decisión bloqueante:** **DP-08 → RESUELTA (2026-08-29)**: *no bloqueante y reactivo de extremo a
 > extremo, en Angular y en Spring*. El BFF envía `configuration.blocking = false`, recibe la `Task`
@@ -14,7 +14,7 @@
 
 ### 1.1 Dependencias resueltas de la Fase 01
 
-La Fase 01 está **cerrada** (`docs/resultados/RESULTADO-FASE-01.md`). Al arrancar esta fase existe:
+La Fase 01 está **cerrada** (`../../../../../docs/sdd/resultados`). Al arrancar esta fase existe:
 
 - **117 pruebas**, 15 fallos —todos heredados, todos del rol de servidor A2A que aquí se retira—.
 - `ChatGatewayAdapterTest` (10 pruebas) con servidor HTTP embebido, incluida la que documenta que
@@ -319,14 +319,15 @@ compilador** (`CIERRE-DEL-PLAN.md` §7.3: el código muerto no lo detecta el com
   `NoOpAgentResponseAdapter`, que quedaron sin consumidor. → **Registrado como D-33; no bloquea.**
 - [x] **P-16** — `gradlew test` en **verde**. → **128 pruebas, 0 fallos.**
 - [x] **P-17** — Rellenar el bloque **Resultado** y actualizar §9 del plan maestro.
-- [x] **P-18** — **Generar `docs/fases/fase-03.md`**: exposición del API de tareas al front y corte
+- [x] **P-18** — **Generar `../../../../../docs/sdd/fases`**: exposición del API de tareas al front
+  y corte
   de la base de datos compartida.
 
 ---
 
 ## 4. Resultado
 
-> Informe completo: **`docs/resultados/RESULTADO-FASE-02.md`**
+> Informe completo: **`../../../../../docs/sdd/resultados`**
 
 - **Fecha de cierre:** 2026-08-29
 - **DP-08 resuelta como:** no bloqueante y reactivo de extremo a extremo

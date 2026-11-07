@@ -1,7 +1,7 @@
 # RESULTADO — FASE 03: API de tareas del BFF hacia el frontend
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
-> **Instrucciones:** `docs/fases/fase-03.md` · **Plan:** `docs/plan/plan-maestro.md` v2.0
+> **Instrucciones:** `../../../../../docs/sdd/fases` · **Plan:** `../../../../../docs/sdd/plan` v2.0
 > **Hito:** **el frontend pasa a hablar con un solo servicio** — 2 → **1**
 
 ---
@@ -243,7 +243,7 @@ La deduplicación es un parche con fecha de caducidad. Cuando DP-05 separe las t
 
 ## 9. Estado al cerrar
 
-- **Siguiente fase generada:** `docs/fases/fase-04.md` — prompts y datos fuera del dominio
+- **Siguiente fase generada:** `../../../../../docs/sdd/fases` — prompts y datos fuera del dominio
 - **Decisiones resueltas en esta fase:** DP-07 (B), DP-07-bis (B2), D-33 (A)
 - **Decisiones abiertas:** DP-02 (Fase 04), DP-03 (Fase 05), DP-04 (Fase 06), DP-05 y DP-06 (Fase
     07)
@@ -258,7 +258,7 @@ La deduplicación es un parche con fecha de caducidad. Cuando DP-05 separe las t
        `verify(taskStoreGateway, never()).save(...)`
     4. Las dos de `GET /api/tasks` se sustituyen por
        `givenTasksRoute_whenGet_thenItIsServedByTaskHandler`
-- **Pendiente fuera de este repositorio:** aplicar `docs/resultados/CAMBIOS-FRONTEND.md` en
+- **Pendiente fuera de este repositorio:** aplicar `../../../../../docs/sdd/resultados` en
   `azure-devops-frontend`. **Hasta entonces el chat sigue llamando al endpoint legacy del agente.**
 - **Estado del build:** 🟢 **verde — 153 pruebas, 0 fallos**
 

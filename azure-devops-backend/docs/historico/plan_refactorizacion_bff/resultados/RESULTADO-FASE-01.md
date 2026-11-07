@@ -1,7 +1,7 @@
 # RESULTADO — FASE 01: Baseline y red de seguridad
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
-> **Instrucciones:** `docs/fases/fase-01.md` · **Plan:** `docs/plan/plan-maestro.md` v2.0
+> **Instrucciones:** `../../../../../docs/sdd/fases` · **Plan:** `../../../../../docs/sdd/plan` v2.0
 > **Código productivo modificado:** **cero líneas**
 
 ---
@@ -36,8 +36,8 @@ el agente), reparar el test de wiring que daba verde en falso, y publicar el bas
 
 ### Documentación
 
-- `docs/resultados/_PLANTILLA_RESULTADO.md`
-- `docs/resultados/RESULTADO-FASE-01.md` (este archivo)
+- `../../../../../docs/sdd/resultados`
+- `../../../../../docs/sdd/resultados` (este archivo)
 
 ---
 
@@ -118,13 +118,13 @@ git --no-pager status --porcelain -- azure-devops-backend
 
 ## 6. Desviaciones respecto a las instrucciones
 
-| Desviación                                                             | Justificación                                                                                                                                                                                                                      |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| No se usó `MockWebServer` para `ChatGatewayAdapterTest`                | No está en el classpath y añadir una dependencia nueva excede el alcance de una fase que no debe tocar producción. Se usó `reactor.netty.http.server.HttpServer`, que ya viene con WebFlux y permite capturar cuerpo y ruta reales |
-| No se generó `docs/resultados/baseline-fase-01.md` como archivo aparte | El baseline se integró en este `RESULTADO-FASE-01.md` para seguir la convención de `azure-devops-agent/docs/resultados`, que el usuario pidió replicar. El «mapa de integración» pedido en T-08 está en §8                         |
-| `jacocoMergedReport` no se pudo ejecutar                               | Falla porque depende de `test`, y `test` arrastra los 15 fallos heredados. Se midió por módulo con `jacocoTestReport`. Se resolverá solo cuando la Fase 02 ponga el build en verde                                                 |
-| Cobertura de `reactive-web` no medida                                  | Mismo motivo: su `jacocoTestReport` depende de un `test` en rojo                                                                                                                                                                   |
-| Dos pruebas se ajustaron tras verlas fallar                            | Ver §8, hallazgo H-1. El comportamiento real difería de lo previsto en las instrucciones; se corrigió la **prueba**, nunca el código                                                                                               |
+| Desviación                                                            | Justificación                                                                                                                                                                                                                      |
+|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| No se usó `MockWebServer` para `ChatGatewayAdapterTest`               | No está en el classpath y añadir una dependencia nueva excede el alcance de una fase que no debe tocar producción. Se usó `reactor.netty.http.server.HttpServer`, que ya viene con WebFlux y permite capturar cuerpo y ruta reales |
+| No se generó `../../../../../docs/sdd/resultados` como archivo aparte | El baseline se integró en este `RESULTADO-FASE-01.md` para seguir la convención de `azure-devops-agent/docs/resultados`, que el usuario pidió replicar. El «mapa de integración» pedido en T-08 está en §8                         |
+| `jacocoMergedReport` no se pudo ejecutar                              | Falla porque depende de `test`, y `test` arrastra los 15 fallos heredados. Se midió por módulo con `jacocoTestReport`. Se resolverá solo cuando la Fase 02 ponga el build en verde                                                 |
+| Cobertura de `reactive-web` no medida                                 | Mismo motivo: su `jacocoTestReport` depende de un `test` en rojo                                                                                                                                                                   |
+| Dos pruebas se ajustaron tras verlas fallar                           | Ver §8, hallazgo H-1. El comportamiento real difería de lo previsto en las instrucciones; se corrigió la **prueba**, nunca el código                                                                                               |
 
 ---
 
@@ -206,7 +206,8 @@ ejecuta.
 
 ## 9. Estado al cerrar
 
-- **Siguiente fase generada:** `docs/fases/fase-02.md` — Cliente A2A del agente y control de tareas
+- **Siguiente fase generada:** `../../../../../docs/sdd/fases` — Cliente A2A del agente y control de
+  tareas
 - **Decisiones resueltas en esta fase:** DP-01, DP-08
 - **Decisiones abiertas:** DP-07 (Fase 03), DP-02 (Fase 04), DP-03 (Fase 05), DP-04 (Fase 06), DP-05
   y DP-06 (Fase 07)

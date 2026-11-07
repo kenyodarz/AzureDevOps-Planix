@@ -264,31 +264,31 @@ Inyectar el nuevo bean. El constructor sube temporalmente a **10 argumentos**; e
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar estado de DP-04 y DP-06 |
-| 2 | **Si DP-04 o DP-06 siguen ABIERTAS → DETENERSE y preguntar al usuario** | Decisiones registradas antes de escribir código |
-| 3 | Crear `PromptTemplateId`, `PromptTemplatePort` y la excepción de dominio (Paso A) | Contratos puros en `domain/model` |
-| 4 | Crear el módulo Gradle `prompt-template` y registrarlo en `settings.gradle` | `.\gradlew.bat projects` lo lista |
-| 5 | Crear los 6 archivos `.md` con el texto literal (Paso B) | Recursos creados |
-| 6 | Implementar `ClasspathPromptTemplateAdapter` con caché al arranque (Paso C) | Adapter funcional |
-| 7 | Escribir el test de equivalencia byte a byte (Paso D) | 6 tests en verde |
-| 8 | Sustituir los `String.format` en `AgentChatUseCase` y borrar las constantes (Paso E) | Use case ~470 líneas |
-| 9 | Actualizar `UseCasesConfig` (Paso F) | Contexto de Spring arranca |
-| 10 | Ejecutar `.\gradlew.bat :usecase:test` | Los 23 tests de la Fase 00 en verde, **sin modificarlos** |
-| 11 | Ejecutar `git diff --stat` sobre los 2 tests de la Fase 00 | Salida **vacía** |
-| 12 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 13 | Medir cobertura y actualizar métricas en `ESTADO.md` (usar `--no-configuration-cache`) | Tablero al día |
-| 14 | Marcar Fase 01 como 🟢 COMPLETADA en `ESTADO.md` + entrada en la bitácora | Tablero al día |
-| 15 | **Generar `docs/fases/FASE-02-value-objects-de-estimacion.md`** con `_PLANTILLA_FASE.md` | Checkpoint de continuidad creado |
-| 16 | Commit: `refactor(agent_prompts): externalizar plantillas de prompt a recursos` | Cambios versionados |
+| Paso | Acción                                                                                 | Resultado esperado                                        |
+|-----:|----------------------------------------------------------------------------------------|-----------------------------------------------------------|
+|    1 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                   | Confirmar estado de DP-04 y DP-06                         |
+|    2 | **Si DP-04 o DP-06 siguen ABIERTAS → DETENERSE y preguntar al usuario**                | Decisiones registradas antes de escribir código           |
+|    3 | Crear `PromptTemplateId`, `PromptTemplatePort` y la excepción de dominio (Paso A)      | Contratos puros en `domain/model`                         |
+|    4 | Crear el módulo Gradle `prompt-template` y registrarlo en `settings.gradle`            | `.\gradlew.bat projects` lo lista                         |
+|    5 | Crear los 6 archivos `.md` con el texto literal (Paso B)                               | Recursos creados                                          |
+|    6 | Implementar `ClasspathPromptTemplateAdapter` con caché al arranque (Paso C)            | Adapter funcional                                         |
+|    7 | Escribir el test de equivalencia byte a byte (Paso D)                                  | 6 tests en verde                                          |
+|    8 | Sustituir los `String.format` en `AgentChatUseCase` y borrar las constantes (Paso E)   | Use case ~470 líneas                                      |
+|    9 | Actualizar `UseCasesConfig` (Paso F)                                                   | Contexto de Spring arranca                                |
+|   10 | Ejecutar `.\gradlew.bat :usecase:test`                                                 | Los 23 tests de la Fase 00 en verde, **sin modificarlos** |
+|   11 | Ejecutar `git diff --stat` sobre los 2 tests de la Fase 00                             | Salida **vacía**                                          |
+|   12 | Ejecutar `.\gradlew.bat build`                                                         | `BUILD SUCCESSFUL`                                        |
+|   13 | Medir cobertura y actualizar métricas en `ESTADO.md` (usar `--no-configuration-cache`) | Tablero al día                                            |
+|   14 | Marcar Fase 01 como 🟢 COMPLETADA en `ESTADO.md` + entrada en la bitácora              | Tablero al día                                            |
+|   15 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`                   | Checkpoint de continuidad creado                          |
+|   16 | Commit: `refactor(agent_prompts): externalizar plantillas de prompt a recursos`        | Cambios versionados                                       |
 
 > ⚠️ **El paso 15 es innegociable.** Sin el MD de la Fase 02, el trabajo no es reanudable tras una
 > desconexión y la Fase 01 se considera **incompleta**.
 
 ### 3.1 Contenido mínimo del MD de la Fase 02
 
-El archivo `docs/fases/FASE-02-value-objects-de-estimacion.md` debe contener:
+El archivo `../../../../../docs/sdd/fases` debe contener:
 
 **CONTEXTO**
 - Venimos de la Fase 01: los prompts viven en recursos y `AgentChatUseCase` ronda las 470 líneas.

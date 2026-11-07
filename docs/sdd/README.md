@@ -18,18 +18,18 @@ Los asistentes y agentes de código autónomos enfrentan tres problemas crítico
 
 ## 2. Los 7 Artefactos Nucleares del Framework
 
-En esta carpeta (`docs/`) residen las plantillas maestras reutilizables para cualquier iniciativa:
+En esta carpeta (`..`) residen las plantillas maestras reutilizables para cualquier iniciativa:
 
-| Artefacto | Ubicación de Plantilla | Propósito y Contrato |
-| :--- | :--- | :--- |
-| **Especificación Técnica (Macro-Spec)** | `specs/_PLANTILLA_SPEC.md` | **Software Design Document (SDD) rector**: alcance, arquitectura del sistema, contratos de API/BFF, modelos DTO y flujos previos a la atomización. |
-| **Plan Maestro** | `plan/_PLANTILLA_PLAN_MAESTRO.md` | Contrato global de arquitectura: objetivo, diagnóstico con IDs (D-XX), diagrama de flujo/componentes y mapa completo de fases atómicas (01 a 0N). |
-| **Decisiones Pendientes** | `plan/_PLANTILLA_DECISIONES_PENDIENTES.md` | Instrumento de la **Política de No-Asunción**: registro de disyuntivas de diseño (DP-XX) categorizadas con semáforo (`🔴 ABIERTA`, `🟢 RESUELTA`, `⚪ INFORMATIVA`). |
-| **Tablero de Estado** | `plan/_PLANTILLA_ESTADO.md` | **Única fuente de verdad del progreso**: dashboard de lectura en 1 minuto que indica la fase activa, la siguiente acción inmediata y las métricas vivas de calidad. |
-| **Especificación de Fase (Micro-Spec)** | `fases/_PLANTILLA_FASE.md` | Guía técnica ejecutable y autosuficiente para una fase individual (Contexto, Instrucciones paso a paso, Qué NO hacer, Criterios de aceptación). |
-| **Prompt Ejecutable** | `prompts/_PLANTILLA_PROMPT.md` | Prompt autosuficiente estructurado para instruir a cualquier agente o sesión en la ejecución de la fase activa sin ambigüedades. |
-| **Prompt Wizard Interactivo** | `prompts/_PLANTILLA_WIZARD_SDD.md` | Prompt de activación para que el agente opere como **Arquitecto de Soluciones y Entrevistador**, co-diseñando la Macro-Spec y las fases paso a paso. |
-| **Resultado de Fase** | `resultados/_PLANTILLA_RESULTADO.md` | Informe de cierre que registra **métricas reales medidas** (tests unitarios, cobertura, archivos modificados y hallazgos descubiertos). |
+| Artefacto                               | Ubicación de Plantilla | Propósito y Contrato                                                                                                                                                 |
+|:----------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Especificación Técnica (Macro-Spec)** | `specs`                | **Software Design Document (SDD) rector**: alcance, arquitectura del sistema, contratos de API/BFF, modelos DTO y flujos previos a la atomización.                   |
+| **Plan Maestro**                        | `plan`                 | Contrato global de arquitectura: objetivo, diagnóstico con IDs (D-XX), diagrama de flujo/componentes y mapa completo de fases atómicas (01 a 0N).                    |
+| **Decisiones Pendientes**               | `plan`                 | Instrumento de la **Política de No-Asunción**: registro de disyuntivas de diseño (DP-XX) categorizadas con semáforo (`🔴 ABIERTA`, `🟢 RESUELTA`, `⚪ INFORMATIVA`). |
+| **Tablero de Estado**                   | `plan`                 | **Única fuente de verdad del progreso**: dashboard de lectura en 1 minuto que indica la fase activa, la siguiente acción inmediata y las métricas vivas de calidad.  |
+| **Especificación de Fase (Micro-Spec)** | `fases`                | Guía técnica ejecutable y autosuficiente para una fase individual (Contexto, Instrucciones paso a paso, Qué NO hacer, Criterios de aceptación).                      |
+| **Prompt Ejecutable**                   | `prompts`              | Prompt autosuficiente estructurado para instruir a cualquier agente o sesión en la ejecución de la fase activa sin ambigüedades.                                     |
+| **Prompt Wizard Interactivo**           | `prompts`              | Prompt de activación para que el agente opere como **Arquitecto de Soluciones y Entrevistador**, co-diseñando la Macro-Spec y las fases paso a paso.                 |
+| **Resultado de Fase**                   | `resultados`           | Informe de cierre que registra **métricas reales medidas** (tests unitarios, cobertura, archivos modificados y hallazgos descubiertos).                              |
 
 ---
 
@@ -68,22 +68,27 @@ Cualquier agente que interactúe con un repositorio bajo este estándar debe seg
 Cuando el usuario solicite planificar una nueva funcionalidad, refactorización o iniciativa:
 
 1. **Gestión de Histórico:**  
-   Si en la carpeta de documentación del módulo ya existen carpetas `plan/`, `fases/`, etc. de un trabajo completado anteriormente, **nunca las sobreescribas**. Muévelas completas a `docs/historico/plan_<nombre_descriptivo>/`.
+   Si en la carpeta de documentación del módulo ya existen carpetas `plan`, `sdd/fases`, etc. de un
+   trabajo completado anteriormente, **nunca las sobreescribas**. Muévelas completas a
+   `sdd/historico`.
 2. **Activación del Modo Wizard (Recomendado):**  
-   Si el usuario no entrega una especificación cerrada completa, **el agente debe activar el Modo Wizard** (`prompts/_PLANTILLA_WIZARD_SDD.md`) y realizar la entrevista guiada (máximo 2-3 preguntas por turno) para acordar alcance, contratos de API/DTO, arquitectura de capas y criterios de calidad.
+   Si el usuario no entrega una especificación cerrada completa, **el agente debe activar el Modo
+   Wizard** (`prompts`) y realizar la entrevista guiada (máximo 2-3 preguntas por turno) para
+   acordar alcance, contratos de API/DTO, arquitectura de capas y criterios de calidad.
 3. **Especificación Técnica y Dimensionamiento Atómico (Regla Anti-Monolito):**  
-   * **Elaborar la Macro-Spec:** Redactar primero la especificación técnica en `docs/specs/ESPECIFICACION-<iniciativa>.md` con contratos, DTOs y diagramas.
+    * **Elaborar la Macro-Spec:** Redactar primero la especificación técnica en `specs` con
+      contratos, DTOs y diagramas.
    * **Prohibido:** Crear planes de 2 o 3 macro-fases gigantes donde se mezcle diseño, backend, frontend y tests.
    * **Obligatorio:** A partir de la Macro-Spec, descomponer la iniciativa en **fases atómicas y quirúrgicas de 2 a 4 archivos como máximo**, diseñadas para ejecutarse y verificarse en una sesión de trabajo de corta duración.
 4. **Instanciación Inicial:**  
    Copia y completa las plantillas maestras creando:
    * `docs/README.md`
-   * `docs/specs/ESPECIFICACION-<nombre>.md` (especificación rectora de arquitectura)
-   * `docs/plan/PLAN_MAESTRO.md` (con el mapa de fases 01 a 0N)
-   * `docs/plan/DECISIONES_PENDIENTES.md` (con las decisiones iniciales resueltas o abiertas)
-   * `docs/plan/ESTADO.md` (con la Fase 01 en `🟡 PENDIENTE` y las restantes en `⚪ NO GENERADA`)
-   * `docs/fases/FASE-01-<nombre>.md` (especificación completa de la primera fase)
-   * `docs/prompts/PROMPT-FASE-01.md` (prompt listo para detonar la ejecución)
+   * `specs` (especificación rectora de arquitectura)
+   * `plan` (con el mapa de fases 01 a 0N)
+   * `plan` (con las decisiones iniciales resueltas o abiertas)
+   * `plan` (con la Fase 01 en `🟡 PENDIENTE` y las restantes en `⚪ NO GENERADA`)
+   * `fases` (especificación completa de la primera fase)
+   * `prompts` (prompt listo para detonar la ejecución)
 5. **Pausa Obligatoria y Aprobación:**  
    Presenta el resumen del plan al usuario y **espera su visto bueno explícito antes de tocar cualquier archivo de código**.
 
@@ -94,26 +99,30 @@ Cuando el usuario solicite planificar una nueva funcionalidad, refactorización 
 Cuando se inicie una sesión de desarrollo para continuar el trabajo:
 
 1. **Lectura en Cascada (Mínimo Contexto):**  
-   * Lee `docs/plan/ESTADO.md` $\rightarrow$ Localiza la fase activa (`🟡 PENDIENTE` o `🔵 EN_CURSO`).
-   * Lee `docs/plan/DECISIONES_PENDIENTES.md` $\rightarrow$ Verifica que no existan decisiones bloqueantes en estado `🔴 ABIERTA`. Si hay una decisión abierta que impida avanzar, **DETENTE y pregunta al usuario**.
-   * Lee la especificación en `docs/fases/FASE-XX-*.md` o su prompt en `docs/prompts/PROMPT-FASE-XX.md`.
+    * Lee `plan` $\rightarrow$ Localiza la fase activa (`🟡 PENDIENTE` o `🔵 EN_CURSO`).
+    * Lee `plan` $\rightarrow$ Verifica que no existan decisiones bloqueantes en estado `🔴 ABIERTA`.
+      Si hay una decisión abierta que impida avanzar, **DETENTE y pregunta al usuario**.
+    * Lee la especificación en `fases` o su prompt en `sdd/prompts`.
 2. **Ejecución Técnica:**  
    Implementa los cambios respetando las instrucciones de la fase, la arquitectura del proyecto y las buenas prácticas de código limpio e inmutabilidad.
 3. **Validación Automática:**  
    Ejecuta las pruebas unitarias, linters y suites de verificación técnica del proyecto. No se avanza si hay tests en rojo.
 4. **Cierre de Fase — La Regla del Doble Artefacto:**  
    Una fase **NUNCA** se da por terminada únicamente modificando código. El agente debe ejecutar estos 5 pasos de cierre:
-   * **1. Registrar el Resultado:** Crear `docs/resultados/RESULTADO-FASE-XX.md` con mediciones reales y verificables.
+    * **1. Registrar el Resultado:** Crear `resultados` con mediciones reales y verificables.
    * **2. Adaptabilidad ante Hallazgos:** Si durante la implementación se descubrieron restricciones o mejores enfoques, **ajustar el Plan Maestro o la siguiente fase**. El plan es adaptativo y evoluciona con la realidad técnica.
-   * **3. Actualizar el Tablero:** Marcar en `docs/plan/ESTADO.md` la fase como `🟢 COMPLETADA` con su fecha y notas.
-   * **4. Generar la Siguiente Fase y Prompt:** Redactar de inmediato `docs/fases/FASE-XX+1-*.md` y `docs/prompts/PROMPT-FASE-XX+1.md` para que la continuidad sea automática.
+    * **3. Actualizar el Tablero:** Marcar en `plan` la fase como `🟢 COMPLETADA` con su fecha y
+      notas.
+    * **4. Generar la Siguiente Fase y Prompt:** Redactar de inmediato `fases` y `sdd/prompts` para
+      que la continuidad sea automática.
    * **5. Confirmar Commit:** Proponer el mensaje de commit siguiendo las convenciones del repositorio (`tipo(scope): descripción`) y solicitar confirmación.
 
 ---
 
 ## 5. Las 5 Reglas de Oro Inquebrantables
 
-1. **Cero Código sin Especificación:** Todo cambio de código debe pertenecer a una fase documentada previamente en `fases/FASE-XX.md`.
+1. **Cero Código sin Especificación:** Todo cambio de código debe pertenecer a una fase documentada
+   previamente en `fases`.
 2. **Atomicidad Quirúrgica:** Una fase no debe abarcar más de 4 archivos de lógica ni tardar más de una sesión en ser probada y cerrada. Si crece, se atomiza.
 3. **Política Estricta de No-Asunción:** Si hay incertidumbre sobre un contrato, una regla de negocio o una decisión de diseño, el agente debe detenerse y consultar al usuario. Queda prohibido asumir silenciosamente.
 4. **Doble Artefacto de Cierre:** El cierre de una fase genera el resultado medido de la fase actual y la especificación ejecutable de la siguiente.

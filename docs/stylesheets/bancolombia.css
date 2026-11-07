@@ -1,0 +1,289 @@
+/**
+ * ============================================================================
+ * Paleta de Colores Corporativos Bancolombia para MkDocs Material / TechDocs
+ * Fuente canónica: plugins/ia-catalog/src/constants/colors.ts (Backstage / BUI)
+ * ============================================================================
+ */
+
+:root {
+  /* Tokens primarios de marca (IA_CATALOG_COLORS) */
+  --bc-primary-yellow: #FDDA24;
+  --bc-primary-green: #00C389;
+  --bc-primary-purple: #9063CD;
+  --bc-primary-orange: #FF7F41;
+  --bc-primary-pink: #F5B6CD;
+  --bc-primary-blue: #59CBE8;
+  --bc-text-dark: #2c2a29;
+  --bc-text-light: #ffffff;
+  --bc-text-muted: #b0b0b0;
+
+  /* Variantes de contraste accesible para modo claro */
+  --bc-green-accessible: #00855B;
+  --bc-purple-accessible: #6E3FB3;
+  --bc-blue-accessible: #007799;
+  --bc-orange-accessible: #D45515;
+  --bc-pink-accessible: #C43C6E;
+
+  /* Estados semánticos (IA_STATUS_COLORS) */
+  --bc-status-ok: var(--bc-primary-green);
+  --bc-status-info: var(--bc-primary-blue);
+  --bc-status-warning: var(--bc-primary-orange);
+  --bc-status-error: var(--bc-primary-pink);
+  --bc-status-secondary: var(--bc-text-muted);
+}
+
+/* ============================================================================
+ * 1. Esquema Claro (default)
+ * ============================================================================ */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--bc-text-dark);
+  --md-primary-fg-color--light: #444140;
+  --md-primary-fg-color--dark: #1a1918;
+  --md-primary-bg-color: var(--bc-text-light);
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.82);
+
+  --md-accent-fg-color: var(--bc-purple-accessible);
+  --md-accent-fg-color--transparent: rgba(144, 99, 205, 0.14);
+  --md-accent-bg-color: var(--bc-text-light);
+
+  --md-default-fg-color: var(--bc-text-dark);
+  --md-default-fg-color--light: #54514f;
+  --md-default-fg-color--lighter: var(--bc-text-muted);
+
+  --md-typeset-color: var(--bc-text-dark);
+  --md-typeset-a-color: var(--bc-purple-accessible);
+}
+
+/* ============================================================================
+ * 2. Esquema Oscuro (slate)
+ * ============================================================================ */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1f1d1c;
+  --md-primary-fg-color--light: var(--bc-text-dark);
+  --md-primary-fg-color--dark: #141312;
+  --md-primary-bg-color: var(--bc-text-light);
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.85);
+
+  --md-accent-fg-color: var(--bc-primary-yellow);
+  --md-accent-fg-color--transparent: rgba(253, 218, 36, 0.16);
+  --md-accent-bg-color: var(--bc-text-dark);
+
+  --md-default-bg-color: #1e1d1c;
+  --md-default-bg-color--light: var(--bc-text-dark);
+  --md-default-fg-color: var(--bc-text-light);
+  --md-default-fg-color--light: #dcdcdc;
+  --md-default-fg-color--lighter: var(--bc-text-muted);
+
+  --md-typeset-color: var(--bc-text-light);
+  --md-typeset-a-color: var(--bc-primary-blue);
+}
+
+/* ============================================================================
+ * 3. Cabecera, Barra de Pestañas y Franja de Marca Bancolombia
+ * ============================================================================ */
+.md-header {
+  background-color: var(--bc-text-dark);
+  color: var(--bc-text-light);
+  border-bottom: 3px solid var(--bc-primary-yellow);
+}
+
+.md-tabs {
+  background-color: var(--bc-text-dark);
+  color: var(--bc-text-light);
+  border-bottom: 1px solid rgba(253, 218, 36, 0.35);
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  color: var(--bc-primary-yellow) !important;
+  opacity: 1;
+}
+
+.md-tabs__link--active {
+  font-weight: 700;
+  border-bottom: 2px solid var(--bc-primary-yellow);
+}
+
+/* Item activo en la navegación lateral */
+.md-nav__item .md-nav__link--active {
+  color: var(--bc-green-accessible);
+  font-weight: 700;
+}
+
+[data-md-color-scheme="slate"] .md-nav__item .md-nav__link--active {
+  color: var(--bc-primary-yellow);
+  font-weight: 700;
+}
+
+/* Resaltado de búsqueda */
+.md-search-result__teaser mark,
+.md-typeset mark {
+  background-color: rgba(253, 218, 36, 0.45);
+  color: var(--bc-text-dark);
+}
+
+[data-md-color-scheme="slate"] .md-search-result__teaser mark,
+[data-md-color-scheme="slate"] .md-typeset mark {
+  background-color: var(--bc-primary-yellow);
+  color: var(--bc-text-dark);
+}
+
+/* ============================================================================
+ * 4. Tablas y Títulos con Identidad Bancolombia
+ * ============================================================================ */
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+  border-bottom: 3px solid var(--bc-primary-yellow);
+  padding-bottom: 0.3rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--bc-text-dark);
+  color: var(--bc-primary-yellow);
+  font-weight: 700;
+  border-bottom: 2px solid var(--bc-primary-yellow);
+}
+
+/* ============================================================================
+ * 5. Admonitions Semánticos (IA_STATUS_COLORS)
+ *    ok -> primaryGreen (#00C389)
+ *    info -> primaryBlue (#59CBE8)
+ *    warning -> primaryOrange (#FF7F41)
+ *    error -> primaryPink (#F5B6CD)
+ *    example/abstract -> primaryPurple (#9063CD)
+ * ============================================================================ */
+
+/* OK / Success / Tip / Check (#00C389) */
+.md-typeset .admonition.success,
+.md-typeset details.success,
+.md-typeset .admonition.tip,
+.md-typeset details.tip,
+.md-typeset .admonition.check,
+.md-typeset details.check {
+  border-color: var(--bc-primary-green);
+}
+
+.md-typeset .success > .admonition-title,
+.md-typeset .success > summary,
+.md-typeset .tip > .admonition-title,
+.md-typeset .tip > summary,
+.md-typeset .check > .admonition-title,
+.md-typeset .check > summary {
+  background-color: rgba(0, 195, 137, 0.14);
+}
+
+.md-typeset .success > .admonition-title::before,
+.md-typeset .success > summary::before,
+.md-typeset .tip > .admonition-title::before,
+.md-typeset .tip > summary::before,
+.md-typeset .check > .admonition-title::before,
+.md-typeset .check > summary::before {
+  background-color: var(--bc-primary-green);
+}
+
+/* Info / Note (#59CBE8) */
+.md-typeset .admonition.info,
+.md-typeset details.info,
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: var(--bc-primary-blue);
+}
+
+.md-typeset .info > .admonition-title,
+.md-typeset .info > summary,
+.md-typeset .note > .admonition-title,
+.md-typeset .note > summary {
+  background-color: rgba(89, 203, 232, 0.16);
+}
+
+.md-typeset .info > .admonition-title::before,
+.md-typeset .info > summary::before,
+.md-typeset .note > .admonition-title::before,
+.md-typeset .note > summary::before {
+  background-color: var(--bc-primary-blue);
+}
+
+/* Warning / Attention / Caution (#FF7F41) */
+.md-typeset .admonition.warning,
+.md-typeset details.warning,
+.md-typeset .admonition.attention,
+.md-typeset details.attention,
+.md-typeset .admonition.caution,
+.md-typeset details.caution {
+  border-color: var(--bc-primary-orange);
+}
+
+.md-typeset .warning > .admonition-title,
+.md-typeset .warning > summary,
+.md-typeset .attention > .admonition-title,
+.md-typeset .attention > summary,
+.md-typeset .caution > .admonition-title,
+.md-typeset .caution > summary {
+  background-color: rgba(255, 127, 65, 0.15);
+}
+
+.md-typeset .warning > .admonition-title::before,
+.md-typeset .warning > summary::before,
+.md-typeset .attention > .admonition-title::before,
+.md-typeset .attention > summary::before,
+.md-typeset .caution > .admonition-title::before,
+.md-typeset .caution > summary::before {
+  background-color: var(--bc-primary-orange);
+}
+
+/* Error / Danger / Failure / Bug (#F5B6CD) */
+.md-typeset .admonition.danger,
+.md-typeset details.danger,
+.md-typeset .admonition.failure,
+.md-typeset details.failure,
+.md-typeset .admonition.bug,
+.md-typeset details.bug {
+  border-color: var(--bc-primary-pink);
+}
+
+.md-typeset .danger > .admonition-title,
+.md-typeset .danger > summary,
+.md-typeset .failure > .admonition-title,
+.md-typeset .failure > summary,
+.md-typeset .bug > .admonition-title,
+.md-typeset .bug > summary {
+  background-color: rgba(245, 182, 205, 0.22);
+}
+
+.md-typeset .danger > .admonition-title::before,
+.md-typeset .danger > summary::before,
+.md-typeset .failure > .admonition-title::before,
+.md-typeset .failure > summary::before,
+.md-typeset .bug > .admonition-title::before,
+.md-typeset .bug > summary::before {
+  background-color: var(--bc-pink-accessible);
+}
+
+/* Example / Abstract (#9063CD) */
+.md-typeset .admonition.example,
+.md-typeset details.example,
+.md-typeset .admonition.abstract,
+.md-typeset details.abstract {
+  border-color: var(--bc-primary-purple);
+}
+
+.md-typeset .example > .admonition-title,
+.md-typeset .example > summary,
+.md-typeset .abstract > .admonition-title,
+.md-typeset .abstract > summary {
+  background-color: rgba(144, 99, 205, 0.15);
+}
+
+.md-typeset .example > .admonition-title::before,
+.md-typeset .example > summary::before,
+.md-typeset .abstract > .admonition-title::before,
+.md-typeset .abstract > summary::before {
+  background-color: var(--bc-primary-purple);
+}
+
+/* Pie de página corporativo */
+.md-footer {
+  background-color: var(--bc-text-dark);
+  border-top: 2px solid var(--bc-primary-yellow);
+}

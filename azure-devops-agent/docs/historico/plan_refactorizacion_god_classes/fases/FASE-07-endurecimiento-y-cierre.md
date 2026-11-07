@@ -2,7 +2,8 @@
 
 > **Estado:** 🟢 COMPLETADA (2026-08-29) · **Depende de:** FASE 06 (🟢 completada) · **Riesgo:** Bajo
 > **Commit al cerrar:** `refactor(agent): endurecer arquitectura y cerrar deudas del plan`
-> **Resultado:** `docs/resultados/RESULTADO-FASE-07.md` · **Cierre:** `docs/resultados/CIERRE-DEL-PLAN.md`
+> **Resultado:** `../../../../../docs/sdd/resultados` · **Cierre:**
+> `../../../../../docs/sdd/resultados`
 
 > ✅ **DP-05 resuelta por el usuario el 2026-08-29: Opción A** (conservar `chat()` como punto de
 > extensión A2A/Kafka). El bloqueo quedó levantado y la fase se ejecutó completa.
@@ -50,21 +51,21 @@ las deudas acumuladas y se resuelve la última decisión abierta.
 
 ### 1.4 Archivos involucrados
 
-| Ruta | Acción |
-|---|---|
-| `docs/plan/DECISIONES_PENDIENTES.md` | MODIFICAR (registrar la resolución de DP-05) |
-| `domain/usecase/.../chat/AgentChatUseCase.java` | MODIFICAR **solo si** DP-05 lo exige |
-| `domain/model/.../gateways/AgentResponseGateway.java` | MODIFICAR / ELIMINAR según DP-05 |
-| `infrastructure/.../NoOpAgentResponseAdapter.java` | MODIFICAR / ELIMINAR según DP-05 |
-| Las 5 clases que violan `Rule_2.7` | MODIFICAR (campos a `final`) |
-| La clase que viola `Rule_2.2` | MODIFICAR (renombrar) |
-| `applications/app-service/src/test/java/.../UseCasesConfigTest.java` | MODIFICAR o SUSTITUIR |
-| `domain/model/src/test/java/co/com/bancolombia/model/a2a/**` | CREAR (pruebas de los ~15 modelos) |
-| `azure-devops-agent/README.md` | MODIFICAR |
-| `docs/resultados/RESULTADO-FASE-07.md` | CREAR |
-| `docs/resultados/CIERRE-DEL-PLAN.md` | CREAR |
+| Ruta                                                                              | Acción                                                              |
+|-----------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| `../../../../../docs/sdd/plan`                                                    | MODIFICAR (registrar la resolución de DP-05)                        |
+| `domain/usecase/.../chat/AgentChatUseCase.java`                                   | MODIFICAR **solo si** DP-05 lo exige                                |
+| `domain/model/.../gateways/AgentResponseGateway.java`                             | MODIFICAR / ELIMINAR según DP-05                                    |
+| `infrastructure/.../NoOpAgentResponseAdapter.java`                                | MODIFICAR / ELIMINAR según DP-05                                    |
+| Las 5 clases que violan `Rule_2.7`                                                | MODIFICAR (campos a `final`)                                        |
+| La clase que viola `Rule_2.2`                                                     | MODIFICAR (renombrar)                                               |
+| `applications/app-service/src/test/java/.../UseCasesConfigTest.java`              | MODIFICAR o SUSTITUIR                                               |
+| `domain/model/src/test/java/co/com/bancolombia/model/a2a/**`                      | CREAR (pruebas de los ~15 modelos)                                  |
+| `azure-devops-agent/README.md`                                                    | MODIFICAR                                                           |
+| `../../../../../docs/sdd/resultados`                                              | CREAR                                                               |
+| `../../../../../docs/sdd/resultados`                                              | CREAR                                                               |
 | `applications/app-service/src/test/java/co/com/bancolombia/ArchitectureTest.java` | **NO TOCAR** (dice literalmente *«Please do not modify this file»*) |
-| Las 4 suites del entry-point | **NO TOCAR** |
+| Las 4 suites del entry-point                                                      | **NO TOCAR**                                                        |
 
 > ⚠️ Antes de tocar `Rule_2.7`, **identifica las 5 clases reales** ejecutando
 > `.\gradlew.bat :app-service:test --tests "*ArchitectureTest*" --info` y leyendo el mensaje de la
@@ -133,7 +134,7 @@ De `rules/spring-rules.md`:
    con evidencia ejecutable por cada uno —como se hizo en las Fases 05 y 06—.
 
 9. **Actualizar el `README.md`** del módulo con la arquitectura resultante y **escribir
-   `docs/resultados/CIERRE-DEL-PLAN.md`** con la tabla baseline → final de las métricas de éxito
+   `../../../../../docs/sdd/resultados`** con la tabla baseline → final de las métricas de éxito
    del plan maestro §5.
 
 ### 2.2 Qué NO hacer
@@ -158,7 +159,7 @@ De `rules/spring-rules.md`:
 - [ ] Las 4 suites del entry-point verdes y sin modificar (`git diff` vacío).
 - [ ] `.\gradlew.bat build` en `BUILD SUCCESSFUL`.
 - [ ] `README.md` del módulo actualizado.
-- [ ] `docs/resultados/CIERRE-DEL-PLAN.md` escrito, con métricas reales baseline → final.
+- [ ] `../../../../../docs/sdd/resultados` escrito, con métricas reales baseline → final.
 
 ### 2.4 Checklist de calidad (obligatoria, de `spring-rules.md` §7)
 
@@ -179,26 +180,26 @@ De `rules/spring-rules.md`:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-06.md` | Contexto al día |
-| 2 | **Preguntar DP-05 al usuario y ESPERAR su respuesta** | Decisión registrada; sin ella no se continúa |
-| 3 | Ejecutar `.\gradlew.bat build` **antes de tocar nada** | Línea base verde registrada |
-| 4 | Aplicar la decisión de DP-05 | Camino muerto resuelto |
-| 5 | Identificar con evidencia las 5 clases de `Rule_2.7` y la de `Rule_2.2` | Lista real, no supuesta |
-| 6 | Corregirlas | `ArchitectureTest` sin advertencias |
-| 7 | Corregir o sustituir `UseCasesConfigTest` | Fin de la señal falsa |
-| 8 | Escribir las pruebas de los ~15 modelos A2A | `domain/model` ≥ 90% sin huecos |
-| 9 | Cubrir lo que falte de `AgentChatUseCase` y `Handler` | Ambos ≥ 90% |
-| 10 | Investigar y documentar el workaround de `jacocoMergedReport` | Conocimiento explícito |
-| 11 | Recorrer el checklist §7 completo, con un comando por criterio | Evidencia ejecutable |
-| 12 | Ejecutar `.\gradlew.bat build` y `jacocoMergedReport` | `BUILD SUCCESSFUL` + métricas finales |
-| 13 | `git diff` sobre las 4 suites del entry-point | **Salida vacía** |
-| 14 | Actualizar el `README.md` del módulo | Arquitectura documentada |
-| 15 | **Escribir `docs/resultados/RESULTADO-FASE-07.md`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad |
-| 16 | **Escribir `docs/resultados/CIERRE-DEL-PLAN.md`** | Baseline → final del plan maestro §5 |
-| 17 | Actualizar `docs/plan/ESTADO.md`: 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
-| 18 | Commit: `refactor(agent): endurecer arquitectura y cerrar deudas del plan` | Cambios versionados |
+| Paso | Acción                                                                          | Resultado esperado                           |
+|-----:|---------------------------------------------------------------------------------|----------------------------------------------|
+|    1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-06.md`           | Contexto al día                              |
+|    2 | **Preguntar DP-05 al usuario y ESPERAR su respuesta**                           | Decisión registrada; sin ella no se continúa |
+|    3 | Ejecutar `.\gradlew.bat build` **antes de tocar nada**                          | Línea base verde registrada                  |
+|    4 | Aplicar la decisión de DP-05                                                    | Camino muerto resuelto                       |
+|    5 | Identificar con evidencia las 5 clases de `Rule_2.7` y la de `Rule_2.2`         | Lista real, no supuesta                      |
+|    6 | Corregirlas                                                                     | `ArchitectureTest` sin advertencias          |
+|    7 | Corregir o sustituir `UseCasesConfigTest`                                       | Fin de la señal falsa                        |
+|    8 | Escribir las pruebas de los ~15 modelos A2A                                     | `domain/model` ≥ 90% sin huecos              |
+|    9 | Cubrir lo que falte de `AgentChatUseCase` y `Handler`                           | Ambos ≥ 90%                                  |
+|   10 | Investigar y documentar el workaround de `jacocoMergedReport`                   | Conocimiento explícito                       |
+|   11 | Recorrer el checklist §7 completo, con un comando por criterio                  | Evidencia ejecutable                         |
+|   12 | Ejecutar `.\gradlew.bat build` y `jacocoMergedReport`                           | `BUILD SUCCESSFUL` + métricas finales        |
+|   13 | `git diff` sobre las 4 suites del entry-point                                   | **Salida vacía**                             |
+|   14 | Actualizar el `README.md` del módulo                                            | Arquitectura documentada                     |
+|   15 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad                                 |
+|   16 | **Escribir `../../../../../docs/sdd/resultados`**                               | Baseline → final del plan maestro §5         |
+|   17 | Actualizar `../../../../../docs/sdd/plan`: 🟢 COMPLETADA + métricas + bitácora  | Tablero al día                               |
+|   18 | Commit: `refactor(agent): endurecer arquitectura y cerrar deudas del plan`      | Cambios versionados                          |
 
 > ⚠️ **El paso 2 es innegociable y bloqueante.** Aplicar DP-05 sin respuesta del usuario invalida
 > la fase completa, por muy verde que quede el build.

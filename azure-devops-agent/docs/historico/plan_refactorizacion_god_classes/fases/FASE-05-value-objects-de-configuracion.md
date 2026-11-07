@@ -2,7 +2,7 @@
 
 > **Estado:** 🟢 COMPLETADA · **Depende de:** FASE 04 (🟢 completada) · **Riesgo:** Bajo
 > **Commit al cerrar:** `refactor(agent_config): agrupar configuracion en objetos de valor`
-> **Resultado de la ejecución:** `docs/resultados/RESULTADO-FASE-05.md`
+> **Resultado de la ejecución:** `../../../../../docs/sdd/resultados`
 
 > ℹ️ **Esta fase se replanteó al cerrar la Fase 04.** El objetivo original —bajar el constructor de
 > `AgentChatUseCase` de 11 argumentos— **ya se cumplió** como efecto colateral de mover los flujos a
@@ -192,21 +192,21 @@ tres veces en total, no seis.
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-04.md` | Contexto al día; comprobar la ratificación pendiente de la Fase 03 |
-| 2 | Crear `AzureDevOpsScope` y `CorporateKnowledge` (Pasos A y B) | Value Objects con validación |
-| 3 | Escribir sus pruebas (Paso E, primera parte) | Verdes antes de tocar los handlers |
-| 4 | Sustituir los `String` en los cuatro handlers (Paso C) | Compilador como red de seguridad |
-| 5 | Ajustar `UseCasesConfig` para leer cada recurso una vez (Paso D) | Sin I/O repetido en el arranque |
-| 6 | Ajustar la construcción de handlers en las pruebas (Paso E, segunda parte) | Sin cambiar aserciones |
-| 7 | Ejecutar `.\gradlew.bat :usecase:test` y `:model:test` | Todo verde |
-| 8 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 9 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`) | Métricas reales |
-| 10 | **Escribir `docs/resultados/RESULTADO-FASE-05.md`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad |
-| 11 | Actualizar `docs/plan/ESTADO.md`: 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
-| 12 | **Generar `docs/fases/FASE-06-separacion-del-entry-point.md`** con `_PLANTILLA_FASE.md` | Checkpoint creado |
-| 13 | Commit: `refactor(agent_config): agrupar configuracion en objetos de valor` | Cambios versionados |
+| Paso | Acción                                                                          | Resultado esperado                                                 |
+|-----:|---------------------------------------------------------------------------------|--------------------------------------------------------------------|
+|    1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-04.md`           | Contexto al día; comprobar la ratificación pendiente de la Fase 03 |
+|    2 | Crear `AzureDevOpsScope` y `CorporateKnowledge` (Pasos A y B)                   | Value Objects con validación                                       |
+|    3 | Escribir sus pruebas (Paso E, primera parte)                                    | Verdes antes de tocar los handlers                                 |
+|    4 | Sustituir los `String` en los cuatro handlers (Paso C)                          | Compilador como red de seguridad                                   |
+|    5 | Ajustar `UseCasesConfig` para leer cada recurso una vez (Paso D)                | Sin I/O repetido en el arranque                                    |
+|    6 | Ajustar la construcción de handlers en las pruebas (Paso E, segunda parte)      | Sin cambiar aserciones                                             |
+|    7 | Ejecutar `.\gradlew.bat :usecase:test` y `:model:test`                          | Todo verde                                                         |
+|    8 | Ejecutar `.\gradlew.bat build`                                                  | `BUILD SUCCESSFUL`                                                 |
+|    9 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`)                 | Métricas reales                                                    |
+|   10 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad                                                       |
+|   11 | Actualizar `../../../../../docs/sdd/plan`: 🟢 COMPLETADA + métricas + bitácora  | Tablero al día                                                     |
+|   12 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`            | Checkpoint creado                                                  |
+|   13 | Commit: `refactor(agent_config): agrupar configuracion en objetos de valor`     | Cambios versionados                                                |
 
 > ⚠️ **Los pasos 10 y 12 son innegociables.** Sin ellos la fase se considera **incompleta**.
 >

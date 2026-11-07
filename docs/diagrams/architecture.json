@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura General: Azure DevOps Agent Harness",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "e2e-view",
+        "label": "Ecosistema Integral",
+        "focus": [
+          "user",
+          "frontend",
+          "bff",
+          "agent",
+          "mcp",
+          "litellm",
+          "ado",
+          "spec_storage",
+          "pgvector"
+        ],
+        "note": "Topología multicapa desacoplada a través de Clean Architecture y protocolos A2A/MCP."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Desarrollador / Scrum",
+      "sublabel": "Canal Usuario",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        170,
+        60
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "backend",
+      "label": "Servidor MCP",
+      "sublabel": "azure-devops-mcp :8082",
+      "brand": "spring",
+      "pos": [
+        570,
+        60
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "MCP Tools"
+    },
+    {
+      "id": "ado",
+      "type": "external",
+      "label": "Azure DevOps Services",
+      "sublabel": "Cloud REST API v7",
+      "pos": [
+        870,
+        60
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "Git, Boards, Pipelines"
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Frontend Web",
+      "sublabel": "azure-devops-frontend :4200",
+      "brand": "angular",
+      "pos": [
+        60,
+        200
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "tag": "Signals & OnPush"
+    },
+    {
+      "id": "bff",
+      "type": "backend",
+      "label": "BFF Orquestador",
+      "sublabel": "azure-devops-backend :8081",
+      "brand": "spring",
+      "pos": [
+        310,
+        200
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "WebFlux / SSE"
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Agent Harness Core",
+      "sublabel": "azure-devops-agent :8080",
+      "brand": "spring",
+      "pos": [
+        570,
+        200
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "Clean Architecture"
+    },
+    {
+      "id": "litellm",
+      "type": "cloud",
+      "label": "LiteLLM Gateway",
+      "sublabel": "OpenAI Protocol :4141",
+      "pos": [
+        870,
+        200
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "Model Agnostic"
+    },
+    {
+      "id": "spec_storage",
+      "type": "database",
+      "label": "Spec Storage",
+      "sublabel": "docs/sdd/specs",
+      "pos": [
+        430,
+        340
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "FileSystem Port"
+    },
+    {
+      "id": "pgvector",
+      "type": "database",
+      "label": "Vector Store",
+      "sublabel": "PostgreSQL PgVector",
+      "pos": [
+        720,
+        340
+      ],
+      "size": [
+        180,
+        60
+      ],
+      "tag": "Planning Memory"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Capa de Presentación y Experiencia",
+      "wraps": [
+        "user",
+        "frontend"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Capa de Integración y Orquestación (Harness Core)",
+      "wraps": [
+        "bff",
+        "agent",
+        "mcp"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Almacenamiento y Servicios Externos",
+      "wraps": [
+        "spec_storage",
+        "pgvector",
+        "litellm",
+        "ado"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "u-to-f",
+      "from": "user",
+      "to": "frontend",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "interactúa",
+      "labelAt": [
+        169,
+        134
+      ],
+      "variant": "emphasis"
+    },
+    {
+      "id": "f-to-b",
+      "from": "frontend",
+      "to": "bff",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "REST / SSE",
+      "labelDy": -16,
+      "variant": "emphasis"
+    },
+    {
+      "id": "b-to-a",
+      "from": "bff",
+      "to": "agent",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "JSON-RPC 2.0",
+      "labelDy": -16,
+      "variant": "emphasis"
+    },
+    {
+      "id": "a-to-m",
+      "from": "agent",
+      "to": "mcp",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "label": "invoca tools",
+      "labelDx": 24
+    },
+    {
+      "id": "m-to-ado",
+      "from": "mcp",
+      "to": "ado",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "REST v7",
+      "labelDy": -16,
+      "variant": "emphasis"
+    },
+    {
+      "id": "a-to-l",
+      "from": "agent",
+      "to": "litellm",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "OpenAI chat",
+      "labelDy": -16
+    },
+    {
+      "id": "a-to-s",
+      "from": "agent",
+      "to": "spec_storage",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "guarda specs",
+      "labelDx": -24
+    },
+    {
+      "id": "a-to-p",
+      "from": "agent",
+      "to": "pgvector",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "embeddings RAG",
+      "labelDx": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Clean Architecture & A2A",
+      "items": [
+        "Dominio del Agente 100% puro y aislado de frameworks.",
+        "Transporte A2A dual: síncrono (JSON-RPC) y asíncrono para Kafka.",
+        "Persistencia documental desacoplada mediante FileSystemSpecAdapter."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Gobernanza y Herramientas MCP",
+      "items": [
+        "azure-devops-mcp encapsula la toolificación sobre Azure DevOps.",
+        "Reglas normativas corporativas HyMS (DP-PL-02) garantizadas en prompts."
+      ]
+    }
+  ]
+}

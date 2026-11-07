@@ -112,12 +112,12 @@ En `src/app/features/devops-agent/models/devops-agent.model.ts`:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md` | Confirmar que la fase no está bloqueada |
-| P-02 | Ejecutar tareas T-01 y T-02 | Contratos tipados implementados |
-| P-03 | Ejecutar `pnpm build` | Bundle generado exitosamente |
-| P-04 | Escribir `docs/resultados/RESULTADO-FASE-01.md` | Evidencia y métricas reales |
-| P-05 | Actualizar `docs/plan/ESTADO.md`: Fase 01 🟢 COMPLETADA | Tablero actualizado |
-| P-06 | Generar `docs/fases/FASE-02-servicios-api-estado-reactivo.md` y prompt | Continuidad lista |
-| P-07 | Presentar al usuario propuesta de commit | Listo para autorización |
+| Paso | Acción                                                     | Resultado esperado                      |
+|-----:|------------------------------------------------------------|-----------------------------------------|
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`   | Confirmar que la fase no está bloqueada |
+| P-02 | Ejecutar tareas T-01 y T-02                                | Contratos tipados implementados         |
+| P-03 | Ejecutar `pnpm build`                                      | Bundle generado exitosamente            |
+| P-04 | Escribir `../../../docs/sdd/resultados`                    | Evidencia y métricas reales             |
+| P-05 | Actualizar `../../../docs/sdd/plan`: Fase 01 🟢 COMPLETADA | Tablero actualizado                     |
+| P-06 | Generar `../../../docs/sdd/fases` y prompt                 | Continuidad lista                       |
+| P-07 | Presentar al usuario propuesta de commit                   | Listo para autorización                 |

@@ -1,6 +1,6 @@
 # FASE 03 — API de tareas del BFF hacia el frontend
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** ✅ COMPLETADA — 2026-08-29 · 153/153 en
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** ✅ COMPLETADA — 2026-08-29 · 153/153 en
 > verde
 > **Deudas objetivo:** D-21, D-24, D-25, D-26, D-28, D-30, D-33 — **todas saldadas**
 > **Decisiones resueltas (2026-08-29):** **DP-07 → Opción B** · **DP-07-bis → B2** · **D-33 → A**
@@ -12,7 +12,7 @@
 
 ### 1.1 Dependencias resueltas de la Fase 02
 
-La Fase 02 está cerrada (`docs/resultados/RESULTADO-FASE-02.md`). Al arrancar esta fase existe:
+La Fase 02 está cerrada (`../../../../../docs/sdd/resultados`). Al arrancar esta fase existe:
 
 - **Build en verde: 128 pruebas, 0 fallos.**
 - `AgentGateway` (`domain/model/agent/gateways/`) operativo sobre JSON-RPC 2.0 con `sendMessage`,
@@ -60,7 +60,7 @@ Que el frontend hable **con un solo servicio** y pueda ver el estado de cada tar
 ejecuta.
 
 **No entra:** modificar el repositorio del frontend. Los cambios que necesita se **documentan** en
-`docs/resultados/CAMBIOS-FRONTEND.md` para que los aplique su equipo.
+`../../../../../docs/sdd/resultados` para que los aplique su equipo.
 
 ---
 
@@ -308,7 +308,7 @@ Si tras esto el paquete `model/chat` queda vacío, eliminarlo también.
 
 ### T-12 · Documentar los cambios del frontend
 
-**Archivo nuevo:** `docs/resultados/CAMBIOS-FRONTEND.md`
+**Archivo nuevo:** `../../../../../docs/sdd/resultados`
 
 ```jsonc
 // proxy.conf.json — DESPUÉS
@@ -370,11 +370,12 @@ Incluir además: el `AgentTask` de TypeScript gana el campo `origin: 'AGENT' | '
   verificación (T-10).
 - [x] **P-17** — `gradlew test` en **verde** (T-13).
 - [x] **P-18** — `gradlew jacocoMergedReport --no-configuration-cache` y anotar cobertura.
-- [x] **P-19** — Redactar `docs/resultados/CAMBIOS-FRONTEND.md` (T-12).
-- [x] **P-20** — Redactar `docs/resultados/RESULTADO-FASE-03.md` con la plantilla de
-  `docs/resultados/_PLANTILLA_RESULTADO.md`.
+- [x] **P-19** — Redactar `../../../../../docs/sdd/resultados` (T-12).
+- [x] **P-20** — Redactar `../../../../../docs/sdd/resultados` con la plantilla de
+  `../../../../../docs/sdd/resultados`.
 - [x] **P-21** — Rellenar el bloque **Resultado** de abajo y actualizar §9 del plan maestro.
-- [x] **P-22** — **Generar `docs/fases/fase-04.md`**: prompts y datos fuera del dominio (D-08,
+- [x] **P-22** — **Generar `../../../../../docs/sdd/fases`**: prompts y datos fuera del dominio
+  (D-08,
   D-19), bloqueada por **DP-02**.
 
 ---
@@ -433,7 +434,7 @@ found**.
 - **Rutas nuevas expuestas:** **5** — `POST /api/chat/messages`, `GET /api/tasks`,
   `GET /api/tasks/{id}`, `POST /api/tasks/{id}/cancel`, `GET /api/agent/card`
 - **Servicios con los que habla el frontend:** **1** (era 2) — pendiente de aplicar
-  `docs/resultados/CAMBIOS-FRONTEND.md` en el repositorio del front
+  `../../../../../docs/sdd/resultados` en el repositorio del front
 - **Pruebas de la Fase 01 invertidas o ajustadas:** 3 invertidas + 2 sustituidas por 1
     1. `givenNonNumericMaxResults_whenGet_then500NotBadRequest` → `..._thenBadRequest` (500 →
        **400**)
@@ -453,5 +454,5 @@ found**.
 - **Deudas nuevas detectadas:** **D-34** — el agente no declara el contrato de respuesta de
   `GET /api/tasks`
 
-> Informe completo: [`docs/resultados/RESULTADO-FASE-03.md`](../resultados/RESULTADO-FASE-03.md)
+> Informe completo: [`../../../../../docs/sdd/resultados`](../resultados/RESULTADO-FASE-03.md)
 

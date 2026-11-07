@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit propuesto:** `feat(frontend): crear componente modal lanzador de program planning con validacion reactiva`  
-> **Instrucciones:** `docs/fases/FASE-04-modal-lanzador-planeacion.md`  
+> **Instrucciones:** `../../../docs/sdd/fases`  
 > **Código productivo y pruebas intervenidos:** 4 archivos (2 creados, 2 modificados).
 
 ---

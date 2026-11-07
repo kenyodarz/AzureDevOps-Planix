@@ -1,9 +1,9 @@
 # FASE 04 — Prompts y datos fuera del dominio
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟢 **COMPLETADA** — 2026-08-29
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟢 **COMPLETADA** — 2026-08-29
 > **Deudas objetivo:** D-08 (saldada), D-19 (parcial)
 > **Decisión resuelta (2026-08-29):** **DP-02.a → destino final el MCP/agente, ejecución en dos
-tiempos** ·
+> tiempos** ·
 > **DP-02.b → B** · **DP-02.c → aplazada a la Fase 05**
 > **Resultado:** [`RESULTADO-FASE-04.md`](../resultados/RESULTADO-FASE-04.md) ·
 > **Fase siguiente:** [`fase-05.md`](fase-05.md)
@@ -14,7 +14,7 @@ tiempos** ·
 
 ### 1.1 De dónde vienes
 
-La Fase 03 está cerrada (`docs/resultados/RESULTADO-FASE-03.md`). Al arrancar esta fase existe:
+La Fase 03 está cerrada (`../../../../../docs/sdd/resultados`). Al arrancar esta fase existe:
 
 - **Build en verde: 153 pruebas, 0 fallos.**
 - El frontend habla con **un solo servicio**: cinco rutas nuevas bajo `/api/**` en `TaskHandler`.
@@ -229,7 +229,7 @@ Implementado en `app-service` leyendo `classpath:mock/dashboard.json`.
 >
 > **Resolución adoptada:**
 > - El puerto es **síncrono** (`String mockDashboard()`). El adaptador lee el recurso **una sola vez
-    > al construirse** y lo cachea, así que en tiempo de petición no hay E/S: DP-08 se mantiene y no
+>   al construirse** y lo cachea, así que en tiempo de petición no hay E/S: DP-08 se mantiene y no
 >   hace falta `block()` en ninguna parte.
 > - `getMockDashboardData()` **se conserva** en el caso de uso con la misma firma, pero deja de
 >   devolver una constante y pasa a delegar en el puerto.
@@ -302,9 +302,10 @@ Sustituir los tres usos literales. **No cambiar los valores.**
 - [ ] **P-12** — `gradlew test` en **verde** (T-07).
 - [ ] **P-13** — `gradlew jacocoMergedReport --no-configuration-cache`; anotar cobertura.
 - [ ] **P-14** — `grep` de verificación de T-07.
-- [ ] **P-15** — Redactar `docs/resultados/RESULTADO-FASE-04.md` con la plantilla.
+- [ ] **P-15** — Redactar `../../../../../docs/sdd/resultados` con la plantilla.
 - [ ] **P-16** — Registrar **D-35** en el plan maestro; rellenar §6 y actualizar §9.
-- [ ] **P-17** — **Generar `docs/fases/fase-05.md`**: dominio del dashboard (D-06, D-07, D-09, D-13)
+- [ ] **P-17** — **Generar `../../../../../docs/sdd/fases`**: dominio del dashboard (D-06, D-07,
+  D-09, D-13)
     + la propuesta del año de DP-02.c, bloqueada por **DP-03**.
 
 ---
@@ -367,7 +368,7 @@ Requiere su propio plan, no un `T-nn` dentro de una fase.
 
 ## 7. Resultado
 
-> Detalle completo en [`docs/resultados/RESULTADO-FASE-04.md`](../resultados/RESULTADO-FASE-04.md).
+> Detalle completo en [`../../../../../docs/sdd/resultados`](../resultados/RESULTADO-FASE-04.md).
 
 - **Fecha de cierre:** 2026-08-29
 - **DP-02 resuelta como:** a → dos tiempos (ficheros ahora, MCP en D-35) · b → **B** · c → **Fase

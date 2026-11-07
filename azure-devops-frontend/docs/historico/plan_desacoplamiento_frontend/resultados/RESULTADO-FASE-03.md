@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-01 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(devops_agent): externalizar copys y prompts a la capa domain`
-> **Instrucciones:** `docs/fases/fase-03.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 > **Código productivo modificado:** 3 archivos existentes tocados · 5 archivos nuevos de dominio · 1 archivo de test nuevo ·
 > **cero `.spec.ts` de las Fases 01 y 02 modificados**
 
@@ -132,10 +132,10 @@ Ninguna. Se siguieron todos los pasos T-01 a T-09 conforme a la especificación 
 
 ## 9. Estado al cerrar
 
-- Siguiente fase generada: **`docs/fases/fase-04.md`** ✅
+- Siguiente fase generada: **`../../../../../docs/sdd/fases`** ✅
 - Decisiones resueltas en esta fase: **DP-04** 🟢, **DP-07** 🟢
 - Decisiones abiertas: DP-01, DP-02, DP-05, DP-06 *(parcial)*, DP-08, DP-10
-- `docs/plan/ESTADO.md` actualizado: **sí**
+- `../../../../../docs/sdd/plan` actualizado: **sí**
 - Restricción **R-3 cumplida**: cero `.spec.ts` previos modificados
 - Siguiente paso: ejecutar **Fase 04 (Segregación de la capa de API)**
 

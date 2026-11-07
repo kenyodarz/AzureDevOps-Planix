@@ -24,7 +24,8 @@ Lee, en este orden, y confirma en 10 líneas qué entendiste antes de tocar nada
    y checklist.
 4. `azure-devops-mcp/docs/resultados/CONTRATO-MCP.md` — **el contrato que NO puedes romper**. Es el
    documento central de esta fase.
-5. `azure-devops-mcp/docs/resultados/BASELINE.md` y `docs/fases/fase-02.md` §4 — cifras medidas.
+5. `azure-devops-mcp/docs/resultados/BASELINE.md` y `../../../../../docs/sdd/fases` §4 — cifras
+   medidas.
 
 ### Estado real al arrancar (medido, no estimado)
 
@@ -92,7 +93,8 @@ el dominio— es la única violación de ArchUnit `Rule_2.2`.
 
 ### Cómo trabajar
 
-Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-03.md`, en orden y
+Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `../../../../../docs/sdd/fases`, en
+orden y
 sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
 completes.
 
@@ -117,7 +119,8 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] `CONTRATO-MCP.md` §3 actualizado.
 - [ ] Plan maestro actualizado: §3, §6, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-03.md` relleno con lo alcanzado **de verdad**.
-- [ ] **`docs/fases/fase-04.md` generado**, con **DP-04** marcada como bloqueante en su primer paso.
+- [ ] **`../../../../../docs/sdd/fases` generado**, con **DP-04** marcada como bloqueante en su
+  primer paso.
 - [ ] Commit hecho con el mensaje indicado.
 
 Empieza por el **Paso 0**.

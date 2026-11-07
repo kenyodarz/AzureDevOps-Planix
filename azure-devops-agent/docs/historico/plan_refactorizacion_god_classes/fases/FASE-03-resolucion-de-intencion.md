@@ -2,7 +2,7 @@
 
 > **Estado:** 🟢 COMPLETADA · **Depende de:** FASE 02 (🟢 completada) · **Riesgo:** Medio
 > **Commit al cerrar:** `refactor(agent_intent): introducir resolutor de intencion en el dominio`
-> **Resultado de la ejecución:** `docs/resultados/RESULTADO-FASE-03.md`
+> **Resultado de la ejecución:** `../../../../../docs/sdd/resultados`
 
 > ⚠️ **Esta es la primera fase que cambia el comportamiento visible para el usuario.**
 > Aplica DP-01: peticiones que hoy se atienden mal pasarán a atenderse bien.
@@ -282,22 +282,22 @@ Añade además pruebas de que `workItemId` se extrae correctamente en los casos 
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-02.md` | Contexto al día; DP-01 confirmada como resuelta |
-| 2 | Crear `AgentIntent` e `IntentResolution` (Paso A) | Contratos en el dominio |
-| 3 | Crear `IntentResolver` con la tabla de precedencia (Paso B) | Servicio de dominio puro |
-| 4 | Escribir `IntentResolverTest` con los 15 casos (Paso F) | Todos en verde **antes** de tocar el caso de uso |
-| 5 | Simplificar `executeChat()` y eliminar `handleSpecialCommands()` (Paso C) | Sin cascada de `if` |
-| 6 | Registrar el bean en `UseCasesConfig` (Paso D) | El contexto de Spring arranca |
-| 7 | Ejecutar `.\gradlew.bat :usecase:test` | 14 pruebas verdes; **2 rojas, las de DP-01** |
-| 8 | Invertir y renombrar esas 2 pruebas (Paso E) | 16 pruebas en verde |
-| 9 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 10 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`) | Métricas reales |
-| 11 | **Escribir `docs/resultados/RESULTADO-FASE-03.md`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad |
-| 12 | Actualizar `docs/plan/ESTADO.md`: 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
-| 13 | **Generar `docs/fases/FASE-04-separacion-de-flujos.md`** con `_PLANTILLA_FASE.md` | Checkpoint creado |
-| 14 | Commit: `refactor(agent_intent): introducir resolutor de intencion en el dominio` | Cambios versionados |
+| Paso | Acción                                                                            | Resultado esperado                               |
+|-----:|-----------------------------------------------------------------------------------|--------------------------------------------------|
+|    1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-02.md`             | Contexto al día; DP-01 confirmada como resuelta  |
+|    2 | Crear `AgentIntent` e `IntentResolution` (Paso A)                                 | Contratos en el dominio                          |
+|    3 | Crear `IntentResolver` con la tabla de precedencia (Paso B)                       | Servicio de dominio puro                         |
+|    4 | Escribir `IntentResolverTest` con los 15 casos (Paso F)                           | Todos en verde **antes** de tocar el caso de uso |
+|    5 | Simplificar `executeChat()` y eliminar `handleSpecialCommands()` (Paso C)         | Sin cascada de `if`                              |
+|    6 | Registrar el bean en `UseCasesConfig` (Paso D)                                    | El contexto de Spring arranca                    |
+|    7 | Ejecutar `.\gradlew.bat :usecase:test`                                            | 14 pruebas verdes; **2 rojas, las de DP-01**     |
+|    8 | Invertir y renombrar esas 2 pruebas (Paso E)                                      | 16 pruebas en verde                              |
+|    9 | Ejecutar `.\gradlew.bat build`                                                    | `BUILD SUCCESSFUL`                               |
+|   10 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`)                   | Métricas reales                                  |
+|   11 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md`   | Trazabilidad                                     |
+|   12 | Actualizar `../../../../../docs/sdd/plan`: 🟢 COMPLETADA + métricas + bitácora    | Tablero al día                                   |
+|   13 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`              | Checkpoint creado                                |
+|   14 | Commit: `refactor(agent_intent): introducir resolutor de intencion en el dominio` | Cambios versionados                              |
 
 > ⚠️ **Los pasos 11 y 13 son innegociables.** Sin ellos la fase se considera **incompleta**.
 >

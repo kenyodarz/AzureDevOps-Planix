@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "skills": {
+    "angular-devops-repo-kickstart": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "angular-devops-repo-kickstart/SKILL.md",
+      "computedHash": "43b714862edfbc01f70a52a810004279ae083dec1efc5675b132dbfd8a392a27"
+    },
+    "angular-sdd-workflow": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "angular-sdd-workflow/SKILL.md",
+      "computedHash": "958cdd74bcd1253b52886cb814b7b899ce473b416b0f4c00744893124f34fbac"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "computedHash": "da48054155b36bfe3fc2ad24f97087af4a495e1b6a4e352233cc1a77550838e5",
+      "installMode": "copy"
+    },
+    "codebase-docs-archify": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "codebase-docs-archify/SKILL.md",
+      "computedHash": "800df02ba4cb1af321ba2813e2c074cf44eb50186a69d785c89c8d945806f0b4"
+    },
+    "codebase-docs-diataxis": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "codebase-docs-diataxis/SKILL.md",
+      "computedHash": "8d8ffea2ec11dd87c706fa3cc6a699baef2143ef3b76cdecb1bc307c66e60678"
+    },
+    "java-api-to-mcp": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "java-api-to-mcp/SKILL.md",
+      "computedHash": "3adba6bc02a730da5f7645343408ff6525f50cfe7d6c001ace8ce0d25bc12bdc"
+    },
+    "java-devops-repo-kickstart": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "java-devops-repo-kickstart/SKILL.md",
+      "computedHash": "a115a7a39df9b10a01339f1c6ea61ca5251a2793ffeb03fc46a8aa27ab5cf9bc"
+    },
+    "java-sdd-workflow": {
+      "source": "jmina_cib/skills-bancolombia-ai",
+      "sourceType": "github",
+      "skillPath": "java-sdd-workflow/SKILL.md",
+      "computedHash": "58020c1fc82a4f10f7f00e98bb9d681c45d3070ef8bdf03e96708b2a01c88d0e"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit propuesto:** `feat(frontend): registrar contratos de api y dtos para program planning y specs`  
-> **Instrucciones:** `docs/fases/FASE-01-contratos-api-modelos-dtos.md`  
+> **Instrucciones:** `../../../docs/sdd/fases`  
 > **Código productivo modificado:** 52 líneas añadidas en 2 archivos (`src/app/core/config/api-endpoints.ts` y `src/app/features/devops-agent/models/devops-agent.model.ts`).
 
 ---
@@ -85,6 +85,6 @@ Ninguna. La ejecución siguió fielmente las especificaciones de T-01 y T-02.
 
 ## 8. Estado al cerrar
 
-- Siguiente fase generada: `docs/fases/FASE-02-servicios-api-estado-reactivo.md`
-- Prompt de siguiente fase generado: `docs/prompts/PROMPT-FASE-02.md`
-- `docs/plan/ESTADO.md` actualizado: Sí (Fase 01 🟢 COMPLETADA, Fase 02 🟡 PENDIENTE)
+- Siguiente fase generada: `../../../docs/sdd/fases`
+- Prompt de siguiente fase generado: `../../../docs/sdd/prompts`
+- `../../../docs/sdd/plan` actualizado: Sí (Fase 01 🟢 COMPLETADA, Fase 02 🟡 PENDIENTE)

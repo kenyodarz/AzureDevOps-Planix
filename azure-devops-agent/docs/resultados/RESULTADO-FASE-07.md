@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**  
 > `feat(agent): especializar prompts de story creator con reglas de negocio HyMS y QA (DP-PL-02)`  
-> **Instrucciones:** `docs/fases/FASE-07-prompts-story-creator-hyms.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

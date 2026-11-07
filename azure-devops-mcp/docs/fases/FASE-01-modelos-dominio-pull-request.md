@@ -13,7 +13,7 @@
 El módulo `azure-devops-mcp` implementa Clean Architecture con soporte probado para Work Items
 (`domain/model/src/main/java/co/com/bancolombia/model/workitem`). El dominio es 100% puro (cero
 dependencias de Spring, Jackson o frameworks externos), tras el cierre exitoso del plan maestro de
-refactorización archivado en `docs/historico/plan_refactorizacion_mcp/`.
+refactorización archivado en `../../../docs/sdd/historico`.
 
 ### 1.2 Problema que resuelve esta fase
 
@@ -104,13 +104,13 @@ Existirá el paquete `co.com.bancolombia.model.pullrequest` con:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción                                                                                    | Resultado esperado                 |
-|-----:|-------------------------------------------------------------------------------------------|------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                         | Confirmar que no hay bloqueos      |
-| P-02 | Crear `GitChange.java` y `PullRequest.java`                                               | Modelos de dominio listos          |
-| P-03 | Crear `PullRequestPort.java`                                                              | Contrato de puerto listo           |
-| P-04 | Crear y ejecutar `PullRequestTest.java`                                                   | Tests en verde                     |
-| P-05 | Ejecutar `./gradlew :model:test`                                                          | Build sin fallos                   |
-| P-06 | Escribir `docs/resultados/RESULTADO-FASE-01.md`                                           | Trazabilidad del resultado medido  |
-| P-07 | Actualizar `docs/plan/ESTADO.md` a 🟢 COMPLETADA                                          | Tablero al día                     |
-| P-08 | Generar `docs/fases/FASE-02-casos-uso-pull-request.md` y `docs/prompts/PROMPT-FASE-02.md` | Siguiente fase lista para ejecutar |
+| Paso | Acción                                                          | Resultado esperado                 |
+|-----:|-----------------------------------------------------------------|------------------------------------|
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`        | Confirmar que no hay bloqueos      |
+| P-02 | Crear `GitChange.java` y `PullRequest.java`                     | Modelos de dominio listos          |
+| P-03 | Crear `PullRequestPort.java`                                    | Contrato de puerto listo           |
+| P-04 | Crear y ejecutar `PullRequestTest.java`                         | Tests en verde                     |
+| P-05 | Ejecutar `./gradlew :model:test`                                | Build sin fallos                   |
+| P-06 | Escribir `../../../docs/sdd/resultados`                         | Trazabilidad del resultado medido  |
+| P-07 | Actualizar `../../../docs/sdd/plan` a 🟢 COMPLETADA             | Tablero al día                     |
+| P-08 | Generar `../../../docs/sdd/fases` y `../../../docs/sdd/prompts` | Siguiente fase lista para ejecutar |

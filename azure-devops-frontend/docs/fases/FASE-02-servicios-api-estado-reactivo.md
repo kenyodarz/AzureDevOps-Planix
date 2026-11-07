@@ -115,11 +115,11 @@ En `src/app/features/devops-agent/services/state/planning-state.service.ts`:
 
 | Paso | Acción                                                                          | Resultado esperado                      |
 |-----:|---------------------------------------------------------------------------------|-----------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`               | Confirmar que la fase no está bloqueada |
+| P-01 | Leer `../../../docs/sdd/plan` y `../../../docs/sdd/plan`                        | Confirmar que la fase no está bloqueada |
 | P-02 | Ejecutar tarea T-01 (`PlanningApiService`, `DevopsAgentApiService` y sus tests) | Métodos HTTP testeados                  |
 | P-03 | Ejecutar tarea T-02 (`PlanningStateService` y sus tests)                        | Estado reactivo testeado                |
 | P-04 | Ejecutar `corepack pnpm test --watch=false` y `corepack pnpm build`             | 100% tests pasando y build verde        |
-| P-05 | Escribir `docs/resultados/RESULTADO-FASE-02.md`                                 | Evidencias y métricas registradas       |
-| P-06 | Actualizar `docs/plan/ESTADO.md`: Fase 02 🟢 COMPLETADA                         | Tablero al día                          |
-| P-07 | Generar `docs/fases/FASE-03-visor-explorador-specs.md` y prompt                 | Continuidad lista                       |
+| P-05 | Escribir `../../../docs/sdd/resultados`                                         | Evidencias y métricas registradas       |
+| P-06 | Actualizar `../../../docs/sdd/plan`: Fase 02 🟢 COMPLETADA                      | Tablero al día                          |
+| P-07 | Generar `../../../docs/sdd/fases` y prompt                                      | Continuidad lista                       |
 | P-08 | Presentar al usuario propuesta de commit                                        | Listo para autorización                 |

@@ -11,11 +11,11 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 01 cerró el 2026-08-31 (`docs/resultados/RESULTADO-FASE-01.md`) dejando:
+La Fase 01 cerró el 2026-08-31 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **188 pruebas verdes en 12 archivos** (antes: 29 en 4). Los 9 componentes tienen `.spec.ts`.
 - El proyecto **vuelve a compilar**: se descubrió que estaba roto (`TS2729`) y se corrigió con la excepción **S-01**, que saldó **D-07**.
-- Baseline medido en `docs/resultados/baseline-fase-01.md`, que **corrige** el diagnóstico inicial.
+- Baseline medido en `../../../../../docs/sdd/resultados`, que **corrige** el diagnóstico inicial.
 - Seis deudas nuevas: **D-22 a D-27**.
 
 **Entorno de ejecución (obligatorio en esta máquina).** El registro npm está interceptado por TLS corporativo. Antes de cualquier comando:
@@ -313,7 +313,7 @@ git diff --stat -- 'src/app/**/*.spec.ts'   # SOLO archivos nuevos de core/
 
 | Paso | Acción                                                                                   | Resultado esperado                                  |
 |-----:|------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                        | Confirmar DP-03, DP-06 y DP-09                      |
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                     | Confirmar DP-03, DP-06 y DP-09                      |
 | P-02 | **Si DP-09 sigue 🔴 ABIERTA: DETENERSE y preguntar al usuario**                          | Bloqueo resuelto                                    |
 | P-03 | Exportar `NODE_EXTRA_CA_CERTS` y ejecutar `corepack pnpm install`                        | Dependencias listas                                 |
 | P-04 | `corepack pnpm test`                                                                     | 188 passed (188)                                    |
@@ -329,9 +329,9 @@ git diff --stat -- 'src/app/**/*.spec.ts'   # SOLO archivos nuevos de core/
 | P-14 | `corepack pnpm test`                                                                     | Cero fallos; ningún `.spec.ts` de la Fase 01 tocado |
 | P-15 | `corepack pnpm build`                                                                    | Correcto, dentro del presupuesto                    |
 | P-16 | Actualizar `DECISIONES_PENDIENTES.md` con lo resuelto                                    | Bitácora al día                                     |
-| P-17 | **Escribir `docs/resultados/RESULTADO-FASE-02.md`** con `_PLANTILLA_RESULTADO.md`        | Trazabilidad                                        |
-| P-18 | Actualizar `docs/plan/ESTADO.md`: Fase 02 🟢 + métricas                                  | Tablero al día                                      |
-| P-19 | **Generar `docs/fases/fase-03.md`** con `_PLANTILLA_FASE.md`                             | Continuidad                                         |
+| P-17 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md`          | Trazabilidad                                        |
+| P-18 | Actualizar `../../../../../docs/sdd/plan`: Fase 02 🟢 + métricas                         | Tablero al día                                      |
+| P-19 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`                     | Continuidad                                         |
 | P-20 | Commit: `refactor(core): crear capa core con configuracion, interceptor y tipos sin any` | Versionado                                          |
 
 > ⚠️ **P-17 y P-19 son innegociables.** Sin resultado no hay trazabilidad y sin `fase-03.md` el

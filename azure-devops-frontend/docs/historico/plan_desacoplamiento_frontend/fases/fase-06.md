@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 05 cerró el 2026-09-01 (`docs/resultados/RESULTADO-FASE-05.md`) dejando:
+La Fase 05 cerró el 2026-09-01 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **259 pruebas verdes en 24 archivos** (220 previas + 39 de `services/state/`).
 - **Existe `src/app/features/devops-agent/services/state/`** con 5 stores atómicos (`GeneralChatStateService`, `RefinementChatStateService`, `PlanningStateService`, `DashboardStateService`, `TasksStateService`) y su `index.ts`.
@@ -127,15 +127,15 @@ git diff --stat -- 'src/app/**/*.spec.ts'  # Solo specs de la fase
 
 | Paso | Acción                                                                                | Resultado esperado      |
 |-----:|---------------------------------------------------------------------------------------|-------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                     | Contexto confirmado     |
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                  | Contexto confirmado     |
 | P-02 | `corepack pnpm test --no-watch`                                                       | 259 passed              |
 | P-03 | Migrar `TasksStateService` a sondeo declarativo con gestión de ciclo de vida          | Temporizadores saneados |
 | P-04 | Validar y expandir tests en `tasks-state.service.spec.ts`                             | Pruebas verdes          |
 | P-05 | `corepack pnpm test --no-watch`                                                       | 259+ passed             |
 | P-06 | `corepack pnpm build`                                                                 | Correcto y < 500 kB     |
-| P-07 | Escribir `docs/resultados/RESULTADO-FASE-06.md`                                       | Trazabilidad            |
-| P-08 | Actualizar `docs/plan/ESTADO.md`                                                      | Tablero al día          |
-| P-09 | Generar `docs/fases/fase-07.md`                                                       | Checkpoint creado       |
+| P-07 | Escribir `../../../../../docs/sdd/resultados`                                         | Trazabilidad            |
+| P-08 | Actualizar `../../../../../docs/sdd/plan`                                             | Tablero al día          |
+| P-09 | Generar `../../../../../docs/sdd/fases`                                               | Checkpoint creado       |
 | P-10 | Commit: `refactor(devops_agent): desacoplar sondeo de tareas y sanear temporizadores` | Versionado              |
 
 ### 3.1 Contenido mínimo del MD de la Fase 07

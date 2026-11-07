@@ -167,3 +167,4 @@ credentials/
 # Reports
 reports/
 **/reports/
+/.agents/

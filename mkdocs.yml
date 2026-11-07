@@ -1,0 +1,86 @@
+site_name: "Azure DevOps Agent Harness - Documentación Técnica"
+site_description: "Portal técnico unificado bajo el marco Diátaxis y TechDocs Backstage para el ecosistema de Harness de Agentes de Azure DevOps."
+site_author: "Bancolombia Architecture Team"
+
+theme:
+  name: material
+  language: es
+  palette:
+    # Modo Claro (Colores Corporativos Bancolombia)
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+    # Modo Oscuro (Colores Corporativos Bancolombia)
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+extra_css:
+  - stylesheets/bancolombia.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search:
+      lang: es
+  - techdocs-core
+
+# Estructura Canónica de Navegación Diátaxis
+nav:
+  - "Inicio": index.md
+  - "Tutoriales":
+      - "Primeros Pasos (Quickstart < 5 min)": tutorials/quickstart-local-environment.md
+  - "Guías Prácticas (How-To)":
+      - "Ejecutar Program Planning": how-to/run-program-planning.md
+      - "Registrar Herramientas MCP": how-to/register-mcp-tools.md
+      - "Variables de Entorno y LiteLLM": how-to/configure-environment-and-llm.md
+  - "Referencia Técnica":
+      - "Protocolo A2A y JSON-RPC 2.0": reference/agent-a2a-contracts.md
+      - "API REST y SSE del BFF": reference/bff-api.md
+      - "Catálogo de Herramientas MCP": reference/mcp-tools-catalog.md
+      - "Variables de Entorno": reference/environment-variables.md
+  - "Arquitectura y Explicación":
+      - "Visión General del Ecosistema": explanation/ecosystem-architecture.md
+      - "Filosofía del Harness y Comparativa Wynxx": explanation/agent-harness-philosophy.md
+      - "Decisiones de Arquitectura (ADRs)":
+          - "ADR 0001: Clean Architecture Scaffold": adr/0001-clean-architecture-scaffold.md
+          - "ADR 0002: Resolución de Intenciones y Flujos": adr/0002-intent-resolution-and-flows.md
+          - "ADR 0003: Prompts Externalizados y Regla HyMS": adr/0003-externalized-prompts-and-hyms.md
+          - "ADR 0004: Transporte Dual A2A y Null Object": adr/0004-a2a-dual-transport.md
+          - "ADR 0005: Almacenamiento Documental FileSystem": adr/0005-spec-storage-filesystem-port.md
+          - "ADR 0006: Motor de Program Planning": adr/0006-program-planning-story-engine.md
+  - "Auditoría y Salud Técnica":
+      - "Escaneo de Dependencias y Resiliencia": DEPENDENCY_SCAN_AND_IMPROVEMENTS.md

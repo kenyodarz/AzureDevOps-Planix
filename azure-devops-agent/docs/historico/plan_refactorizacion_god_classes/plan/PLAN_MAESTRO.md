@@ -175,13 +175,13 @@ Tomado literalmente de `rules/spring-rules.md` §7:
 
 ## 8. Riesgos y mitigación
 
-| Riesgo | Impacto | Mitigación |
-|---|---|---|
-| El refactor cambia el flujo elegido para un texto dado | Alto | Fase 00 congela el comportamiento actual con tests de caracterización; cualquier desvío rompe el build |
-| Los prompts externalizados alteran la salida del LLM | Alto | Fase 01 exige comparación byte a byte del prompt renderizado contra la constante original |
-| Corregir D-01 cambia funcionalidad para el usuario final | Alto | **Bloqueado** hasta aprobación explícita (ver `DECISIONES_PENDIENTES.md`, DP-01) |
-| Pérdida de contexto o desconexión a mitad del trabajo | Medio | Protocolo de continuidad en `docs/README.md` + `ESTADO.md` + MD por fase |
-| Regresión en el contrato A2A / JSON-RPC | Alto | `JsonRpcErrorContractTest` y `RouterRestTest` existentes deben permanecer intactos y verdes |
+| Riesgo                                                   | Impacto | Mitigación                                                                                             |
+|----------------------------------------------------------|---------|--------------------------------------------------------------------------------------------------------|
+| El refactor cambia el flujo elegido para un texto dado   | Alto    | Fase 00 congela el comportamiento actual con tests de caracterización; cualquier desvío rompe el build |
+| Los prompts externalizados alteran la salida del LLM     | Alto    | Fase 01 exige comparación byte a byte del prompt renderizado contra la constante original              |
+| Corregir D-01 cambia funcionalidad para el usuario final | Alto    | **Bloqueado** hasta aprobación explícita (ver `DECISIONES_PENDIENTES.md`, DP-01)                       |
+| Pérdida de contexto o desconexión a mitad del trabajo    | Medio   | Protocolo de continuidad en `../../../../../docs/sdd/README.md` + `ESTADO.md` + MD por fase            |
+| Regresión en el contrato A2A / JSON-RPC                  | Alto    | `JsonRpcErrorContractTest` y `RouterRestTest` existentes deben permanecer intactos y verdes            |
 
 ---
 

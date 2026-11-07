@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:** `feat(backend): crear modelos de dominio inmutables para program planning`  
-> **Instrucciones:** `docs/fases/FASE-02-modelos-dominio-planeacion.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

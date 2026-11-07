@@ -1,6 +1,6 @@
 # FASE 01 — Baseline y red de seguridad
 
-> **Plan:** `docs/plan/plan-maestro.md` v2.0 · **Estado:** 🟡 PENDIENTE
+> **Plan:** `../../../../../docs/sdd/plan` v2.0 · **Estado:** 🟡 PENDIENTE
 > **Deudas objetivo:** D-17, D-18 (parcial) · **Decisiones requeridas:** ninguna
 > **Fase siguiente:** `fase-02.md` (se genera al cerrar esta)
 
@@ -67,7 +67,7 @@ relaja de forma explícita y solo para esta fase:
 
 ### T-01 · Registrar el baseline reproducible
 
-Crear `docs/resultados/baseline-fase-01.md` con:
+Crear `../../../../../docs/sdd/resultados` con:
 
 - Salida de `gradlew test`: totales por suite y detalle de los 15 fallos (nombre del test y motivo).
 - Tabla de líneas por clase productiva (top 10).
@@ -208,7 +208,7 @@ manda el BFF por el cable. Usar `MockWebServer` y congelar:
 
 ### T-08 · Registrar el mapa de integración
 
-Añadir a `docs/resultados/baseline-fase-01.md` una sección **«Mapa de integración actual»** con la
+Añadir a `../../../../../docs/sdd/resultados` una sección **«Mapa de integración actual»** con la
 tabla de las 4 llamadas del front (§2.1 del plan maestro), su destino real según
 `proxy.conf.json`, y su estado (OK / rota / salta el BFF). Es el documento que la Fase 03 usará para
 verificar que el front pasa a hablar con un solo servicio.
@@ -220,7 +220,7 @@ verificar que el front pasa a hablar con un solo servicio.
 - `gradlew test` → **exactamente 15 fallos**, los mismos 15 del baseline. Cualquier fallo nuevo es
   un test mal escrito, no un hallazgo.
 - Ningún fichero bajo `src/main/` ha cambiado. Verificar con `git status`.
-- El informe `docs/resultados/baseline-fase-01.md` está completo, incluida la cifra de violaciones
+- El informe `../../../../../docs/sdd/resultados` está completo, incluida la cifra de violaciones
   de ArchUnit.
 
 ---
@@ -234,7 +234,7 @@ verificar que el front pasa a hablar con un solo servicio.
 - [x] **P-02** — `gradlew jacocoMergedReport` y anotar la cobertura por módulo.
 - [x] **P-03** — `gradlew :app-service:test --tests "*ArchitectureTest*" -i` y extraer las líneas
   `ARCHITECTURE_RULE_VIOLATED`.
-- [x] **P-04** — Redactar `docs/resultados/baseline-fase-01.md` (T-01).
+- [x] **P-04** — Redactar `../../../../../docs/sdd/resultados` (T-01).
 - [x] **P-05** — Reescribir `UseCasesConfigTest` con `ApplicationContextRunner` (T-02). Debe pasar
   del verde falso al verde real; si al reescribirlo se pone rojo, **el hallazgo se documenta y se
   arregla aquí**: es wiring, no comportamiento.
@@ -250,7 +250,8 @@ verificar que el front pasa a hablar con un solo servicio.
   verde (T-09).
 - [x] **P-11** — `git status`: confirmar que no se tocó `src/main/`.
 - [x] **P-12** — Rellenar el bloque **Resultado** de abajo y actualizar §9 del plan maestro.
-- [x] **P-13** — **Generar `docs/fases/fase-02.md`** con el estado real alcanzado: cliente A2A del
+- [x] **P-13** — **Generar `../../../../../docs/sdd/fases`** con el estado real alcanzado: cliente
+  A2A del
   agente y retirada del rol de servidor. Dejar constancia de que **DP-08** (llamada bloqueante o no
   bloqueante) debe resolverse antes de escribir el `AgentGateway`.
 
@@ -258,7 +259,7 @@ verificar que el front pasa a hablar con un solo servicio.
 
 ## 4. Resultado
 
-> Informe completo: **`docs/resultados/RESULTADO-FASE-01.md`**
+> Informe completo: **`../../../../../docs/sdd/resultados`**
 
 - **Fecha de cierre:** 2026-08-29
 - **Tests totales / fallidos:** **117 / 15** (los mismos 15 heredados, ni uno más)

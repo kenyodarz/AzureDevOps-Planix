@@ -3,7 +3,7 @@
 > **Ejecutada:** 2026-09-06 · **Estado final:** 🟢 COMPLETADA  
 > **Commit sugerido:**
 > `feat(backend): crear modelos y puerto de almacenamiento documental spec storage en domain model`  
-> **Instrucciones:** `docs/fases/FASE-01-modelos-y-puerto-spec-storage.md`
+> **Instrucciones:** `../../../docs/sdd/fases`
 
 ---
 

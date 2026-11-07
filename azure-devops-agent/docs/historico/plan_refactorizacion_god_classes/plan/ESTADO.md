@@ -6,7 +6,7 @@
 **Última actualización:** 2026-08-29 · **Fase activa:** _ninguna — **PLAN CERRADO**_
 
 > 🏁 **Plan completado.** Las 8 fases están cerradas y no queda ninguna decisión abierta.
-> Informe final: **`docs/resultados/CIERRE-DEL-PLAN.md`**.
+> Informe final: **`../../../../../docs/sdd/resultados`**.
 
 ---
 

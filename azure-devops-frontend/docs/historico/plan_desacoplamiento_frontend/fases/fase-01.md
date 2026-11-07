@@ -1,7 +1,7 @@
 # FASE 01 — Baseline y red de seguridad
 
 > **Estado:** 🟢 **COMPLETADA** (2026-08-31) · **Depende de:** — · **Riesgo:** Nulo
-> **Resultado:** `docs/resultados/RESULTADO-FASE-01.md` · **Baseline:** `docs/resultados/baseline-fase-01.md`
+> **Resultado:** `../../../../../docs/sdd/resultados` · **Baseline:** `../../../../../docs/sdd/resultados`
 > **Commit al cerrar:** `test(devops_agent): agregar pruebas de caracterizacion de los flujos del frontend`
 > **Siguiente fase:** `fase-02.md` (🔴 bloqueada por DP-03, DP-06 y DP-09)
 > **Restricción original:** cero líneas en `src/app/**` fuera de `.spec.ts` — **relajada por la
@@ -80,7 +80,7 @@ Deudas que esta fase **documenta pero no arregla**, dejando prueba de caracteriz
 
 1. Existe una suite de caracterización que cubre los **cinco flujos** del servicio de estado.
 2. Existe una prueba de componente para cada uno de los **9 componentes** actuales.
-3. Existe `docs/resultados/baseline-fase-01.md` con las métricas M-01 a M-12 **medidas**, no declaradas.
+3. Existe `../../../../../docs/sdd/resultados` con las métricas M-01 a M-12 **medidas**, no declaradas.
 4. Los umbrales de calidad, los intervalos de polling y las rutas de endpoint están **fijados por pruebas**: cambiarlos en una fase futura rompe una prueba y obliga a una decisión consciente.
 5. **`git diff --stat -- src/app` no muestra ningún archivo que no termine en `.spec.ts`.**
 
@@ -102,10 +102,10 @@ Deudas que esta fase **documenta pero no arregla**, dejando prueba de caracteriz
 | `src/app/features/devops-agent/components/planning-management/planning-management.component.spec.ts` | CREAR                          |
 | `src/app/features/devops-agent/components/planning-dashboard/planning-dashboard.component.spec.ts`   | CREAR                          |
 | `src/app/features/devops-agent/pages/devops-agent-home.page.spec.ts`                                 | CREAR                          |
-| `docs/resultados/baseline-fase-01.md`                                                                | CREAR                          |
-| `docs/resultados/RESULTADO-FASE-01.md`                                                               | CREAR                          |
-| `docs/fases/fase-02.md`                                                                              | CREAR                          |
-| `docs/plan/ESTADO.md`                                                                                | MODIFICAR                      |
+| `../../../../../docs/sdd/resultados`                                                                 | CREAR                          |
+| `../../../../../docs/sdd/resultados`                                                                 | CREAR                          |
+| `../../../../../docs/sdd/fases`                                                                      | CREAR                          |
+| `../../../../../docs/sdd/plan`                                                                       | MODIFICAR                      |
 
 ### 1.5 Reglas aplicables
 
@@ -129,7 +129,7 @@ De `AGENTS.md` / `COMMIT_RULES.md`:
 
 > Las decisiones DP-02, DP-04, DP-06 y DP-09 se **alimentan** con las evidencias que produzca esta
 > fase. Si las pruebas revelan datos nuevos, hay que actualizar
-> `docs/plan/DECISIONES_PENDIENTES.md` antes de cerrar.
+> `../../../../../docs/sdd/plan` antes de cerrar.
 
 ---
 
@@ -139,7 +139,7 @@ De `AGENTS.md` / `COMMIT_RULES.md`:
 
 #### T-01 — Registrar el baseline reproducible
 
-Crear `docs/resultados/baseline-fase-01.md` con:
+Crear `../../../../../docs/sdd/resultados` con:
 
 1. Salida de `pnpm test` (total de pruebas, pasadas, fallidas). Si hay fallos previos, **anotar el número exacto**: es la línea base intocable para todas las fases siguientes.
 2. Salida de `pnpm build` (tamaño del bundle inicial y si respeta los presupuestos de
@@ -177,7 +177,7 @@ grep -rn '[^0-9a-zA-Z_]\(5000\|30000\|13\|50\|70\|80\|90\)[^0-9]' src/app --incl
 ```
 
 > Los números que arroje esta tarea **sustituyen** a los valores «declarados» de
-> `docs/plan/ESTADO.md` §4. Si difieren del plan maestro §2.1, corregir el plan maestro.
+> `../../../../../docs/sdd/plan` §4. Si difieren del plan maestro §2.1, corregir el plan maestro.
 
 ---
 
@@ -325,7 +325,7 @@ En `planning-dashboard.component.spec.ts`, **fijar los umbrales exactamente como
 | 20 | `runDetailedAudit('42')` con éxito y con error                                              | Se refleja el contenido o el mensaje de error actual en `detailedAudits['42']`                               |
 
 > El caso 13 es la evidencia dura que debe anexarse a **DP-02**. Anotarla en
-> `docs/plan/DECISIONES_PENDIENTES.md`.
+> `../../../../../docs/sdd/plan`.
 
 ---
 
@@ -368,7 +368,7 @@ En `devops-agent-home.page.spec.ts`, con un doble del servicio de estado:
 
 ### 2.3 Criterios de aceptación
 
-- [ ] Existe `docs/resultados/baseline-fase-01.md` con las métricas M-01 a M-12 **medidas** y el comando usado para cada una.
+- [ ] Existe `../../../../../docs/sdd/resultados` con las métricas M-01 a M-12 **medidas** y el comando usado para cada una.
 - [ ] Los cinco flujos (F1–F5) tienen pruebas de caracterización según T-02 a T-05.
 - [ ] Existen los **8 archivos `.spec.ts` nuevos** de T-06 y T-08 (7 componentes + 1 página).
 - [ ] Los umbrales de calidad de T-07 están fijados por prueba, incluida la discrepancia del caso 13.
@@ -398,30 +398,30 @@ En `devops-agent-home.page.spec.ts`, con un doble del servicio de estado:
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción                                                                                                   | Resultado esperado                                    |
-|-----:|----------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                                        | Confirmado: ninguna DP bloquea la Fase 01             |
-| P-02 | `pnpm install`                                                                                           | Dependencias resueltas                                |
-| P-03 | `pnpm test` y anotar el resultado exacto                                                                 | Número de fallos del baseline fijado                  |
-| P-04 | `pnpm build` y anotar el tamaño del bundle                                                               | Presupuestos de `angular.json` verificados            |
-| P-05 | Ejecutar los comandos de medición de T-01                                                                | Métricas M-01 a M-12 reales obtenidas                 |
-| P-06 | Escribir `docs/resultados/baseline-fase-01.md` (T-01)                                                    | Baseline publicado                                    |
-| P-07 | Ampliar `devops-agent-state.service.spec.ts` con T-02 (F1 y F2)                                          | 16 casos nuevos verdes                                |
-| P-08 | Ampliar `devops-agent-state.service.spec.ts` y `devops-agent-api.service.spec.ts` con T-03 (F3)          | 14 casos nuevos verdes                                |
-| P-09 | Ampliar `devops-agent-state.service.spec.ts` con T-04 (F4)                                               | 10 casos nuevos verdes                                |
-| P-10 | Ampliar `devops-agent-state.service.spec.ts` con T-05 (F5, temporizadores falsos)                        | 11 casos nuevos verdes                                |
-| P-11 | Crear los 6 `.spec.ts` de componentes tontos de T-06                                                     | 6 archivos nuevos verdes                              |
-| P-12 | Crear `planning-dashboard.component.spec.ts` con T-07                                                    | 20 casos verdes; discrepancia del caso 13 documentada |
-| P-13 | Crear `devops-agent-home.page.spec.ts` con T-08                                                          | 8 casos verdes; inventario de `aria-label` registrado |
-| P-14 | `pnpm test`                                                                                              | Sin fallos nuevos respecto a P-03                     |
-| P-15 | `pnpm build`                                                                                             | Correcto                                              |
-| P-16 | `git status --porcelain src/app`                                                                         | Solo archivos `.spec.ts`                              |
-| P-17 | Actualizar `docs/plan/DECISIONES_PENDIENTES.md` con las evidencias halladas (DP-02, DP-04, DP-06, DP-09) | Decisiones enriquecidas con datos reales              |
-| P-18 | Corregir el plan maestro §2.1 y §6 si las métricas medidas difieren de las declaradas                    | Plan maestro alineado con la realidad                 |
-| P-19 | **Escribir `docs/resultados/RESULTADO-FASE-01.md`** con `_PLANTILLA_RESULTADO.md` y métricas reales      | Trazabilidad de la ejecución                          |
-| P-20 | Actualizar `docs/plan/ESTADO.md`: Fase 01 🟢 COMPLETADA, métricas medidas, bitácora                      | Tablero al día                                        |
-| P-21 | **Generar `docs/fases/fase-02.md`** con `docs/fases/_PLANTILLA_FASE.md`                                  | Checkpoint de continuidad creado                      |
-| P-22 | Commit: `test(devops_agent): agregar pruebas de caracterizacion de los flujos del frontend`              | Cambios versionados                                   |
+| Paso | Acción                                                                                             | Resultado esperado                                    |
+|-----:|----------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                               | Confirmado: ninguna DP bloquea la Fase 01             |
+| P-02 | `pnpm install`                                                                                     | Dependencias resueltas                                |
+| P-03 | `pnpm test` y anotar el resultado exacto                                                           | Número de fallos del baseline fijado                  |
+| P-04 | `pnpm build` y anotar el tamaño del bundle                                                         | Presupuestos de `angular.json` verificados            |
+| P-05 | Ejecutar los comandos de medición de T-01                                                          | Métricas M-01 a M-12 reales obtenidas                 |
+| P-06 | Escribir `../../../../../docs/sdd/resultados` (T-01)                                               | Baseline publicado                                    |
+| P-07 | Ampliar `devops-agent-state.service.spec.ts` con T-02 (F1 y F2)                                    | 16 casos nuevos verdes                                |
+| P-08 | Ampliar `devops-agent-state.service.spec.ts` y `devops-agent-api.service.spec.ts` con T-03 (F3)    | 14 casos nuevos verdes                                |
+| P-09 | Ampliar `devops-agent-state.service.spec.ts` con T-04 (F4)                                         | 10 casos nuevos verdes                                |
+| P-10 | Ampliar `devops-agent-state.service.spec.ts` con T-05 (F5, temporizadores falsos)                  | 11 casos nuevos verdes                                |
+| P-11 | Crear los 6 `.spec.ts` de componentes tontos de T-06                                               | 6 archivos nuevos verdes                              |
+| P-12 | Crear `planning-dashboard.component.spec.ts` con T-07                                              | 20 casos verdes; discrepancia del caso 13 documentada |
+| P-13 | Crear `devops-agent-home.page.spec.ts` con T-08                                                    | 8 casos verdes; inventario de `aria-label` registrado |
+| P-14 | `pnpm test`                                                                                        | Sin fallos nuevos respecto a P-03                     |
+| P-15 | `pnpm build`                                                                                       | Correcto                                              |
+| P-16 | `git status --porcelain src/app`                                                                   | Solo archivos `.spec.ts`                              |
+| P-17 | Actualizar `../../../../../docs/sdd/plan` con las evidencias halladas (DP-02, DP-04, DP-06, DP-09) | Decisiones enriquecidas con datos reales              |
+| P-18 | Corregir el plan maestro §2.1 y §6 si las métricas medidas difieren de las declaradas              | Plan maestro alineado con la realidad                 |
+| P-19 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md` y métricas reales  | Trazabilidad de la ejecución                          |
+| P-20 | Actualizar `../../../../../docs/sdd/plan`: Fase 01 🟢 COMPLETADA, métricas medidas, bitácora       | Tablero al día                                        |
+| P-21 | **Generar `../../../../../docs/sdd/fases`** con `../../../../../docs/sdd/fases`                    | Checkpoint de continuidad creado                      |
+| P-22 | Commit: `test(devops_agent): agregar pruebas de caracterizacion de los flujos del frontend`        | Cambios versionados                                   |
 
 > ⚠️ **Los pasos P-19 y P-21 son innegociables.** Sin el registro de resultado no hay trazabilidad,
 > y sin `fase-02.md` el trabajo no es reanudable tras una desconexión. En cualquiera de los dos
@@ -429,7 +429,7 @@ En `devops-agent-home.page.spec.ts`, con un doble del servicio de estado:
 
 ### 3.1 Contenido mínimo del MD de la Fase 02
 
-`docs/fases/fase-02.md` debe redactarse con la plantilla obligatoria y contener, como mínimo:
+`../../../../../docs/sdd/fases` debe redactarse con la plantilla obligatoria y contener, como mínimo:
 
 **Nombre.** FASE 02 — Núcleo transversal: `core/`, configuración y erradicación de `any`.
 

@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0.0 · **Fecha:** 2026-09-06  
 > **Alineado con:** Clean Architecture Bancolombia (`AGENTS.md` - Fase 1 Frontend), Angular 22, PrimeNG 21, Tailwind CSS, A2A Protocol v1.0  
-> **Especificación Base:** `docs/specs/ESPECIFICACION-INTEGRACION-PLANNING-FRONTEND.md`  
+> **Especificación Base:** `../../../docs/sdd/specs`  
 > **Módulo:** `azure-devops-frontend`
 
 ---

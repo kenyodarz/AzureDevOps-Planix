@@ -1,6 +1,6 @@
 # DECISIONES PENDIENTES — Evaluación de Pull Requests con Azure DevOps MCP
 
-> **Regla rectora:** Política de No-Asunción (`docs/README.md`).  
+> **Regla rectora:** Política de No-Asunción (`../../../docs/sdd/README.md`).  
 > **Última actualización:** 2026-09-08
 >
 > Si una decisión que bloquea la fase activa se encuentra marcada como 🔴 **ABIERTA**, el

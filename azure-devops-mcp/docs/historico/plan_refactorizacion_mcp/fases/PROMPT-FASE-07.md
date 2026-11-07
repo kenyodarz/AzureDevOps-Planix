@@ -199,7 +199,8 @@ Value Objects de la Fase 04. Es el modelo anémico literal que `spring-rules.md`
 
 ### Cómo trabajar
 
-Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `docs/fases/fase-07.md`, en orden y
+Sigue **exactamente** el checklist de §3 «Orden de Ejecución» de `../../../../../docs/sdd/fases`, en
+orden y
 sin adelantar pasos, empezando por el **paso 0 bloqueante**. Marca cada casilla conforme la
 completes.
 
@@ -227,7 +228,7 @@ cd C:\Users\minaj\Work\GitHub\Labs\AzureDevOps\azure-devops-mcp
 - [ ] `CONTRATO-MCP.md` §3.4 **actualizado**: ya no puede decir «queda anotada para la Fase 07».
 - [ ] Plan maestro actualizado: §3, §6, §7, §9 y cabecera.
 - [ ] Bloque **Resultado** de `fase-07.md` relleno con lo alcanzado **de verdad**.
-- [ ] **`docs/fases/fase-08.md` y `docs/fases/PROMPT-FASE-08.md` generados**.
+- [ ] **`../../../../../docs/sdd/fases` y `../../../../../docs/sdd/fases` generados**.
 - [ ] Commit hecho con el mensaje indicado.
 
 Empieza por el **Paso 0**.

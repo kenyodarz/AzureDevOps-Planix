@@ -182,7 +182,7 @@ Get-ChildItem -Recurse -Filter TEST-*.xml | Where-Object { $_.FullName -match 't
    falla y cuesta dos intentos.
 5. **No pegues la salida cruda de Gradle.** Fíltrala con `Select-String`.
 6. Si el contexto se te acaba igual: cierra lo que tengas, escribe el resultado parcial en
-   `docs/resultados/` y genera un handoff nuevo como éste.
+   `../../../../../docs/sdd/resultados` y genera un handoff nuevo como éste.
 
 ### Ingeniería
 
@@ -236,12 +236,12 @@ Borrador en `fase-05.md` §3. Resumen:
 - [ ] Reglas de negocio en `entry-points`: 3 → 0.
 - [ ] Mutaciones in-place en cadenas reactivas: 3 → 0.
 - [ ] ArchUnit *Rule_2.2* sin violaciones, si B-03 se resolvió como se recomienda.
-- [ ] `docs/resultados/RESULTADO-FASE-05.md` con la misma estructura que el de la Fase 04:
+- [ ] `../../../../../docs/sdd/resultados` con la misma estructura que el de la Fase 04:
   objetivo · qué se construyó · decisiones · métricas · comandos · **desviaciones** · checklist ·
   hallazgos · estado.
 - [ ] `plan-maestro.md` actualizado: deudas, §6 (columna «Actual (Fase 05)»), §9 (bitácora), DP-03 a
   «Resueltas».
-- [ ] `docs/fases/fase-06.md` generada, con sus bloqueantes si los tiene.
+- [ ] `../../../../../docs/sdd/fases` generada, con sus bloqueantes si los tiene.
 
 ---
 

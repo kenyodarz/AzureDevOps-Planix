@@ -2,7 +2,7 @@
 
 > **Estado:** 🟢 COMPLETADA · **Depende de:** FASE 03 (🟢 completada) · **Riesgo:** Medio
 > **Commit al cerrar:** `refactor(agent_chat): separar flujos de conversacion con patron strategy`
-> **Resultado de la ejecución:** `docs/resultados/RESULTADO-FASE-04.md`
+> **Resultado de la ejecución:** `../../../../../docs/sdd/resultados`
 
 ---
 
@@ -243,22 +243,22 @@ Registrar en `UseCasesConfig` los seis handlers y el dispatcher. Mantener `Inten
 
 ## 3. ORDEN DE EJECUCIÓN
 
-| Paso | Acción | Resultado esperado |
-|---:|---|---|
-| 1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-03.md` | Contexto al día; comprobar la ratificación pendiente de la Fase 03 |
-| 2 | Crear `ChatFlowHandler` y `ChatFlowContext` (Pasos A y B) | Contrato del flujo |
-| 3 | Crear los seis handlers moviendo el cuerpo de cada `run*Flow` (Paso C) | Un flujo, una clase |
-| 4 | Escribir una prueba por handler (Paso G) | Verdes antes de tocar el caso de uso |
-| 5 | Crear `ChatFlowDispatcher` con validación de exhaustividad (Paso D) | Fail-fast en el arranque |
-| 6 | Adelgazar `AgentChatUseCase` y unificar el `onErrorResume` (Paso E) | ≤ 120 líneas, D-02 saldada |
-| 7 | Registrar handlers y dispatcher en `UseCasesConfig` (Paso F) | El contexto de Spring arranca |
-| 8 | Ejecutar `.\gradlew.bat :usecase:test` | 24 de caracterización verdes; **ninguna aserción modificada** |
-| 9 | Ejecutar `.\gradlew.bat build` | `BUILD SUCCESSFUL` |
-| 10 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`) | Métricas reales |
-| 11 | **Escribir `docs/resultados/RESULTADO-FASE-04.md`** con `_PLANTILLA_RESULTADO.md` | Trazabilidad |
-| 12 | Actualizar `docs/plan/ESTADO.md`: 🟢 COMPLETADA + métricas + bitácora | Tablero al día |
-| 13 | **Generar `docs/fases/FASE-05-value-objects-de-configuracion.md`** con `_PLANTILLA_FASE.md` | Checkpoint creado |
-| 14 | Commit: `refactor(agent_chat): separar flujos de conversacion con patron strategy` | Cambios versionados |
+| Paso | Acción                                                                             | Resultado esperado                                                 |
+|-----:|------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+|    1 | Leer `ESTADO.md`, `DECISIONES_PENDIENTES.md` y `RESULTADO-FASE-03.md`              | Contexto al día; comprobar la ratificación pendiente de la Fase 03 |
+|    2 | Crear `ChatFlowHandler` y `ChatFlowContext` (Pasos A y B)                          | Contrato del flujo                                                 |
+|    3 | Crear los seis handlers moviendo el cuerpo de cada `run*Flow` (Paso C)             | Un flujo, una clase                                                |
+|    4 | Escribir una prueba por handler (Paso G)                                           | Verdes antes de tocar el caso de uso                               |
+|    5 | Crear `ChatFlowDispatcher` con validación de exhaustividad (Paso D)                | Fail-fast en el arranque                                           |
+|    6 | Adelgazar `AgentChatUseCase` y unificar el `onErrorResume` (Paso E)                | ≤ 120 líneas, D-02 saldada                                         |
+|    7 | Registrar handlers y dispatcher en `UseCasesConfig` (Paso F)                       | El contexto de Spring arranca                                      |
+|    8 | Ejecutar `.\gradlew.bat :usecase:test`                                             | 24 de caracterización verdes; **ninguna aserción modificada**      |
+|    9 | Ejecutar `.\gradlew.bat build`                                                     | `BUILD SUCCESSFUL`                                                 |
+|   10 | Medir cobertura (`jacocoMergedReport --no-configuration-cache`)                    | Métricas reales                                                    |
+|   11 | **Escribir `../../../../../docs/sdd/resultados`** con `_PLANTILLA_RESULTADO.md`    | Trazabilidad                                                       |
+|   12 | Actualizar `../../../../../docs/sdd/plan`: 🟢 COMPLETADA + métricas + bitácora     | Tablero al día                                                     |
+|   13 | **Generar `../../../../../docs/sdd/fases`** con `_PLANTILLA_FASE.md`               | Checkpoint creado                                                  |
+|   14 | Commit: `refactor(agent_chat): separar flujos de conversacion con patron strategy` | Cambios versionados                                                |
 
 > ⚠️ **Los pasos 11 y 13 son innegociables.** Sin ellos la fase se considera **incompleta**.
 >

@@ -2,7 +2,7 @@
 
 > **Ejecutada:** 2026-08-29 · **Estado final:** 🟢 COMPLETADA
 > **Commit:** `refactor(agent_api): separar validacion y mapeo de errores del entry point`
-> **Instrucciones:** `docs/fases/FASE-06-separacion-del-entry-point.md`
+> **Instrucciones:** `../../../../../docs/sdd/fases`
 
 ---
 

@@ -11,7 +11,7 @@
 
 ### 1.1 De dónde venimos
 
-La Fase 06 cerró el 2026-09-01 (`docs/resultados/RESULTADO-FASE-06.md`) dejando:
+La Fase 06 cerró el 2026-09-01 (`../../../../../docs/sdd/resultados`) dejando:
 
 - **260 pruebas verdes en 24 archivos**.
 - `TasksStateService` migrado a un pipeline declarativo RxJS con intervalos dinámicos (D-02, D-15, M-06 saneadas en tasks-state).
@@ -152,16 +152,16 @@ git diff --stat -- 'src/app/**/*.spec.ts'
 
 | Paso | Acción                                                                                        | Resultado esperado     |
 |-----:|-----------------------------------------------------------------------------------------------|------------------------|
-| P-01 | Leer `docs/plan/ESTADO.md` y `docs/plan/DECISIONES_PENDIENTES.md`                             | Contexto confirmado    |
+| P-01 | Leer `../../../../../docs/sdd/plan` y `../../../../../docs/sdd/plan`                          | Contexto confirmado    |
 | P-02 | `corepack pnpm test --no-watch`                                                               | 260 passed             |
 | P-03 | Crear `domain/quality-score.ts` y su `.spec.ts`                                               | Cálculos aislados      |
 | P-04 | Crear subcomponentes de presentación en `components/planning-dashboard/`                      | Subcomponentes creados |
 | P-05 | Refactorizar `PlanningDashboardComponent` reduciendo su tamaño                                | ≤ 200 líneas           |
 | P-06 | `corepack pnpm test --no-watch`                                                               | Verde                  |
 | P-07 | `corepack pnpm build`                                                                         | Correcto y < 500 kB    |
-| P-08 | Escribir `docs/resultados/RESULTADO-FASE-07.md`                                               | Trazabilidad           |
-| P-09 | Actualizar `docs/plan/ESTADO.md`                                                              | Tablero al día         |
-| P-10 | Generar `docs/fases/fase-08.md`                                                               | Checkpoint creado      |
+| P-08 | Escribir `../../../../../docs/sdd/resultados`                                                 | Trazabilidad           |
+| P-09 | Actualizar `../../../../../docs/sdd/plan`                                                     | Tablero al día         |
+| P-10 | Generar `../../../../../docs/sdd/fases`                                                       | Checkpoint creado      |
 | P-11 | Commit: `refactor(devops_agent): descomponer tablero de calidad y modularizar subcomponentes` | Versionado             |
 
 ### 3.1 Contenido mínimo del MD de la Fase 08

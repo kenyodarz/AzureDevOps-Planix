@@ -1,6 +1,6 @@
 # FASE 03 — Frontera de contrato: DTOs y mappers
 
-> **Plan:** [`docs/plan/plan-maestro.md`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
+> **Plan:** [`../../../../../docs/sdd/plan`](../plan/plan-maestro.md) · **Estado:** 🟢 **COMPLETADA**
 > (2026-08-30)
 > **Deudas que ataca:** D-11, D-17 · **Decisión bloqueante:** ✅ **DP-03 (RESUELTA)**
 > **Riesgo:** Medio · **Depende de:** Fases 01 y 02 (cerradas) · **Habilita:** Fases 04 a 08
@@ -166,7 +166,8 @@ excepción. **La regla debe quedar a cero violaciones reales**, verificado **en 
    qué nombre de clase quedó en cada frontera.
 2. Plan maestro: §3 (D-11, D-17), §6 (métricas), §9 (bitácora) y cabecera.
 3. Rellenar §4 de este documento y marcar el checklist.
-4. **Generar `docs/fases/fase-04.md`** con **DP-04** marcada como bloqueante en su primer paso.
+4. **Generar `../../../../../docs/sdd/fases`** con **DP-04** marcada como bloqueante en su primer
+   paso.
 5. Commit: `refactor(mcp_contract): separar los dto de cable de los modelos de dominio`
 
 ---
@@ -188,7 +189,8 @@ excepción. **La regla debe quedar a cero violaciones reales**, verificado **en 
 - [x] **10.** `.\gradlew.bat build` verde de nuevo.
 - [x] **11.** Actualizar `CONTRATO-MCP.md` §3 y el plan maestro (§3, §6, §9, cabecera). **(T-05)**
 - [x] **12.** Rellenar **Resultado** en §4 y marcar este checklist. **(T-05)**
-- [x] **13.** **Generar `docs/fases/fase-04.md`** con DP-04 bloqueante. **(Regla de Continuidad)**
+- [x] **13.** **Generar `../../../../../docs/sdd/fases`** con DP-04 bloqueante. **(Regla de
+  Continuidad)**
 - [x] **14.** Commit: `refactor(mcp_contract): separar los dto de cable de los modelos de dominio`
 
 ---
@@ -305,7 +307,8 @@ nombre de clase terminado en `Dto`, `DTO`, `Request` o `Response`**.
 (DP-03 y el conflicto de `RestConsumerTest`) se elevaron al propietario y se resolvieron el mismo
 día. **Ninguna decisión se tomó por cuenta propia** (`spring-rules.md` §6).
 
-**Fase siguiente generada:** ☑ [`docs/fases/fase-04.md`](fase-04.md) — con **DP-04** marcada como
-bloqueante en su primer paso · ☑ [`docs/fases/PROMPT-FASE-04.md`](PROMPT-FASE-04.md), prompt de
+**Fase siguiente generada:** ☑ [`../../../../../docs/sdd/fases`](fase-04.md) — con **DP-04** marcada
+como
+bloqueante en su primer paso · ☑ [`../../../../../docs/sdd/fases`](PROMPT-FASE-04.md), prompt de
 arranque **autocontenido** (§8.7 del plan maestro).
 

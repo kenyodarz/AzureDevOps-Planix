@@ -29,19 +29,20 @@ datos reales medidos. Nunca se mezclan.
 Si eres un agente de IA retomando este trabajo, ejecuta estos pasos **en orden** antes de tocar
 código:
 
-1. Lee `docs/plan/ESTADO.md` y localiza la primera fase con estado `PENDIENTE` o `EN_CURSO`.
-2. Lee `docs/plan/PLAN_MAESTRO.md` para entender el objetivo global y dónde encaja esa fase.
-3. Lee el `docs/resultados/RESULTADO-FASE-XX.md` de la fase **anterior**: contiene las desviaciones
+1. Lee `../../../../docs/sdd/plan` y localiza la primera fase con estado `PENDIENTE` o `EN_CURSO`.
+2. Lee `../../../../docs/sdd/plan` para entender el objetivo global y dónde encaja esa fase.
+3. Lee el `../../../../docs/sdd/resultados` de la fase **anterior**: contiene las desviaciones
    reales y los hallazgos que condicionan la siguiente.
-4. Lee `docs/plan/DECISIONES_PENDIENTES.md`. Si la fase depende de una decisión sin resolver,
+4. Lee `../../../../docs/sdd/plan`. Si la fase depende de una decisión sin resolver,
    **detente y pregunta al usuario** (regla obligatoria de No-Asunción, `rules/spring-rules.md` §6).
-5. Lee `docs/fases/FASE-XX-<nombre>.md` correspondiente y ejecútala **literalmente**.
+5. Lee `../../../../docs/sdd/fases` correspondiente y ejecútala **literalmente**.
 6. Al terminar la fase:
    - Verifica la checklist de salida de esa fase (debe estar 100% marcada).
-   - **Escribe `docs/resultados/RESULTADO-FASE-XX.md`** usando `_PLANTILLA_RESULTADO.md`, con
+   - **Escribe `../../../../docs/sdd/resultados`** usando `_PLANTILLA_RESULTADO.md`, con
      métricas reales medidas, no estimadas.
-   - Actualiza `docs/plan/ESTADO.md` marcando la fase como `COMPLETADA` con fecha y notas.
-   - **Genera el MD de la siguiente fase** en `docs/fases/` usando `_PLANTILLA_FASE.md`.
+   - Actualiza `../../../../docs/sdd/plan` marcando la fase como `COMPLETADA` con fecha y notas.
+   - **Genera el MD de la siguiente fase** en `../../../../docs/sdd/fases` usando
+     `_PLANTILLA_FASE.md`.
    - Haz commit siguiendo `COMMIT_RULES.md`.
 
 ## Regla de oro
