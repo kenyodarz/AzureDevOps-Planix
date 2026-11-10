@@ -31,9 +31,9 @@ spring:
       api-key: "${AI_API_KEY:dummy}"
       base-url: "${AI_BASE_URL:http://localhost:4141}"
       chat:
-        model: "${AI_MODEL:gpt-5-mini}"
+        model: "${AI_MODEL:claude-haiku-5.5}"
       embedding:
-        model: "${AI_EMBEDDING_MODEL:nvidia/llama-3.2-nv-embedqa-1b-v1}"
+        model: "${AI_EMBEDDING_MODEL:text-embedding-ada-002}"
     vectorstore:
       pgvector:
         table-name: "planning_chunks"
